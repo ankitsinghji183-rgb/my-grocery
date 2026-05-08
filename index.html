@@ -158,7 +158,7 @@
             if (search && !item.name.toLowerCase().includes(search)) return;
             container.innerHTML += `
                 <div class="item-row ${item.selected ? 'selected-row' : ''}">
-                    <span class="delete-btn" onclick="deleteItem(${i})">×</span>
+                    <span class="delete-btn" onclick="deleteItem(${i})">&#10006;</span>
                     <span class="item-label" onclick="toggleSelect(${i})">${item.name}</span>
                     <div class="qty-box">
                         <input type="number" class="qty-input" step="0.001" value="${item.qty}" oninput="updateQty(${i}, this.value)" placeholder="0">
