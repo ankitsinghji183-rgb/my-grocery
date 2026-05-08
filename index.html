@@ -124,7 +124,7 @@
     function toggleLang() {
         currentLang = (currentLang === 'EN') ? 'HI' : 'EN';
         document.getElementById('langBtn').innerText = (currentLang === 'EN') ? 'ENGLISH' : 'HINDI';
-        document.getElementById('listHeading').innerText = (currentLang === 'EN') ? 'SHOPPING LIST' : '??????? ?? ????';
+        document.getElementById('listHeading').innerText = (currentLang === 'EN') ? 'SHOPPING LIST' : 'खरीदारी की सूची';
     }
 
     function addItem() {
@@ -197,20 +197,20 @@
         if(!n) return "";
         let isHi = (currentLang === 'HI');
         if(n === 0.5) {
-            if(unit === 'Kg') return isHi ? "??? ????" : "Half Kg";
-            if(unit === 'Litre') return isHi ? "??? ????" : "Half Litre";
+            if(unit === 'Kg') return isHi ? "आधा किलो" : "Half Kg";
+            if(unit === 'Litre') return isHi ? "आधा लीटर" : "Half Litre";
         }
         if(n > 0 && n < 1) {
             let valGram = n * 1000;
-            if(unit === 'Kg') return valGram + (isHi ? " ?????" : " Gram");
+            if(unit === 'Kg') return valGram + (isHi ? " ग्राम" : " Gram");
             if(unit === 'Litre') return valGram + (isHi ? " ML" : " ML");
         }
         let unitText = unit;
         if(isHi) {
-            if(unit === 'Kg') unitText = "????";
-            else if(unit === 'Litre') unitText = "????";
-            else if(unit === 'Pc') unitText = "???"; 
-            else if(unit === 'Rs') unitText = "?????"; 
+            if(unit === 'Kg') unitText = "किलो";
+            else if(unit === 'Litre') unitText = "लीटर";
+            else if(unit === 'Pc') unitText = "पीस"; 
+            else if(unit === 'Rs') unitText = "रुपये"; 
         }
         return n + " " + unitText;
     }
@@ -219,15 +219,14 @@
         let display = document.getElementById('finalDisplay');
         display.innerHTML = ''; let hasSelection = false;
         
-        // --- ONLY HINDI NAMES HERE ---
-        let cats = (currentLang === 'EN') ? ['GROCERY', 'SABJI', 'OTHER'] : ['??????', '?????', '????'];
+        let cats = (currentLang === 'EN') ? ['GROCERY', 'SABJI', 'OTHER'] : ['किराना', 'सब्जी', 'अन्य'];
         let rawCats = ['GROCERY', 'SABJI', 'OTHER'];
 
         rawCats.forEach((cat, idx) => {
             let filtered = items.filter(it => it.selected && it.cat === cat);
             if(filtered.length > 0) {
                 hasSelection = true;
-                display.innerHTML += `<div class="cat-header-row"><div class="cat-title">${cats[idx]}</div><div style="font-size:10px;text-align:right;">${currentLang=='EN'?'Qty':'??????'}</div><div style="font-size:10px;text-align:right;">${currentLang=='EN'?'Price':'????'}</div></div>`;
+                display.innerHTML += `<div class="cat-header-row"><div class="cat-title">${cats[idx]}</div><div style="font-size:10px;text-align:right;">${currentLang=='EN'?'Qty':'मात्रा'}</div><div style="font-size:10px;text-align:right;">${currentLang=='EN'?'Price':'कीमत'}</div></div>`;
                 filtered.forEach((it, i) => {
                     display.innerHTML += `<div class="list-item"><span>${i+1}.</span><span class="final-item-name">${it.name}</span><span class="final-qty">${formatQtyDisplay(it.qty, it.unit)}</span><div class="price-dash"></div></div>`;
                 });
