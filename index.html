@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Online v20</title>
+    <title>Grocery Online v22</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root { --primary: #1a73e8; --success: #28a745; --danger: #dc3545; --bg: #f4f7f6; }
@@ -23,27 +23,29 @@
 
         .list-container { background: white; margin-bottom: 80px; }
         .item-row { display: flex; align-items: center; padding: 8px 10px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
-        .selected-row { background: #f1f8ff; }
-        .item-label { flex: 1; cursor: pointer; font-weight: 500; }
+        .selected-row { background: #e7f3ff; border-left: 4px solid var(--primary); }
+        .item-label { flex: 1; cursor: pointer; font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
         .qty-box { display: flex; gap: 3px; align-items: center; }
         input.qty-input, select.unit-select { width: 45px; height: 30px; border-radius: 4px; border: 1px solid #bbb; font-size: 12px; text-align: center; }
         .del-text { color: var(--danger); font-size: 11px; font-weight: bold; cursor: pointer; padding: 0 5px; text-decoration: underline; }
-        input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+        input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; }
 
-        /* Final Screen */
-        #finalScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: none; flex-direction: column; }
-        .screen-header { background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; height: 45px; position: relative; }
+        #finalScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: none; flex-direction: column; overflow: hidden; }
+        .screen-header { background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; height: 45px; position: relative; width: 100%; }
         .back-text-btn { font-size: 14px; font-weight: bold; cursor: pointer; background: none; border: none; color: white; position: absolute; left: 10px; }
-        #captureAreaScroll { flex: 1; overflow-y: auto; padding: 10px; background: #ddd; }
-        #captureArea { background: white; color: black; width: 100%; max-width: 400px; margin: auto; padding: 15px; border-radius: 4px; }
+        #captureAreaScroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px; background: #f0f0f0; width: 100%; box-sizing: border-box; }
+        #captureArea { background: white; color: black; width: 100%; max-width: 380px; margin: 0 auto; padding: 15px; border-radius: 4px; box-sizing: border-box; }
+        
         .list-main-heading { font-size: 22px; font-weight: bold; text-align: center; border-bottom: 3px double black; padding-bottom: 5px; margin-bottom: 15px; }
-        .cat-header-row { display: grid; grid-template-columns: 1fr 90px 60px; gap: 5px; border-bottom: 2px solid #333; margin: 15px 0 5px 0; align-items: end; padding-bottom: 2px; }
+        .cat-header-row { display: grid; grid-template-columns: 1fr 100px 70px; gap: 5px; border-bottom: 2px solid #333; margin: 15px 0 5px 0; align-items: end; padding-bottom: 2px; }
         .cat-title { font-weight: 900; font-size: 16px; }
-        .list-item { display: grid; grid-template-columns: 25px 1fr 90px 60px; gap: 5px; padding: 8px 0; border-bottom: 1px dashed #777; font-size: 15px; align-items: center; font-weight: 600; }
-        .price-dash { border-bottom: 1.5px solid #000; height: 18px; width: 50px; justify-self: end; }
+        
+        .list-item { display: grid; grid-template-columns: 25px 1fr 100px 70px; gap: 5px; padding: 8px 0; border-bottom: 1px dashed #777; font-size: 15px; align-items: center; }
+        .final-qty { font-weight: 900; text-align: right; color: #000; }
+        .price-dash { border-bottom: 2px solid #000; height: 18px; width: 55px; justify-self: end; }
 
         .btn-download { width: 90%; background: #ff9800; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; margin: 10px auto; display: block; }
-        .generate-btn { position: fixed; bottom: 10px; left: 10px; right: 10px; background: var(--primary); color: white; text-align: center; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; z-index: 100; }
+        .generate-btn { position: fixed; bottom: 10px; left: 10px; right: 10px; background: var(--primary); color: white; text-align: center; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         #loading { position: fixed; top: 10px; right: 10px; background: var(--success); color: white; padding: 4px 10px; border-radius: 20px; font-size: 10px; display: none; z-index: 2000; }
     </style>
 </head>
@@ -82,7 +84,7 @@
 <div id="finalScreen">
     <div class="screen-header">
         <button class="back-text-btn" onclick="handleBack()">Back</button>
-        <div style="font-weight: bold;">Final List</div>
+        <div style="font-weight: bold;">Final Shopping List</div>
     </div>
     <div id="captureAreaScroll">
         <div id="captureArea">
@@ -95,51 +97,15 @@
 
 <script>
     const dbURL = "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/grocery.json"; 
-    let items = JSON.parse(localStorage.getItem('groceryWeb_v20')) || [];
+    let items = [];
     let currentFilter = 'All';
     let currentLang = 'EN';
 
-    // --- MOBILE BACK BUTTON LOGIC ---
-    window.onpopstate = function() {
-        // Jab bhi phone ka back button dabega, ye function chalega
-        document.getElementById('finalScreen').style.display = 'none';
-    };
+    window.onpopstate = function() { document.getElementById('finalScreen').style.display = 'none'; };
+    function handleBack() { window.history.back(); }
 
-    function handleBack() {
-        // Button par click karne par wapas normal list par le jayega
-        window.history.back();
-    }
-
-    function showFinalScreen() {
-        let display = document.getElementById('finalDisplay');
-        display.innerHTML = ''; let hasSelection = false;
-        
-        let cats = (currentLang === 'EN') ? ['GROCERY', 'SABJI', 'OTHER'] : ['किराना (GROCERY)', 'सब्जी (SABJI)', 'अन्य (OTHER)'];
-        let rawCats = ['GROCERY', 'SABJI', 'OTHER'];
-
-        rawCats.forEach((cat, idx) => {
-            let filtered = items.filter(it => it.selected && it.cat === cat);
-            if(filtered.length > 0) {
-                hasSelection = true;
-                display.innerHTML += `<div class="cat-header-row"><div class="cat-title">${cats[idx]}</div><div style="font-size:10px;text-align:right;">${currentLang=='EN'?'Qty':'मात्रा'}</div><div style="font-size:10px;text-align:right;">${currentLang=='EN'?'Price':'कीमत'}</div></div>`;
-                filtered.forEach((it, i) => {
-                    display.innerHTML += `<div class="list-item"><span>${i+1}.</span><span>${it.name}</span><span style="text-align:right;">${formatQtyDisplay(it.qty, it.unit)}</span><div class="price-dash"></div></div>`;
-                });
-            }
-        });
-
-        if(hasSelection) {
-            document.getElementById('finalScreen').style.display = 'flex';
-            // Browser history mein ek naya state add kar rahe hain
-            window.history.pushState({view: 'final'}, '');
-        } else {
-            alert("Select items!");
-        }
-    }
-
-    // --- BAAKI LOGIC SAME HAI ---
     async function save() {
-        localStorage.setItem('groceryWeb_v20', JSON.stringify(items));
+        localStorage.setItem('groceryWeb_v22', JSON.stringify(items));
         document.getElementById('loading').style.display = 'block';
         try { await fetch(dbURL, { method: 'PUT', body: JSON.stringify(items) }); } catch (e) {}
         setTimeout(() => document.getElementById('loading').style.display = 'none', 500);
@@ -152,7 +118,6 @@
             if(data) { items = data; renderMaster(); }
         } catch (e) {}
     }
-
     window.onload = loadFromCloud;
 
     function toggleLang() {
@@ -166,7 +131,7 @@
         let cat = document.getElementById('catSelect').value;
         if(name) {
             if(!items.find(it => it.name.toLowerCase() === name.toLowerCase())) {
-                items.push({ name, cat, selected: false, qty: '', unit: 'Kg' });
+                items.unshift({ name, cat, selected: false, qty: '', unit: 'Kg' });
                 save();
             }
             document.getElementById('itemName').value = '';
@@ -182,22 +147,26 @@
         let container = document.getElementById('masterList');
         let search = document.getElementById('itemName').value.toLowerCase();
         container.innerHTML = '';
-        items.forEach((item, i) => {
+        let sortedItems = [...items].sort((a, b) => (b.selected === a.selected) ? 0 : b.selected ? 1 : -1);
+
+        sortedItems.forEach((item) => {
+            let originalIndex = items.indexOf(item);
             if (currentFilter !== 'All' && item.cat !== currentFilter) return;
             if (search && !item.name.toLowerCase().includes(search)) return;
+            
             container.innerHTML += `
                 <div class="item-row ${item.selected ? 'selected-row' : ''}">
-                    <span class="item-label" onclick="toggleSelect(${i})">${item.name}</span>
+                    <span class="item-label" onclick="toggleSelect(${originalIndex})">${item.name}</span>
                     <div class="qty-box">
-                        <span class="del-text" onclick="deleteItem(${i})">Del</span>
-                        <input type="number" class="qty-input" step="0.001" value="${item.qty}" oninput="updateQty(${i}, this.value)" placeholder="0">
-                        <select class="unit-select" onchange="updateUnit(${i}, this.value)">
+                        <span class="del-text" onclick="deleteItem(${originalIndex})">Del</span>
+                        <input type="number" class="qty-input" step="0.001" value="${item.qty}" oninput="updateQty(${originalIndex}, this.value)" placeholder="0">
+                        <select class="unit-select" onchange="updateUnit(${originalIndex}, this.value)">
                             <option value="Kg" ${item.unit=='Kg'?'selected':''}>Kg</option>
                             <option value="Litre" ${item.unit=='Litre'?'selected':''}>Litre</option>
                             <option value="Pc" ${item.unit=='Pc'?'selected':''}>Pc</option>
                             <option value="Rs" ${item.unit=='Rs'?'selected':''}>Rs</option>
                         </select>
-                        <input type="checkbox" ${item.selected ? 'checked' : ''} onclick="toggleSelect(${i})">
+                        <input type="checkbox" ${item.selected ? 'checked' : ''} onclick="toggleSelect(${originalIndex})">
                     </div>
                 </div>`;
         });
@@ -206,7 +175,6 @@
     function toggleSelect(i) { items[i].selected = !items[i].selected; save(); renderMaster(); }
     function updateQty(i, v) { items[i].qty = v; save(); }
     function updateUnit(i, v) { items[i].unit = v; save(); }
-
     function setFilter(f) {
         currentFilter = f;
         document.querySelectorAll('.f-btn').forEach(b => {
@@ -227,6 +195,8 @@
         let n = parseFloat(val);
         if(!n) return "";
         let isHi = (currentLang === 'HI');
+        
+        // Special Logic for Hindi Labels
         if(n === 0.5) {
             if(unit === 'Kg') return isHi ? "आधा किलो" : "Half Kg";
             if(unit === 'Litre') return isHi ? "आधा लीटर" : "Half Litre";
@@ -236,14 +206,42 @@
             if(unit === 'Kg') return valGram + (isHi ? " ग्राम" : " Gram");
             if(unit === 'Litre') return valGram + (isHi ? " ML" : " ML");
         }
+        
         let unitText = unit;
         if(isHi) {
             if(unit === 'Kg') unitText = "किलो";
-            if(unit === 'Litre') unitText = "लीटर";
+            else if(unit === 'Litre') unitText = "लीटर";
+            else if(unit === 'Pc') unitText = "पीस"; // Fixed Pc -> पीस
+            else if(unit === 'Rs') unitText = "रुपये"; // Fixed Rs -> रुपये
+        } else {
+            // Big Case for English
             if(unit === 'Pc') unitText = "Pc";
             if(unit === 'Rs') unitText = "Rs";
         }
         return n + " " + unitText;
+    }
+
+    function showFinalScreen() {
+        let display = document.getElementById('finalDisplay');
+        display.innerHTML = ''; let hasSelection = false;
+        let cats = (currentLang === 'EN') ? ['GROCERY', 'SABJI', 'OTHER'] : ['किराना (GROCERY)', 'सब्जी (SABJI)', 'अन्य (OTHER)'];
+        let rawCats = ['GROCERY', 'SABJI', 'OTHER'];
+
+        rawCats.forEach((cat, idx) => {
+            let filtered = items.filter(it => it.selected && it.cat === cat);
+            if(filtered.length > 0) {
+                hasSelection = true;
+                display.innerHTML += `<div class="cat-header-row"><div class="cat-title">${cats[idx]}</div><div style="font-size:10px;text-align:right;">${currentLang=='EN'?'Qty':'मात्रा'}</div><div style="font-size:10px;text-align:right;">${currentLang=='EN'?'Price':'कीमत'}</div></div>`;
+                filtered.forEach((it, i) => {
+                    display.innerHTML += `<div class="list-item"><span>${i+1}.</span><span>${it.name}</span><span class="final-qty">${formatQtyDisplay(it.qty, it.unit)}</span><div class="price-dash"></div></div>`;
+                });
+            }
+        });
+
+        if(hasSelection) {
+            document.getElementById('finalScreen').style.display = 'flex';
+            window.history.pushState({view: 'final'}, '');
+        } else { alert("Select items!"); }
     }
 
     function downloadImage() {
@@ -252,7 +250,6 @@
             link.download = 'ShoppingList.png'; link.href = canvas.toDataURL(); link.click();
         });
     }
-
     renderMaster();
 </script>
 </body>
