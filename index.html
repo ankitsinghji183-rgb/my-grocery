@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Online v19</title>
+    <title>Grocery Online v20</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root { --primary: #1a73e8; --success: #28a745; --danger: #dc3545; --bg: #f4f7f6; }
@@ -18,8 +18,6 @@
         .filter-bar { display: flex; gap: 3px; overflow-x: auto; flex: 1; scrollbar-width: none; }
         .f-btn { background: #f0f0f0; color: #555; padding: 5px 10px; border-radius: 15px; font-size: 10px; cursor: pointer; border: none; font-weight: 600; }
         .f-active { background: var(--primary); color: white; }
-        
-        /* Language & Clear Buttons */
         .btn-lang { background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 15px; font-size: 10px; font-weight: bold; cursor: pointer; }
         .btn-clear { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 15px; font-size: 10px; font-weight: bold; cursor: pointer; margin-left: 2px; }
 
@@ -27,15 +25,12 @@
         .item-row { display: flex; align-items: center; padding: 8px 10px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
         .selected-row { background: #f1f8ff; }
         .item-label { flex: 1; cursor: pointer; font-weight: 500; }
-        
         .qty-box { display: flex; gap: 3px; align-items: center; }
         input.qty-input, select.unit-select { width: 45px; height: 30px; border-radius: 4px; border: 1px solid #bbb; font-size: 12px; text-align: center; }
-        
-        /* Red Delete Text */
         .del-text { color: var(--danger); font-size: 11px; font-weight: bold; cursor: pointer; padding: 0 5px; text-decoration: underline; }
         input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
 
-        /* Photo List Styling */
+        /* Final Screen */
         #finalScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: none; flex-direction: column; }
         .screen-header { background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; height: 45px; position: relative; }
         .back-text-btn { font-size: 14px; font-weight: bold; cursor: pointer; background: none; border: none; color: white; position: absolute; left: 10px; }
@@ -86,7 +81,7 @@
 
 <div id="finalScreen">
     <div class="screen-header">
-        <button class="back-text-btn" onclick="closeFinalScreen()">Back</button>
+        <button class="back-text-btn" onclick="handleBack()">Back</button>
         <div style="font-weight: bold;">Final List</div>
     </div>
     <div id="captureAreaScroll">
@@ -100,12 +95,51 @@
 
 <script>
     const dbURL = "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/grocery.json"; 
-    let items = JSON.parse(localStorage.getItem('groceryWeb_v19')) || [];
+    let items = JSON.parse(localStorage.getItem('groceryWeb_v20')) || [];
     let currentFilter = 'All';
-    let currentLang = 'EN'; // Default English
+    let currentLang = 'EN';
 
+    // --- MOBILE BACK BUTTON LOGIC ---
+    window.onpopstate = function() {
+        // Jab bhi phone ka back button dabega, ye function chalega
+        document.getElementById('finalScreen').style.display = 'none';
+    };
+
+    function handleBack() {
+        // Button par click karne par wapas normal list par le jayega
+        window.history.back();
+    }
+
+    function showFinalScreen() {
+        let display = document.getElementById('finalDisplay');
+        display.innerHTML = ''; let hasSelection = false;
+        
+        let cats = (currentLang === 'EN') ? ['GROCERY', 'SABJI', 'OTHER'] : ['किराना (GROCERY)', 'सब्जी (SABJI)', 'अन्य (OTHER)'];
+        let rawCats = ['GROCERY', 'SABJI', 'OTHER'];
+
+        rawCats.forEach((cat, idx) => {
+            let filtered = items.filter(it => it.selected && it.cat === cat);
+            if(filtered.length > 0) {
+                hasSelection = true;
+                display.innerHTML += `<div class="cat-header-row"><div class="cat-title">${cats[idx]}</div><div style="font-size:10px;text-align:right;">${currentLang=='EN'?'Qty':'मात्रा'}</div><div style="font-size:10px;text-align:right;">${currentLang=='EN'?'Price':'कीमत'}</div></div>`;
+                filtered.forEach((it, i) => {
+                    display.innerHTML += `<div class="list-item"><span>${i+1}.</span><span>${it.name}</span><span style="text-align:right;">${formatQtyDisplay(it.qty, it.unit)}</span><div class="price-dash"></div></div>`;
+                });
+            }
+        });
+
+        if(hasSelection) {
+            document.getElementById('finalScreen').style.display = 'flex';
+            // Browser history mein ek naya state add kar rahe hain
+            window.history.pushState({view: 'final'}, '');
+        } else {
+            alert("Select items!");
+        }
+    }
+
+    // --- BAAKI LOGIC SAME HAI ---
     async function save() {
-        localStorage.setItem('groceryWeb_v19', JSON.stringify(items));
+        localStorage.setItem('groceryWeb_v20', JSON.stringify(items));
         document.getElementById('loading').style.display = 'block';
         try { await fetch(dbURL, { method: 'PUT', body: JSON.stringify(items) }); } catch (e) {}
         setTimeout(() => document.getElementById('loading').style.display = 'none', 500);
@@ -189,27 +223,19 @@
         }
     }
 
-    // Advanced Formatting Logic
     function formatQtyDisplay(val, unit) {
         let n = parseFloat(val);
         if(!n) return "";
-        
         let isHi = (currentLang === 'HI');
-
-        // Special Case: 0.5 or 0.500
         if(n === 0.5) {
             if(unit === 'Kg') return isHi ? "आधा किलो" : "Half Kg";
             if(unit === 'Litre') return isHi ? "आधा लीटर" : "Half Litre";
         }
-
-        // Special Case: Decimal to Gram/ML (0.2 -> 200, 0.25 -> 250)
         if(n > 0 && n < 1) {
             let valGram = n * 1000;
             if(unit === 'Kg') return valGram + (isHi ? " ग्राम" : " Gram");
             if(unit === 'Litre') return valGram + (isHi ? " ML" : " ML");
         }
-
-        // Default: 1 Kg, 1 Litre, 1 Pc, 1 Rs
         let unitText = unit;
         if(isHi) {
             if(unit === 'Kg') unitText = "किलो";
@@ -219,28 +245,6 @@
         }
         return n + " " + unitText;
     }
-
-    function showFinalScreen() {
-        let display = document.getElementById('finalDisplay');
-        display.innerHTML = ''; let hasSelection = false;
-        let cats = (currentLang === 'EN') ? ['GROCERY', 'SABJI', 'OTHER'] : ['किराना (GROCERY)', 'सब्जी (SABJI)', 'अन्य (OTHER)'];
-        let rawCats = ['GROCERY', 'SABJI', 'OTHER'];
-
-        rawCats.forEach((cat, idx) => {
-            let filtered = items.filter(it => it.selected && it.cat === cat);
-            if(filtered.length > 0) {
-                hasSelection = true;
-                display.innerHTML += `<div class="cat-header-row"><div class="cat-title">${cats[idx]}</div><div style="font-size:10px;text-align:right;">${currentLang=='EN'?'Qty':'मात्रा'}</div><div style="font-size:10px;text-align:right;">${currentLang=='EN'?'Price':'कीमत'}</div></div>`;
-                filtered.forEach((it, i) => {
-                    display.innerHTML += `<div class="list-item"><span>${i+1}.</span><span>${it.name}</span><span style="text-align:right;">${formatQtyDisplay(it.qty, it.unit)}</span><div class="price-dash"></div></div>`;
-                });
-            }
-        });
-        if(hasSelection) document.getElementById('finalScreen').style.display = 'flex';
-        else alert("Select items!");
-    }
-
-    function closeFinalScreen() { document.getElementById('finalScreen').style.display = 'none'; }
 
     function downloadImage() {
         html2canvas(document.getElementById('captureArea'), { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
