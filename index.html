@@ -14,25 +14,29 @@
         .h-box { flex: 1; background: #fff; border: 1px solid #ccc; padding: 10px 0; text-align: center; border-radius: 6px; font-weight: bold; font-size: 10px; color: #1a73e8; }
         .card { background: white; padding: 6px; margin: 5px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
         .in-row { display: flex; gap: 4px; margin-bottom: 5px; width: 100%; align-items: center; }
-        input, select { padding: 8px 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; outline: none; min-width: 0; }
-        .u-box { width: 45px !important; text-align: center; }
-        .p-box { width: 55px !important; text-align: center; }
+        input, select { padding: 8px 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; outline: none; }
+        
+        /* Grid Alignment for Lists */
+        .c-grid { display: grid; grid-template-columns: 1.5fr 50px 55px 65px 45px 45px; gap: 6px; align-items: center; padding: 10px 6px; border-bottom: 1px solid #eee; font-size: 11px; background: #fff; }
+        .dk-grid { display: grid; grid-template-columns: 1.5fr 55px 65px 45px 45px; gap: 8px; align-items: center; padding: 10px 6px; border-bottom: 1px solid #eee; background: #fff; }
+        
+        .u-box { width: 100% !important; text-align: center; }
+        .p-box { width: 100% !important; background: #fffde7; font-weight: bold; }
+        
         .btn { border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; text-align: center; font-size: 10px; }
-        .f-btn { flex: 1; padding: 7px 0; background: #6c757d; font-size: 8px; }
-        .del-btn { background: #dc3545 !important; padding: 6px 6px; font-size: 9px; min-width: 35px; }
-        .ok-btn { background: #28a745 !important; color: white; padding: 6px; font-size: 9px; min-width: 38px; }
-        .lock-btn { background: #ffc107 !important; color: #000; padding: 6px; font-size: 9px; min-width: 38px; }
-        .item-row { display: grid; grid-template-columns: 1fr 45px 50px 30px 35px; gap: 6px; align-items: center; padding: 10px 6px; border-bottom: 1px solid #eee; background: white; }
+        .f-btn { flex: 1; padding: 8px 0; background: #6c757d; font-size: 8px; }
+        .del-btn { background: #dc3545 !important; padding: 8px 0; }
+        .ok-btn { background: #28a745 !important; padding: 8px 0; }
+        .lock-btn { background: #ffc107 !important; color: #000; padding: 8px 0; }
+        
+        .item-row { display: grid; grid-template-columns: 1fr 45px 50px 30px 40px; gap: 6px; align-items: center; padding: 12px 6px; border-bottom: 1px solid #eee; background: white; }
         .sel-bg { background: #fff9c4 !important; }
+        
         .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display: none; flex-direction: column; z-index: 9999; }
-        .p-head { background: #1a73e8; color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; }
-        .scroll { flex: 1; overflow-y: auto; padding: 4px; padding-bottom: 80px; }
-        .month-label { background: #e8f0fe; color: #1a73e8; padding: 8px; font-weight: bold; font-size: 12px; border-left: 4px solid #1a73e8; margin-top: 10px; display: flex; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
-        /* Revolutionary Aligned Grid for Daily Kharch & Edit */
-        .c-grid { display: grid; grid-template-columns: 1fr 42px 48px 55px 38px 38px; gap: 5px; align-items: center; padding: 10px 4px; border-bottom: 1px solid #eee; font-size: 11px; }
-        .calc-grid { display: grid; grid-template-columns: 1fr 42px 42px 55px 38px; gap: 5px; align-items: center; padding: 10px 4px; border-bottom: 1px solid #eee; font-size: 11px; }
-        .sum-box { padding: 12px; background: #e8f0fe; font-weight: bold; text-align: right; border-top: 2px solid #1a73e8; font-size: 13px; color: #1a73e8; }
-        .b-nav { position: fixed; bottom: 0; width: 100%; background: white; padding: 6px; border-top: 1px solid #eee; display: flex; gap: 5px; z-index: 1000; }
+        .p-head { background: #1a73e8; color: white; padding: 14px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; }
+        .scroll { flex: 1; overflow-y: auto; padding: 4px; padding-bottom: 85px; }
+        .sum-box { padding: 15px; background: #e8f0fe; font-weight: bold; text-align: right; border-top: 2px solid #1a73e8; font-size: 14px; color: #1a73e8; }
+        .b-nav { position: fixed; bottom: 0; width: 100%; background: white; padding: 8px; border-top: 1px solid #eee; display: flex; gap: 6px; z-index: 1000; }
         b { color: #000; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     </style>
 </head>
@@ -45,16 +49,16 @@
     </div>
     <div class="card">
         <div class="in-row">
-            <input type="text" id="itemName" placeholder="Search ya Naya Item..." style="flex:1;" oninput="renderMaster()">
-            <select id="catSelect" style="width:60px;">
+            <input type="text" id="itemName" placeholder="Search / Naya Item..." style="flex:1;" oninput="renderMaster()">
+            <select id="catSelect" style="width:70px;">
                 <option value="GROCERY">GROC</option>
                 <option value="SABJI">SABJI</option>
                 <option value="BODY">BODY</option>
                 <option value="OTHER">ANYA</option>
             </select>
-            <button onclick="addItem()" class="btn" style="background:#28a745; padding:8px 10px;">ADD</button>
+            <button onclick="addItem()" class="btn" style="background:#28a745; padding:8px 12px;">ADD</button>
         </div>
-        <div style="display:flex; gap:2px; flex-wrap: wrap;">
+        <div style="display:flex; gap:3px; flex-wrap: wrap;">
             <button onclick="setFilter('All')" class="btn f-btn">ALL</button>
             <button onclick="setFilter('GROCERY')" class="btn f-btn" style="background:#17a2b8;">GROC</button>
             <button onclick="setFilter('SABJI')" class="btn f-btn" style="background:#6f42c1;">SABJI</button>
@@ -63,14 +67,14 @@
             <button onclick="unselectAll()" class="btn f-btn" style="background:#dc3545;">CLR</button>
         </div>
     </div>
-    <div id="masterList" style="padding-bottom: 70px;"></div>
+    <div id="masterList"></div>
     <div class="b-nav">
-        <button class="btn" style="background:#1a73e8; flex:1; padding:12px;" onclick="showFinalList()">MAKE LIST</button>
-        <button class="btn" style="background:#ff9800; flex:1; padding:12px;" onclick="openDailyKharch()">DAILY KHARCH</button>
+        <button class="btn" style="background:#1a73e8; flex:1; padding:14px;" onclick="showFinalList()">MAKE LIST</button>
+        <button class="btn" style="background:#ff9800; flex:1; padding:14px;" onclick="openDailyKharch()">DAILY KHARCH</button>
     </div>
 </div>
 
-<div id="kInPage" class="full-page"><div class="p-head"><span onclick="closePage('kInPage')">Back</span><span>Daily Kharch</span></div><div class="card"><div class="in-row"><input type="text" id="kName" style="flex:1" placeholder="Item Name"><input type="number" id="kQty" class="u-box" placeholder="Qty"><input type="number" id="kPrice" class="p-box" placeholder="Rs"><button class="btn" onclick="addK()" style="background:#28a745; padding:8px 10px;">ADD</button></div></div><div class="scroll" id="dkList"></div><div id="dkSum" class="sum-box"></div></div>
+<div id="kInPage" class="full-page"><div class="p-head"><span onclick="closePage('kInPage')">Back</span><span>Daily Kharch</span></div><div class="card"><div class="in-row"><input type="text" id="kName" style="flex:1" placeholder="Item Name"><input type="number" id="kQty" style="width:50px;" placeholder="Qty"><input type="number" id="kPrice" style="width:60px;" placeholder="Rs"><button class="btn" onclick="addK()" style="background:#28a745; padding:8px 10px;">ADD</button></div></div><div class="scroll" id="dkList"></div><div id="dkSum" class="sum-box"></div></div>
 <div id="calcPage" class="full-page"><div class="p-head"><span onclick="closeCalc()">Back</span><span>Calculation</span></div><div class="scroll" id="cList"></div><div id="cSum" class="sum-box"></div></div>
 <div id="editPage" class="full-page"><div class="p-head"><span onclick="closePage('editPage')">Back</span><span>Edit Record</span></div><div class="scroll" id="eList"></div><div id="eSum" class="sum-box"></div></div>
 <div id="hPage" class="full-page"><div class="p-head"><span onclick="closePage('hPage')">Back</span><span id="hTitle">History</span></div><div class="scroll" id="hArea"></div></div>
@@ -85,43 +89,55 @@
     let currLang = 'HI', activeF = 'All', hType = 'shopping', tCalc = [];
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+    // Mobile Back Button Handler
+    window.addEventListener('popstate', function (event) {
+        let pages = document.querySelectorAll('.full-page');
+        let anyOpen = false;
+        pages.forEach(p => { if(p.style.display === 'flex') { p.style.display = 'none'; anyOpen = true; } });
+        if (anyOpen) { history.pushState(null, null, window.location.pathname); }
+    });
+
+    function openPage(id) { 
+        history.pushState(null, null, window.location.pathname);
+        document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); 
+        document.getElementById(id).style.display = 'flex'; 
+    }
+    function closePage(id) { document.getElementById(id).style.display = 'none'; }
+
     db.once('value', (snapshot) => {
         const data = snapshot.val();
-        if (data) {
-            items = data.items || [];
-            history = data.history || { shopping: [], expense: [] };
-            renderMaster();
-        }
+        if (data) { items = data.items || []; history = data.history || { shopping: [], expense: [] }; renderMaster(); }
     });
 
     const save = (render = false) => { db.set({ items, history }); if(render) renderMaster(); };
-    function openPage(id) { document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); document.getElementById(id).style.display = 'flex'; }
-    function closePage(id) { document.getElementById(id).style.display = 'none'; }
 
     function renderMaster() {
-        let cont = document.getElementById('masterList'), term = document.getElementById('itemName').value.toLowerCase();
-        let gI = 0, cI = { GROCERY:0, SABJI:0, BODY:0, OTHER:0 }, sorted = [...items].sort((a, b) => b.sel - a.sel);
+        let cont = document.getElementById('masterList'), search = document.getElementById('itemName').value.toLowerCase();
+        let gIdx = 0, cIdx = { GROCERY:0, SABJI:0, BODY:0, OTHER:0 };
+        let sorted = [...items].sort((a, b) => b.sel - a.sel);
         cont.innerHTML = sorted.map((it) => {
             if(activeF !== 'All' && it.cat !== activeF) return '';
-            if(term && !it.name.toLowerCase().includes(term)) return '';
-            let s = (activeF === 'All') ? ++gI : ++cI[it.cat], r = items.indexOf(it);
+            if(search && !it.name.toLowerCase().includes(search)) return '';
+            let sNum = (activeF === 'All') ? ++gIdx : ++cIdx[it.cat];
+            let rIdx = items.indexOf(it);
             return `<div class="item-row ${it.sel?'sel-bg':''}">
-                <span onclick="toggleI(${r})"><b>${s}.${it.name}</b></span>
-                <input type="number" step="0.001" value="${it.qty}" oninput="items[${r}].qty=this.value;save(false)" class="u-box">
-                <select onchange="items[${r}].unit=this.value;save(false)" style="width:50px; font-size:9px;">
+                <span onclick="toggleI(${rIdx})"><b>${sNum}.${it.name}</b></span>
+                <input type="number" step="0.001" value="${it.qty}" oninput="items[${rIdx}].qty=this.value;save(false)" class="u-box">
+                <select onchange="items[${rIdx}].unit=this.value;save(false)" style="font-size:10px;">
                     <option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
                     <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option>
                 </select>
-                <input type="checkbox" ${it.sel?'checked':''} onclick="toggleI(${r})">
-                <button class="btn del-btn" onclick="delMasterItem(${r})">DEL</button></div>`;
+                <input type="checkbox" ${it.sel?'checked':''} onclick="toggleI(${rIdx})">
+                <button class="btn del-btn" onclick="delMasterItem(${rIdx})">DEL</button>
+            </div>`;
         }).join('');
     }
 
     function addItem() { let n = document.getElementById('itemName').value, c = document.getElementById('catSelect').value; if(n){ items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); save(true); document.getElementById('itemName').value=''; } }
     function toggleI(i) { items[i].sel = !items[i].sel; save(true); }
-    function delMasterItem(i) { if(confirm("Del?")){ items.splice(i,1); save(true); } }
+    function delMasterItem(i) { if(confirm("Delete?")){ items.splice(i,1); save(true); } }
     function setFilter(f) { activeF = f; renderMaster(); }
-    function unselectAll() { if(confirm("Unselect All?")) { items.forEach(it => it.sel = false); save(true); } }
+    function unselectAll() { if(confirm("Clear?")) { items.forEach(it => it.sel = false); save(true); } }
 
     function getSmartUnit(val, unit, lang) {
         let v = parseFloat(val); if (isNaN(v) || v === 0) return "";
@@ -132,40 +148,69 @@
     }
 
     function showFinalList() {
-        let sel = items.filter(it => it.sel); if(!sel.length) return alert("Select items");
-        let out = document.getElementById('fOut');
-        out.innerHTML = `<h3 style="text-align:center; border-bottom:2px solid #000;">${currLang==='HI'?'खरीदारी की सूची':'Shopping List'}</h3>`;
+        let sel = items.filter(it => it.sel), out = document.getElementById('fOut'); if(!sel.length) return alert("Select Items");
+        out.innerHTML = `<h3 style="text-align:center;">${currLang==='HI'?'खरीदारी की सूची':'Shopping List'}</h3>`;
         ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {
             let f = sel.filter(it => it.cat === c);
             if(f.length) {
                 out.innerHTML += `<div style="background:#eee;padding:5px;font-weight:bold;font-size:11px;">${c}</div>` + 
-                f.map((it, j) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #ddd;font-size:12px;">
-                <span><b>${j+1}.${it.name}</b></span><span style="font-weight:bold;">${getSmartUnit(it.qty, it.unit, currLang)}</span><span style="border-bottom:1px solid #000;width:35px;"></span></div>`).join('');
+                f.map((it, j) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #ddd;font-size:12px;"><span><b>${j+1}.${it.name}</b></span><b>${getSmartUnit(it.qty, it.unit, currLang)}</b><span style="border-bottom:1px solid #000;width:40px;"></span></div>`).join('');
             }
         });
         openPage('listPage');
     }
 
-    // Daily Kharch
-    function openDailyKharch() { let d = new Date().toLocaleDateString('en-GB'); renderDK(d); openPage('kInPage'); }
-    function addK() { let n = document.getElementById('kName').value, q = parseFloat(document.getElementById('kQty').value)||1, p = parseFloat(document.getElementById('kPrice').value)||0; if(n && p) { let d = new Date().toLocaleDateString('en-GB'), ex = (history.expense || []).find(h => h.date === d); if(!ex){ ex = {date: d, items: []}; if(!history.expense) history.expense = []; history.expense.unshift(ex); } let old = ex.items.find(o => o.name.toLowerCase() === n.toLowerCase()); if(old){ old.qty += q; old.price += p; } else { ex.items.push({name: n, qty: q, price: p, done: false, unit: 'Pc'}); } save(false); renderDK(d); document.getElementById('kName').value=''; document.getElementById('kQty').value=''; document.getElementById('kPrice').value=''; } }
-    function renderDK(date) { let ex = (history.expense || []).find(h => h.date === date), t = 0, area = document.getElementById('dkList'); if(!ex) { area.innerHTML = ""; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; } area.innerHTML = ex.items.map((it, i) => { t += parseFloat(it.price) || 0; let lk = it.done || false; return `<div class="c-grid"><b>${it.name}</b><input type="number" value="${it.qty}" ${lk?'disabled':''} oninput="updateDKItem('${date}',${i},'qty',this.value)" class="u-box"><select disabled style="width:48px;font-size:9px;"><option>Pc</option></select><input type="number" value="${it.price}" ${lk?'disabled':''} oninput="updateDKItem('${date}',${i},'price',this.value)" class="p-box"><button class="btn ${lk?'ok-btn':'lock-btn'}" onclick="lockDK('${date}',${i})">${lk?'OK':'CON'}</button><button class="btn del-btn" onclick="delDKItem('${date}',${i})">DEL</button></div>`; }).join(''); document.getElementById('dkSum').innerText = `TOTAL: ₹${t}`; }
-    function updateDKItem(d, idx, f, v) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx][f] = parseFloat(v)||0; save(false); } }
-    function lockDK(d, idx) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx].done = !ex.items[idx].done; save(false); renderDK(ex.date); } }
-    function delDKItem(d, idx) { if(confirm("Del?")){ history.expense.find(h => h.date === d).items.splice(idx,1); save(false); renderDK(d); } }
+    function renderDK(date) { 
+        let ex = (history.expense || []).find(h => h.date === date), t = 0, area = document.getElementById('dkList'); 
+        if(!ex) { area.innerHTML = ""; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; }
+        area.innerHTML = ex.items.map((it, i) => { 
+            t += parseFloat(it.price) || 0; let done = it.done || false;
+            return `<div class="dk-grid"><b>${it.name}</b><input type="number" value="${it.qty}" ${done?'disabled':''} oninput="updateDKItem('${date}',${i},'qty',this.value)" class="u-box"><input type="number" value="${it.price}" ${done?'disabled':''} oninput="updateDKItem('${date}',${i},'price',this.value)" class="p-box"><button class="btn ${done?'ok-btn':'lock-btn'}" onclick="lockDK('${date}',${i})">${done?'OK':'CON'}</button><button class="btn del-btn" onclick="delDKItem('${date}',${i})">DEL</button></div>`;
+        }).join(''); 
+        document.getElementById('dkSum').innerText = `TOTAL: ₹${t}`; 
+    }
 
-    // Calc Mode
+    function renderC() { 
+        let area = document.getElementById('cList'), gt = 0; 
+        area.innerHTML = tCalc.map((it, i) => { 
+            gt += parseFloat(it.price) || 0; 
+            return `<div class="c-grid"><b>${it.name}</b><input type="number" value="${it.qty}" oninput="smartAddition(${i},'qty',this.value)" class="u-box"><select onchange="smartAddition(${i},'unit',this.value)"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option></select><input type="number" value="${it.price}" oninput="smartAddition(${i},'price',this.value)" class="p-box"><button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="lockToggleCalc(${i})">${it.done?'OK':'CON'}</button></div>`;
+        }).join(''); 
+        document.getElementById('cSum').innerText = `TOTAL: ₹${gt}`; 
+    }
+
+    // Helper functions (Add, Lock, Delete, etc. - Full logic preserved)
+    function addK() { let n = document.getElementById('kName').value, q = parseFloat(document.getElementById('kQty').value)||1, p = parseFloat(document.getElementById('kPrice').value)||0; if(n && p) { let d = new Date().toLocaleDateString('en-GB'); let ex = (history.expense || []).find(h => h.date === d); if(!ex){ ex = {date: d, items: []}; if(!history.expense) history.expense = []; history.expense.unshift(ex); } let old = ex.items.find(o => o.name.toLowerCase() === n.toLowerCase()); if(old){ old.qty += q; old.price += p; } else { ex.items.push({name: n, qty: q, price: p, done: false}); } save(false); renderDK(d); document.getElementById('kName').value=''; document.getElementById('kQty').value=''; document.getElementById('kPrice').value=''; } }
+    function updateDKItem(d, i, f, v) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[i][f] = v; save(false); } }
+    function lockDK(d, i) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[i].done = !ex.items[i].done; save(false); renderDK(d); } }
+    function delDKItem(d, i) { if(confirm("Del?")){ history.expense.find(h => h.date === d).items.splice(i,1); save(false); renderDK(d); } }
+    function openDailyKharch() { let d = new Date().toLocaleDateString('en-GB'); renderDK(d); openPage('kInPage'); }
     function openCalc() { tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, unit: it.unit, price: '', done: false, lastQty: 0, lastPrice: 0 })); renderC(); tCalc.forEach((_, i) => smartAddition(i, 'qty', tCalc[i].qty)); openPage('calcPage'); }
-    function renderC() { let area = document.getElementById('cList'), gt = 0; area.innerHTML = tCalc.map((it, i) => { gt += parseFloat(it.price) || 0; return `<div class="calc-grid"><b>${it.name}</b><input type="number" step="0.1" value="${it.qty}" oninput="smartAddition(${i}, 'qty', this.value)" class="u-box"><select onchange="smartAddition(${i}, 'unit', this.value)" style="width:42px;"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select><input type="number" value="${it.price}" oninput="smartAddition(${i}, 'price', this.value)" class="p-box"><div class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="lockToggleCalc(${i})">${it.done?'OK':'CON'}</div></div>`; }).join(''); document.getElementById('cSum').innerText = `TOTAL: ₹${gt}`; }
-    function smartAddition(idx, field, val) { let it = tCalc[idx], d = new Date().toLocaleDateString('en-GB'), ex = (history.shopping || []).find(h => h.date === d); if(!ex){ ex = {date: d, items: []}; if(!history.shopping) history.shopping = []; history.shopping.unshift(ex); } let histItem = ex.items.find(o => o.name.toLowerCase() === it.name.toLowerCase()); if(!histItem){ histItem = {name: it.name, qty: 0, price: 0, unit: it.unit, done: false}; ex.items.push(histItem); } if(field === 'qty'){ let newVal = parseFloat(val)||0; histItem.qty = (parseFloat(histItem.qty)-it.lastQty)+newVal; it.lastQty=newVal; it.qty=val; } if(field === 'price'){ let newVal = parseFloat(val)||0; histItem.price = (parseFloat(histItem.price)-it.lastPrice)+newVal; it.lastPrice=newVal; it.price=val; } if(field === 'unit'){ histItem.unit = val; it.unit = val; } save(false); document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; }
+    function smartAddition(idx, field, val) { let it = tCalc[idx], d = new Date().toLocaleDateString('en-GB'), ex = (history.shopping || []).find(h => h.date === d); if(!ex){ ex = {date: d, items: []}; if(!history.shopping) history.shopping = []; history.shopping.unshift(ex); } let histItem = ex.items.find(o => o.name.toLowerCase() === it.name.toLowerCase()); if(!histItem){ histItem = {name: it.name, qty: 0, price: 0, unit: it.unit, done: false}; ex.items.push(histItem); } if(field === 'qty'){ let nv = parseFloat(val)||0; histItem.qty = (parseFloat(histItem.qty)-it.lastQty)+nv; it.lastQty=nv; it.qty=val; } if(field === 'price'){ let nv = parseFloat(val)||0; histItem.price = (parseFloat(histItem.price)-it.lastPrice)+nv; it.lastPrice=nv; it.price=val; } if(field === 'unit'){ histItem.unit = val; it.unit = val; } save(false); document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; }
     function lockToggleCalc(idx) { tCalc[idx].done = !tCalc[idx].done; let d = new Date().toLocaleDateString('en-GB'); let histItem = history.shopping.find(h=>h.date===d).items.find(o=>o.name.toLowerCase()===tCalc[idx].name.toLowerCase()); if(histItem) histItem.done = tCalc[idx].done; save(false); renderC(); }
     function closeCalc() { tCalc = []; closePage('calcPage'); }
-
-    // History & Edit
     function openHistory(type) { hType = type; renderH(); openPage('hPage'); }
-    function renderH() { let area = document.getElementById('hArea'); area.innerHTML = ''; let dataArr = (history[hType] || []); let sortedData = [...dataArr].sort((a,b) => { let da = a.date.split('/'), db = b.date.split('/'); return new Date(db[2], db[1]-1, db[0]) - new Date(da[2], da[1]-1, da[0]); }); let currentMonth = "", monthTotal = 0, tempHtml = ""; sortedData.forEach((h) => { let parts = h.date.split('/'), mName = months[parseInt(parts[1])-1] + " " + parts[2], dayTotal = h.items.reduce((a, b) => a + (parseFloat(b.price)||0), 0); if (currentMonth !== "" && currentMonth !== mName) { area.innerHTML += `<div class="month-label"><span>${currentMonth} Total:</span><span>₹${monthTotal}</span></div>` + tempHtml; tempHtml = ""; monthTotal = 0; } currentMonth = mName; monthTotal += dayTotal; tempHtml += `<div class="item-row" style="grid-template-columns: 1fr 60px 45px 40px;"><span>${h.date}</span><b>₹${dayTotal}</b><button onclick="editHistory(${history[hType].indexOf(h)})" style="background:orange;color:white;border:none;padding:6px;border-radius:4px;font-size:9px;">EDIT</button><button class="btn del-btn" onclick="delH(${history[hType].indexOf(h)})">DEL</button></div>`; }); if(currentMonth) area.innerHTML += `<div class="month-label"><span>${currentMonth} Total:</span><span>₹${monthTotal}</span></div>` + tempHtml; }
-    function editHistory(idx) { let dataArr = history[hType][idx].items; let area = document.getElementById('eList'); area.innerHTML = dataArr.map((it, i) => { let lk = it.done || false; return `<div class="c-grid"><b>${it.name}</b><input type="number" step="0.1" value="${it.qty}" ${lk?'disabled':''} oninput="updateHistItem(${idx},${i},'qty',this.value)" class="u-box"><select ${lk?'disabled':''} onchange="updateHistItem(${idx},${i},'unit',this.value)" style="width:48px;font-size:9px;"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select><input type="number" value="${it.price}" ${lk?'disabled':''} oninput="updateHistItem(${idx},${i},'price',this.value)" class="p-box"><button class="btn ${lk?'ok-btn':'lock-btn'}" onclick="toggleLock(${idx},${i})">${lk?'OK':'CON'}</button><button class="btn del-btn" onclick="delHistItem(${idx},${i})">DEL</button></div>`; }).join(''); document.getElementById('eSum').innerText = `TOTAL: ₹${dataArr.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; openPage('editPage'); }
-    function updateHistItem(hI, iI, f, v) { history[hType][hI].items[iI][f] = v; save(false); let sum = history[hType][hI].items.reduce((a,b)=>a+(parseFloat(b.price)||0),0); document.getElementById('eSum').innerText = `TOTAL: ₹${sum}`; }
+    function renderH() { 
+        let area = document.getElementById('hArea'); area.innerHTML = ''; let data = (history[hType] || []); 
+        let sorted = [...data].sort((a,b) => { let da = a.date.split('/'), db = b.date.split('/'); return new Date(db[2], db[1]-1, db[0]) - new Date(da[2], da[1]-1, da[0]); });
+        let curM = "", mTotal = 0, html = "";
+        sorted.forEach((h) => {
+            let mName = months[parseInt(h.date.split('/')[1])-1] + " " + h.date.split('/')[2], dTotal = h.items.reduce((a, b) => a + (parseFloat(b.price)||0), 0);
+            if (curM !== "" && curM !== mName) { area.innerHTML += `<div class="month-label"><span>${curM}</span><span>₹${mTotal}</span></div>` + html; html = ""; mTotal = 0; }
+            curM = mName; mTotal += dTotal; 
+            html += `<div class="item-row" style="grid-template-columns: 1fr 60px 45px 40px;"><span>${h.date}</span><b>₹${dTotal}</b><button onclick="editHistory(${history[hType].indexOf(h)})" style="background:orange;color:white;border:none;border-radius:4px;font-size:9px;">EDIT</button><button class="btn del-btn" onclick="delH(${history[hType].indexOf(h)})">DEL</button></div>`;
+        });
+        if(curM) area.innerHTML += `<div class="month-label"><span>${curM}</span><span>₹${mTotal}</span></div>` + html;
+    }
+    function editHistory(idx) { 
+        let itemsArr = history[hType][idx].items, area = document.getElementById('eList'); 
+        area.innerHTML = itemsArr.map((it, i) => { 
+            let done = it.done || false;
+            return `<div class="c-grid"><b>${it.name}</b><input type="number" value="${it.qty}" ${done?'disabled':''} oninput="updateHistItem(${idx},${i},'qty',this.value)" class="u-box"><select ${done?'disabled':''} onchange="updateHistItem(${idx},${i},'unit',this.value)"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option></select><input type="number" value="${it.price}" ${done?'disabled':''} oninput="updateHistItem(${idx},${i},'price',this.value)" class="p-box"><button class="btn ${done?'ok-btn':'lock-btn'}" onclick="toggleLock(${idx},${i})">${done?'OK':'CON'}</button><button class="btn del-btn" onclick="delHistItem(${idx},${i})">DEL</button></div>`;
+        }).join('');
+        document.getElementById('eSum').innerText = `TOTAL: ₹${itemsArr.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; openPage('editPage'); 
+    }
+    function updateHistItem(hI, iI, f, v) { history[hType][hI].items[iI][f] = v; save(false); editHistory(hI); }
     function toggleLock(hI, iI) { history[hType][hI].items[iI].done = !history[hType][hI].items[iI].done; save(false); editHistory(hI); }
     function delHistItem(hI, iI) { if(confirm("Del?")){ history[hType][hI].items.splice(iI,1); save(false); editHistory(hI); } }
     function delH(i) { if(confirm("Del?")){ history[hType].splice(i,1); save(false); renderH(); } }
