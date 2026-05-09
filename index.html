@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Manager v64 Final</title>
+    <title>Grocery Manager v65 Final</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
@@ -11,37 +11,22 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
         
-        .full-page { 
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            background: #f0f2f5;
-            display: none; 
-            flex-direction: column; 
-            z-index: 9999; 
-            overflow: hidden;
-        }
-
+        .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0f2f5; display: none; flex-direction: column; z-index: 9999; overflow: hidden; }
         .top-hist { display: flex; gap: 4px; padding: 6px; }
         .h-box { flex: 1; background: #fff; border: 1px solid #ccc; padding: 10px 0; text-align: center; border-radius: 6px; font-weight: bold; font-size: 10px; color: #1a73e8; }
         .card { background: white; padding: 6px; margin: 5px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .in-row { display: flex; gap: 4px; margin-bottom: 5px; width: 100%; align-items: center; }
         input, select { padding: 8px 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; outline: none; height: 35px; }
-        
         .u-box { width: 50px !important; text-align: center; flex-shrink: 0; }
         .p-box { width: 65px !important; flex-shrink: 0; }
         .unit-sel { width: 55px !important; flex-shrink: 0; font-size: 10px; }
-        
         .btn { border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; text-align: center; font-size: 10px; height: 35px; display: flex; align-items: center; justify-content: center; }
         .f-btn { flex: 1; padding: 7px 0; background: #6c757d; font-size: 8px; }
         .del-btn { background: #dc3545 !important; min-width: 40px; }
         .ok-btn { background: #28a745 !important; min-width: 40px; }
         .lock-btn { background: #ffc107 !important; color: #000; min-width: 40px; }
-        
         .item-row { display: grid; grid-template-columns: 1fr 50px 55px 30px 40px; gap: 6px; align-items: center; padding: 10px 6px; border-bottom: 1px solid #eee; background: white; }
         .c-grid { display: grid; grid-template-columns: 1fr 50px 55px 65px 40px 40px; gap: 4px; align-items: center; padding: 8px 4px; border-bottom: 1px solid #eee; font-size: 11px; background: white; }
-        .dk-grid { display: grid; grid-template-columns: 1fr 50px 65px 40px 40px; gap: 4px; align-items: center; padding: 8px 4px; border-bottom: 1px solid #eee; background: white; }
-
         .sel-bg { background: #fff9c4 !important; }
         .p-head { background: #1a73e8; color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; position: sticky; top: 0; z-index: 10001; }
         .scroll { flex: 1; overflow-y: auto; padding: 4px; padding-bottom: 80px; -webkit-overflow-scrolling: touch; }
@@ -104,41 +89,17 @@
     let currLang = 'HI', activeF = 'All', hType = 'shopping', tCalc = [];
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    window.onpopstate = function() {
-        document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none');
-        document.body.style.overflow = "auto";
-    };
-
-    function openPage(id) { 
-        document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); 
-        document.getElementById(id).style.display = 'flex'; 
-        document.body.style.overflow = "hidden"; 
-        window.history.pushState({page: id}, ""); 
-    }
-
+    window.onpopstate = function() { document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); document.body.style.overflow = "auto"; };
+    function openPage(id) { document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); document.getElementById(id).style.display = 'flex'; document.body.style.overflow = "hidden"; window.history.pushState({page: id}, ""); }
     function closeCurrentPage() { window.history.back(); }
 
-    db.once('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            items = data.items || [];
-            history = data.history || { shopping: [], expense: [] };
-            renderMaster();
-        }
-    });
-
-    const save = (shouldRender = false) => { 
-        db.set({ items, history }); 
-        if(shouldRender) renderMaster(); 
-    };
+    db.once('value', (snapshot) => { const data = snapshot.val(); if (data) { items = data.items || []; history = data.history || { shopping: [], expense: [] }; renderMaster(); } });
+    const save = (shouldRender = false) => { db.set({ items, history }); if(shouldRender) renderMaster(); };
 
     function renderMaster() {
-        let cont = document.getElementById('masterList');
-        let query = document.getElementById('itemName').value.toLowerCase();
+        let cont = document.getElementById('masterList'), query = document.getElementById('itemName').value.toLowerCase();
         let sorted = [...items].sort((a, b) => b.sel - a.sel);
-        let globalCounter = 0;
-        let categoryCounters = { GROCERY: 0, SABJI: 0, BODY: 0, OTHER: 0 };
-
+        let globalCounter = 0, categoryCounters = { GROCERY: 0, SABJI: 0, BODY: 0, OTHER: 0 };
         cont.innerHTML = sorted.map((it) => {
             if(activeF !== 'All' && it.cat !== activeF) return '';
             if(query && !it.name.toLowerCase().includes(query)) return '';
@@ -159,27 +120,16 @@
 
     function updateQty(idx, val) { items[idx].qty = val; save(false); }
     function updateUnit(idx, val) { items[idx].unit = val; save(false); }
-    function addItem() { 
-        let n = document.getElementById('itemName').value, c = document.getElementById('catSelect').value; 
-        if(n){ items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); save(true); document.getElementById('itemName').value=''; renderMaster(); } 
-    }
+    function addItem() { let n = document.getElementById('itemName').value, c = document.getElementById('catSelect').value; if(n){ items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); save(true); document.getElementById('itemName').value=''; renderMaster(); } }
     function toggleI(i) { items[i].sel = !items[i].sel; save(true); }
     function delMasterItem(i) { if(confirm("Del?")){ items.splice(i,1); save(true); } }
     function setFilter(f) { activeF = f; renderMaster(); }
     function unselectAll() { if(confirm("Unselect All Items?")) { items.forEach(it => it.sel = false); save(true); } }
 
     function getSmartUnit(val, unit, lang) {
-        let v = parseFloat(val);
-        if (isNaN(v) || v === 0) return "";
-        let u = { 
-            HI: { Kg: "किलो", Pc: "पीस", Ltr: "लीटर", Rs: "रु", Gram: "ग्राम", HalfK: "आधा किलो", HalfL: "आधा लीटर", Pav: "पाव" }, 
-            EN: { Kg: "Kg", Pc: "Pc", Ltr: "Ltr", Rs: "Rs", Gram: "gm", HalfK: "Half Kg", HalfL: "Half Ltr", Pav: "Pav", ML: "ml" } 
-        }[lang];
-        if (unit === 'Kg') {
-            if (v === 0.5) return u.HalfK;
-            if (v === 0.25) return u.Pav + " " + u.Kg;
-            if (v < 1) return (v * 1000) + " " + u.Gram;
-        }
+        let v = parseFloat(val); if (isNaN(v) || v === 0) return "";
+        let u = { HI: { Kg: "किलो", Pc: "पीस", Ltr: "लीटर", Rs: "रु", Gram: "ग्राम", HalfK: "आधा किलो", HalfL: "आधा लीटर", Pav: "पाव" }, EN: { Kg: "Kg", Pc: "Pc", Ltr: "Ltr", Rs: "Rs", Gram: "gm", HalfK: "Half Kg", HalfL: "Half Ltr", Pav: "Pav", ML: "ml" } }[lang];
+        if (unit === 'Kg') { if (v === 0.5) return u.HalfK; if (v === 0.25) return u.Pav + " " + u.Kg; if (v < 1) return (v * 1000) + " " + u.Gram; }
         if (unit === 'Ltr' && v < 1) return (v * 1000) + " " + (lang==='HI'?'ML':'ml');
         return v + " " + u[unit];
     }
@@ -199,39 +149,9 @@
         openPage('listPage');
     }
 
-    // --- Daily Kharch Functions ---
-    function addK() { 
-        let n = document.getElementById('kName').value, q = parseFloat(document.getElementById('kQty').value)||1, p = parseFloat(document.getElementById('kPrice').value)||0; 
-        if(n && p) { 
-            let d = new Date().toLocaleDateString('en-GB'), ex = (history.expense || []).find(h => h.date === d); 
-            if(!ex){ ex = {date: d, items: []}; if(!history.expense) history.expense = []; history.expense.unshift(ex); } 
-            let old = ex.items.find(o => o.name.toLowerCase() === n.toLowerCase()); 
-            if(old){ old.qty = parseFloat(old.qty) + q; old.price = parseFloat(old.price) + p; } 
-            else { ex.items.push({name: n, qty: q, price: p, done: false}); } 
-            save(false); renderDK(d); 
-            document.getElementById('kName').value=''; document.getElementById('kQty').value=''; document.getElementById('kPrice').value=''; 
-        } 
-    }
-    function renderDK(date) { 
-        let ex = (history.expense || []).find(h => h.date === date), t = 0, area = document.getElementById('dkList'); 
-        if(!ex) { area.innerHTML = ""; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; } 
-        area.innerHTML = ex.items.map((it, i) => { 
-            t += parseFloat(it.price) || 0; 
-            let isLocked = it.done || false; 
-            return `<div class="dk-grid"><b>${it.name}</b><input type="number" value="${it.qty}" ${isLocked?'disabled':''} oninput="updateDKItem('${date}',${i},'qty',this.value)" class="u-box"><input type="number" value="${it.price}" ${isLocked?'disabled':''} oninput="updateDKItem('${date}',${i},'price',this.value)" class="p-box"><button class="btn ${isLocked?'ok-btn':'lock-btn'}" onclick="lockDK('${date}',${i})">${isLocked?'OK':'CON'}</button><button class="btn del-btn" onclick="delDKItem('${date}',${i})">DEL</button></div>`; 
-        }).join(''); 
-        document.getElementById('dkSum').innerText = `TOTAL: ₹${t}`; 
-    }
-    function updateDKItem(d, idx, f, v) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx][f] = v; save(false); } }
-    function lockDK(d, idx) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx].done = !ex.items[idx].done; save(false); renderDK(ex.date); } }
-    function delDKItem(d, idx) { if(confirm("Del?")){ history.expense.find(h => h.date === d).items.splice(idx,1); save(false); renderDK(d); } }
-    function openDailyKharch() { let d = new Date().toLocaleDateString('en-GB'); renderDK(d); openPage('kInPage'); }
-
-    // --- Calculation Logic (v64 Updated) ---
+    // --- Calculation & Smart Merge Core Logic ---
     function openCalc() { 
-        tCalc = items.filter(it => it.sel).map(it => ({ 
-            name: it.name, qty: it.qty, unit: it.unit, price: '', done: false 
-        })); 
+        tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, unit: it.unit, price: '', done: false })); 
         renderC(); 
         openPage('calcPage'); 
     }
@@ -242,24 +162,35 @@
         if(field === 'price') it.price = val;
         if(field === 'unit') it.unit = val;
         
-        // यदि कीमत दर्ज की गई है, तो सिंक करें
-        if (field === 'price' && val !== '') {
-            syncToHistory(idx);
-        }
+        // Auto-save only if price is entered
+        if (field === 'price' && val !== '') { syncToHistory(idx, false); }
         document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; 
     }
 
-    function syncToHistory(idx) {
+    function syncToHistory(idx, isConfirmAction) {
         let it = tCalc[idx];
+        if(!it.price && !isConfirmAction) return; // Don't save if no price and not a confirm click
+        
         let d = new Date().toLocaleDateString('en-GB');
-        let ex = (history.shopping || []).find(h => h.date === d);
-        if(!ex){ ex = {date: d, items: []}; if(!history.shopping) history.shopping = []; history.shopping.unshift(ex); } 
+        if(!history.shopping) history.shopping = [];
+        let ex = history.shopping.find(h => h.date === d);
+        if(!ex){ ex = {date: d, items: []}; history.shopping.unshift(ex); } 
+
         let histItem = ex.items.find(o => o.name.toLowerCase() === it.name.toLowerCase()); 
+        
         if(!histItem){ 
-            histItem = {name: it.name, qty: it.qty, price: it.price||0, unit: it.unit, done: it.done}; 
-            ex.items.push(histItem); 
+            ex.items.push({ name: it.name, qty: parseFloat(it.qty)||0, price: parseFloat(it.price)||0, unit: it.unit, done: it.done }); 
         } else {
-            histItem.qty = it.qty; histItem.price = it.price||0; histItem.unit = it.unit; histItem.done = it.done;
+            // Smart Merge: If item exists in today's list, Add new values to old ones
+            if(isConfirmAction && it.done) {
+                histItem.qty = (parseFloat(histItem.qty)||0) + (parseFloat(it.qty)||0);
+                histItem.price = (parseFloat(histItem.price)||0) + (parseFloat(it.price)||0);
+            } else {
+                // Just updating current entry during typing
+                histItem.qty = parseFloat(it.qty)||0;
+                histItem.price = parseFloat(it.price)||0;
+            }
+            histItem.done = it.done;
         }
         save(false); 
     }
@@ -275,16 +206,38 @@
 
     function lockToggleCalc(idx) { 
         tCalc[idx].done = !tCalc[idx].done; 
-        syncToHistory(idx);
+        syncToHistory(idx, true); // True means it's a final addition action
         if(tCalc[idx].done) {
-            let mIdx = items.findIndex(m => m.name === tCalc[idx].name);
-            if(mIdx !== -1) items[mIdx].sel = false;
-            save(false);
+            let mIdx = items.findIndex(m => m.name.toLowerCase() === tCalc[idx].name.toLowerCase());
+            if(mIdx !== -1) { items[mIdx].sel = false; items[mIdx].qty = ''; }
+            save(true);
         }
         renderC(); 
     }
 
-    // --- History Functions ---
+    // --- Daily Kharch ---
+    function addK() { 
+        let n = document.getElementById('kName').value, q = parseFloat(document.getElementById('kQty').value)||1, p = parseFloat(document.getElementById('kPrice').value)||0; 
+        if(n && p) { 
+            let d = new Date().toLocaleDateString('en-GB'), ex = (history.expense || []).find(h => h.date === d); 
+            if(!ex){ ex = {date: d, items: []}; if(!history.expense) history.expense = []; history.expense.unshift(ex); } 
+            let old = ex.items.find(o => o.name.toLowerCase() === n.toLowerCase()); 
+            if(old){ old.qty += q; old.price += p; } else { ex.items.push({name: n, qty: q, price: p, done: false}); } 
+            save(false); renderDK(d); document.getElementById('kName').value=''; document.getElementById('kQty').value=''; document.getElementById('kPrice').value=''; 
+        } 
+    }
+    function renderDK(date) { 
+        let ex = (history.expense || []).find(h => h.date === date), t = 0, area = document.getElementById('dkList'); 
+        if(!ex) { area.innerHTML = ""; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; } 
+        area.innerHTML = ex.items.map((it, i) => { t += it.price; let l = it.done; return `<div class="dk-grid"><b>${it.name}</b><input type="number" value="${it.qty}" ${l?'disabled':''} oninput="updateDKItem('${date}',${i},'qty',this.value)" class="u-box"><input type="number" value="${it.price}" ${l?'disabled':''} oninput="updateDKItem('${date}',${i},'price',this.value)" class="p-box"><button class="btn ${l?'ok-btn':'lock-btn'}" onclick="lockDK('${date}',${i})">${l?'OK':'CON'}</button><button class="btn del-btn" onclick="delDKItem('${date}',${i})">DEL</button></div>`; }).join(''); 
+        document.getElementById('dkSum').innerText = `TOTAL: ₹${t}`; 
+    }
+    function updateDKItem(d, idx, f, v) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx][f] = parseFloat(v); save(false); } }
+    function lockDK(d, idx) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx].done = !ex.items[idx].done; save(false); renderDK(ex.date); } }
+    function delDKItem(d, idx) { if(confirm("Del?")){ history.expense.find(h => h.date === d).items.splice(idx,1); save(false); renderDK(d); } }
+    function openDailyKharch() { let d = new Date().toLocaleDateString('en-GB'); renderDK(d); openPage('kInPage'); }
+
+    // --- History Timeline ---
     function renderH() { 
         let area = document.getElementById('hArea'); area.innerHTML = ''; 
         let dataArr = (history[hType] || []); 
@@ -301,13 +254,11 @@
     function editHistory(idx) { 
         let dataArr = history[hType][idx].items; let area = document.getElementById('eList'); 
         area.innerHTML = dataArr.map((it, i) => { 
-            let isLocked = it.done || false; 
-            return `<div class="c-grid"><b>${it.name}</b><input type="number" step="0.1" value="${it.qty}" ${isLocked?'disabled':''} oninput="updateHistItem(${idx},${i},'qty',this.value)" class="u-box"><select ${isLocked?'disabled':''} onchange="updateHistItem(${idx},${i},'unit',this.value)" class="unit-sel"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select><input type="number" value="${it.price}" ${isLocked?'disabled':''} oninput="updateHistItem(${idx},${i},'price',this.value)" class="p-box"><button class="btn ${isLocked?'ok-btn':'lock-btn'}" onclick="toggleLock(${idx},${i})">${isLocked?'OK':'CON'}</button><button class="btn del-btn" onclick="delHistItem(${idx},${i})">DEL</button></div>`; 
+            let l = it.done; return `<div class="c-grid"><b>${it.name}</b><input type="number" step="0.1" value="${it.qty}" ${l?'disabled':''} oninput="updateHistItem(${idx},${i},'qty',this.value)" class="u-box"><select ${l?'disabled':''} onchange="updateHistItem(${idx},${i},'unit',this.value)" class="unit-sel"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select><input type="number" value="${it.price}" ${l?'disabled':''} oninput="updateHistItem(${idx},${i},'price',this.value)" class="p-box"><button class="btn ${l?'ok-btn':'lock-btn'}" onclick="toggleLock(${idx},${i})">${l?'OK':'CON'}</button><button class="btn del-btn" onclick="delHistItem(${idx},${i})">DEL</button></div>`; 
         }).join(''); 
-        document.getElementById('eSum').innerText = `TOTAL: ₹${dataArr.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; 
-        openPage('editPage'); 
+        document.getElementById('eSum').innerText = `TOTAL: ₹${dataArr.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; openPage('editPage'); 
     }
-    function updateHistItem(hIdx, iIdx, f, v) { history[hType][hIdx].items[iIdx][f] = v; save(false); let sum = history[hType][hIdx].items.reduce((a,b)=>a+(parseFloat(b.price)||0),0); document.getElementById('eSum').innerText = `TOTAL: ₹${sum}`; }
+    function updateHistItem(hIdx, iIdx, f, v) { history[hType][hIdx].items[iIdx][f] = parseFloat(v)||v; save(false); let sum = history[hType][hIdx].items.reduce((a,b)=>a+(parseFloat(b.price)||0),0); document.getElementById('eSum').innerText = `TOTAL: ₹${sum}`; }
     function toggleLock(hIdx, iIdx) { history[hType][hIdx].items[iIdx].done = !history[hType][hIdx].items[iIdx].done; save(false); editHistory(hIdx); }
     function delHistItem(hIdx, iIdx) { if(confirm("Del?")){ history[hType][hIdx].items.splice(iIdx,1); save(false); editHistory(hIdx); } }
     function delH(i) { if(confirm("Del?")){ history[hType].splice(i,1); save(false); renderH(); } }
