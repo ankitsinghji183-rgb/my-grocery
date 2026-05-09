@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Manager v64 - Final Asia URL</title>
+    <title>Grocery Manager v65 - THE COMPLETE RECOVERY</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -16,175 +16,184 @@
         .in-row { display: flex; gap: 2px; margin-bottom: 5px; width: 100%; align-items: center; }
         input, select { padding: 8px 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; outline: none; }
         .u-box { width: 42px !important; text-align: center; }
-        .p-box { width: 52px !important; }
         .btn { border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; text-align: center; font-size: 10px; }
         .f-btn { flex: 1; padding: 7px 0; background: #6c757d; font-size: 8px; }
-        .del-btn { background: #dc3545 !important; padding: 6px 6px; font-size: 9px; min-width: 35px; }
-        .ok-btn { background: #28a745 !important; color: white; padding: 6px; font-size: 9px; min-width: 35px; }
-        .lock-btn { background: #ffc107 !important; color: #000; padding: 6px; font-size: 9px; min-width: 35px; }
-        .item-row { display: grid; grid-template-columns: 1fr 42px 45px 30px 35px; gap: 4px; align-items: center; padding: 10px 6px; border-bottom: 1px solid #eee; background: white; }
+        .del-btn { background: #dc3545 !important; padding: 6px; font-size: 9px; }
+        .item-row { display: grid; grid-template-columns: 1fr 45px 55px 30px 35px; gap: 4px; align-items: center; padding: 10px 6px; border-bottom: 1px solid #eee; background: white; }
         .sel-bg { background: #fff9c4 !important; }
         .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display: none; flex-direction: column; z-index: 9999; }
         .p-head { background: #1a73e8; color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; }
         .scroll { flex: 1; overflow-y: auto; padding: 4px; padding-bottom: 80px; }
-        .sum-box { padding: 12px; background: #e8f0fe; font-weight: bold; text-align: right; border-top: 2px solid #1a73e8; font-size: 13px; color: #1a73e8; }
         .b-nav { position: fixed; bottom: 0; width: 100%; background: white; padding: 6px; border-top: 1px solid #eee; display: flex; gap: 5px; z-index: 1000; }
-        b { color: #000; font-size: 12px; }
+        .k-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
     </style>
 </head>
 <body>
 
 <div id="mainView">
     <div class="top-hist">
-        <div class="h-box" onclick="openHistory('shopping')">ITEM HISTORY</div>
-        <div class="h-box" onclick="openHistory('expense')">KHARCHA HISTORY</div>
+        <div class="h-box" onclick="openH('shopping')">ITEM HISTORY</div>
+        <div class="h-box" onclick="openH('expense')">KHARCHA HISTORY</div>
     </div>
     <div class="card">
         <div class="in-row">
-            <input type="text" id="itemName" placeholder="Item Name..." style="flex:1;">
-            <select id="catSelect" style="width:60px;">
-                <option value="GROCERY">GROC</option>
-                <option value="SABJI">SABJI</option>
-                <option value="BODY">BODY</option>
-                <option value="OTHER">ANYA</option>
-            </select>
-            <button onclick="addItem()" class="btn" style="background:#28a745; padding:8px 10px;">ADD</button>
+            <input type="text" id="itemName" placeholder="Item..." style="flex:1;">
+            <select id="catSelect" style="width:60px;"><option value="GROCERY">GROC</option><option value="SABJI">SABJI</option><option value="BODY">BODY</option><option value="OTHER">ANYA</option></select>
+            <button onclick="addItem()" class="btn" style="background:#28a745; padding:8px;">ADD</button>
         </div>
         <div style="display:flex; gap:2px; flex-wrap: wrap;">
             <button onclick="setFilter('All')" class="btn f-btn">ALL</button>
             <button onclick="setFilter('GROCERY')" class="btn f-btn" style="background:#17a2b8;">GROC</button>
             <button onclick="setFilter('SABJI')" class="btn f-btn" style="background:#6f42c1;">SABJI</button>
-            <button onclick="setFilter('BODY')" class="btn f-btn" style="background:#e83e8c;">BODY</button>
-            <button onclick="setFilter('OTHER')" class="btn f-btn" style="background:#ffc107; color:#333;">ANYA</button>
-            <button onclick="clearList()" class="btn f-btn" style="background:#dc3545;">CLR</button>
+            <button onclick="unselectAll()" class="btn f-btn" style="background:#dc3545;">CLR SEL</button>
         </div>
     </div>
-    <div id="masterList" style="padding-bottom: 70px;"></div>
+    <div id="masterList" style="padding-bottom: 80px;"></div>
     <div class="b-nav">
-        <button class="btn" style="background:#1a73e8; flex:1; padding:12px;" onclick="showFinalList()">MAKE LIST</button>
-        <button class="btn" style="background:#ff9800; flex:1; padding:12px;" onclick="openDailyKharch()">DAILY KHARCH</button>
+        <button class="btn" style="background:#1a73e8; flex:1; padding:15px;" onclick="showFinalList()">GENERATE LIST</button>
+        <button class="btn" style="background:#ff9800; flex:1; padding:15px;" onclick="openDaily()">DAILY KHARCH</button>
     </div>
 </div>
 
 <div id="listPage" class="full-page">
-    <div class="p-head"><span onclick="closePage('listPage')">Back</span><span>Final List</span></div>
+    <div class="p-head"><span onclick="closeP('listPage')">← Back</span><span>Final List</span><button onclick="toggleLang()" style="background:#fff; color:#1a73e8; border:none; padding:4px; border-radius:4px; font-size:10px;">HI/EN</button></div>
     <div class="scroll"><div id="shotArea" style="background:white; padding:10px;"><div id="fOut"></div></div></div>
-    <div class="b-nav" style="position:static;"><button class="btn" style="background:#ff9800; flex:1; padding:15px;" onclick="takeShot()">SAVE PHOTO</button></div>
+    <div class="b-nav" style="position:static;"><button class="btn" style="background:#ff9800; flex:1; padding:15px;" onclick="takeShot()">DOWNLOAD PHOTO</button></div>
+</div>
+
+<div id="dailyPage" class="full-page">
+    <div class="p-head"><span onclick="closeP('dailyPage')">← Close</span><span>Add Expense</span></div>
+    <div class="card" style="margin-top:20px;">
+        <input type="text" id="kName" placeholder="Item Name..." style="width:100%; margin-bottom:10px; padding:12px;">
+        <input type="number" id="kPrice" placeholder="Price (₹)..." style="width:100%; margin-bottom:10px; padding:12px;">
+        <button onclick="saveKharcha()" class="btn" style="background:#28a745; width:100%; padding:15px;">SAVE EXPENSE</button>
+    </div>
+</div>
+
+<div id="hPage" class="full-page">
+    <div class="p-head"><span onclick="closeP('hPage')">← Back</span><span id="hTitle">History</span><button onclick="clearHistory()" class="del-btn btn">CLR ALL</button></div>
+    <div class="scroll" id="hOut"></div>
 </div>
 
 <script>
-    // --- FIREBASE INITIALIZATION ---
-    // Aapka Asia-Southeast1 URL
-    const firebaseConfig = {
-        databaseURL: "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/"
-    };
-    
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
+    const firebaseConfig = { databaseURL: "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/" };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Indian Grocery & Sabji List
     const masterItems = [
-        {name: "आलू", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "प्याज", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "टमाटर", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "पत्ता गोभी", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "फूल गोभी", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "मेथी भाजी", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "पालक", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "बैंगन", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "भिंडी", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "हरी मिर्च", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "धनिया", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "अदरक", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "लहसुन", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "नींबू", cat: "SABJI", sel: false, qty: "", unit: "Pc"},
-        {name: "सोयाबीन तेल", cat: "GROCERY", sel: false, qty: "", unit: "Ltr"},
-        {name: "सरसों तेल", cat: "GROCERY", sel: false, qty: "", unit: "Ltr"},
-        {name: "नारियल तेल", cat: "GROCERY", sel: false, qty: "", unit: "Ltr"},
-        {name: "नमक", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "जीरा", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "चावल", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "आटा", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "चीनी", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "दूध", cat: "OTHER", sel: false, qty: "", unit: "Ltr"},
-        {name: "दही", cat: "OTHER", sel: false, qty: "", unit: "Kg"},
-        {name: "पनीर", cat: "OTHER", sel: false, qty: "", unit: "Kg"},
-        {name: "नहाने का साबुन", cat: "BODY", sel: false, qty: "", unit: "Pc"},
-        {name: "टूथपेस्ट", cat: "BODY", sel: false, qty: "", unit: "Pc"}
+        {name: "आलू", en: "Potato", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
+        {name: "प्याज", en: "Onion", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
+        {name: "टमाटर", en: "Tomato", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
+        {name: "पत्ता गोभी", en: "Cabbage", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
+        {name: "फूल गोभी", en: "Cauliflower", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
+        {name: "बैंगन", en: "Brinjal", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
+        {name: "सोयाबीन तेल", en: "Soybean Oil", cat: "GROCERY", sel: false, qty: "", unit: "Ltr"},
+        {name: "सरसों तेल", en: "Mustard Oil", cat: "GROCERY", sel: false, qty: "", unit: "Ltr"},
+        {name: "नारियल तेल", en: "Coconut Oil", cat: "GROCERY", sel: false, qty: "", unit: "Ltr"},
+        {name: "चावल", en: "Rice", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
+        {name: "शक्कर", en: "Sugar", cat: "GROCERY", sel: false, qty: "", unit: "Kg"}
     ];
 
-    let items = [];
-    let history = { shopping: [], expense: [] };
-    let isDataReady = false; 
-    let activeF = 'All';
+    let items = [], history = { shopping: [], expense: [] };
+    let isReady = false, activeF = 'All', currL = 'HI';
 
-    // Firebase Sync: Load data on startup
-    db.ref('groceryAppV64').on('value', (snapshot) => {
-        const cloudData = snapshot.val();
-        if (cloudData && cloudData.items && cloudData.items.length > 0) {
-            items = cloudData.items;
-            history = cloudData.history || { shopping: [], expense: [] };
-            isDataReady = true;
-        } else {
-            if(!isDataReady) {
-                items = masterItems;
-                isDataReady = true;
-                syncToFirebase();
-            }
-        }
+    db.ref('v65Store').on('value', (snap) => {
+        const d = snap.val();
+        if(d && d.items) { items = d.items; history = d.history || {shopping:[], expense:[]}; isReady = true; }
+        else if(!isReady) { items = masterItems; isReady = true; sync(); }
         renderMaster();
     });
 
-    function syncToFirebase() {
-        if(isDataReady) {
-            db.ref('groceryAppV64').set({ items, history });
-        }
-    }
+    function sync() { if(isReady) db.ref('v65Store').set({items, history}); }
 
     function renderMaster() {
         let cont = document.getElementById('masterList');
-        let sorted = [...items].sort((a, b) => b.sel - a.sel);
-        cont.innerHTML = sorted.map((it) => {
+        let sorted = [...items].sort((a,b) => b.sel - a.sel);
+        cont.innerHTML = sorted.map(it => {
             if(activeF !== 'All' && it.cat !== activeF) return '';
-            let rIdx = items.indexOf(it);
+            let i = items.indexOf(it);
             return `<div class="item-row ${it.sel?'sel-bg':''}">
-                <span onclick="toggleI(${rIdx})"><b>${it.name}</b></span>
-                <input type="number" step="0.1" value="${it.qty}" oninput="items[${rIdx}].qty=this.value;syncToFirebase()" class="u-box">
-                <select onchange="items[${rIdx}].unit=this.value;syncToFirebase()" style="width:45px; font-size:9px;">
-                    <option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
-                    <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option>
+                <span onclick="toggleI(${i})"><b>${it.name}</b></span>
+                <input type="number" step="0.1" value="${it.qty}" oninput="items[${i}].qty=this.value;sync()" class="u-box">
+                <select onchange="items[${i}].unit=this.value;sync()" style="font-size:9px;">
+                    <option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option>
+                    <option value="Gram" ${it.unit=='Gram'?'selected':''}>Gram</option>
+                    <option value="1/2 Kg" ${it.unit=='1/2 Kg'?'selected':''}>1/2 Kg</option>
+                    <option value="1 Pao" ${it.unit=='1 Pao'?'selected':''}>1 Pao</option>
+                    <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option>
+                    <option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
                 </select>
-                <input type="checkbox" ${it.sel?'checked':''} onclick="toggleI(${rIdx})">
-                <button class="btn del-btn" onclick="delMasterItem(${rIdx})">DEL</button>
+                <input type="checkbox" ${it.sel?'checked':''} onclick="toggleI(${i})">
+                <button class="btn del-btn" onclick="delI(${i})">X</button>
             </div>`;
         }).join('');
     }
 
-    function toggleI(i) { items[i].sel = !items[i].sel; syncToFirebase(); }
-    function addItem() { let n = document.getElementById('itemName').value, c = document.getElementById('catSelect').value; if(n){ items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); syncToFirebase(); document.getElementById('itemName').value=''; } }
-    function delMasterItem(i) { if(confirm("Delete?")){ items.splice(i,1); syncToFirebase(); } }
+    function toggleI(i) { items[i].sel = !items[i].sel; sync(); }
+    function addItem() { 
+        let n = document.getElementById('itemName').value;
+        if(n) { items.unshift({name: n, en: n, cat: document.getElementById('catSelect').value, sel: true, qty: '', unit: 'Kg'}); sync(); document.getElementById('itemName').value=''; }
+    }
+    function delI(i) { if(confirm("Del?")) { items.splice(i,1); sync(); } }
+    function unselectAll() { items.forEach(it => it.sel = false); sync(); }
     function setFilter(f) { activeF = f; renderMaster(); }
-    function clearList() { if(confirm("Clear Everything?")){ items=[]; syncToFirebase(); } }
-    function openPage(id) { document.getElementById(id).style.display = 'flex'; }
-    function closePage(id) { document.getElementById(id).style.display = 'none'; }
+    function closeP(id) { document.getElementById(id).style.display='none'; }
+    function openP(id) { document.getElementById(id).style.display='flex'; }
 
+    // --- Final List & Language ---
+    function toggleLang() { currL = (currL==='HI'?'EN':'HI'); showFinalList(); }
     function showFinalList() {
-        let sel = items.filter(it => it.sel); if(!sel.length) return alert("Items select karein");
+        let sel = items.filter(it => it.sel);
+        if(!sel.length) return alert("Select items!");
         let out = document.getElementById('fOut');
-        out.innerHTML = `<h3 style="text-align:center; border-bottom:2px solid #000; padding-bottom:5px;">LIST</h3>`;
-        ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {
-            let f = sel.filter(it => it.cat === c);
-            if(f.length) {
-                out.innerHTML += `<div style="background:#eee;padding:5px;font-weight:bold;font-size:11px; margin-top:10px;">${c}</div>` + 
-                f.map((it) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #ddd;font-size:13px;">
-                <span><b>${it.name}</b></span><span style="font-weight:bold;">${it.qty} ${it.unit}</span><span style="border-bottom:1px solid #000;width:40px;"></span></div>`).join('');
+        let date = new Date().toLocaleDateString();
+        out.innerHTML = `<center><h3>${currL==='HI'?'खरीदारी सूची':'SHOPPING LIST'}</h3><small>${date}</small></center>`;
+        ['GROCERY','SABJI','BODY','OTHER'].forEach(cat => {
+            let filt = sel.filter(it => it.cat === cat);
+            if(filt.length) {
+                out.innerHTML += `<div style="background:#f0f0f0; padding:5px; font-weight:bold; margin-top:10px;">${cat}</div>`;
+                out.innerHTML += filt.map(it => `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #ccc;">
+                    <span>${currL==='HI'?it.name:it.en}</span><span><b>${it.qty} ${it.unit}</b></span><span style="width:40px; border-bottom:1px solid #000;"></span>
+                </div>`).join('');
             }
         });
-        openPage('listPage');
+        openP('listPage');
+        // Auto-save to History
+        let historyEntry = { date: date, items: sel.map(s => `${s.name}(${s.qty}${s.unit})`).join(', ') };
+        if(!history.shopping.some(h => h.items === historyEntry.items)) {
+            history.shopping.unshift(historyEntry); sync();
+        }
     }
-    function takeShot() { html2canvas(document.getElementById('shotArea')).then(c => { let a = document.createElement('a'); a.download = 'GroceryList.png'; a.href = c.toDataURL(); a.click(); }); }
+
+    // --- Daily Kharcha ---
+    function openDaily() { openP('dailyPage'); }
+    function saveKharcha() {
+        let n = document.getElementById('kName').value, p = document.getElementById('kPrice').value;
+        if(n && p) {
+            history.expense.unshift({ date: new Date().toLocaleString(), name: n, price: p });
+            sync(); alert("Saved!");
+            document.getElementById('kName').value=''; document.getElementById('kPrice').value='';
+            closeP('dailyPage');
+        }
+    }
+
+    // --- History Control ---
+    let currHType = '';
+    function openH(type) {
+        currHType = type;
+        document.getElementById('hTitle').innerText = type.toUpperCase() + " HISTORY";
+        let out = document.getElementById('hOut');
+        let data = history[type] || [];
+        out.innerHTML = data.map((h, i) => `<div class="k-item">
+            <div><b>${h.date}</b><br>${type==='expense'? h.name + ' - ₹' + h.price : h.items}</div>
+            <button onclick="delH(${i})" style="color:red; background:none; border:none;">X</button>
+        </div>`).join('');
+        openP('hPage');
+    }
+    function delH(i) { history[currHType].splice(i,1); sync(); openH(currHType); }
+    function clearHistory() { if(confirm("Clear All?")) { history[currHType]=[]; sync(); openH(currHType); } }
+
+    function takeShot() { html2canvas(document.getElementById('shotArea')).then(c => { let a = document.createElement('a'); a.download='List.png'; a.href=c.toDataURL(); a.click(); }); }
 </script>
 </body>
 </html>
