@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Manager v57 Firebase</title>
+    <title>Grocery Manager v58 Category-Serial</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
-    
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
@@ -105,7 +104,6 @@
 </div>
 
 <script>
-    // Firebase Config using your URL
     const firebaseConfig = { databaseURL: "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database().ref('grocery/3');
@@ -114,7 +112,6 @@
     let currLang = 'HI', activeF = 'All', hType = 'shopping', tCalc = [];
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    // Sync from Firebase
     db.on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
@@ -129,14 +126,22 @@
     function openPage(id) { document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); document.getElementById(id).style.display = 'flex'; }
     function closePage(id) { document.getElementById(id).style.display = 'none'; }
 
+    // Master List with Serial Number Reset per Category
     function renderMaster() {
         let cont = document.getElementById('masterList');
         let sorted = [...items].sort((a, b) => b.sel - a.sel);
-        cont.innerHTML = sorted.map((it, i) => {
+        let categoryCounters = { GROCERY: 0, SABJI: 0, BODY: 0, OTHER: 0 };
+        
+        cont.innerHTML = sorted.map((it) => {
             if(activeF !== 'All' && it.cat !== activeF) return '';
+            
+            // Increment counter for this specific category
+            categoryCounters[it.cat]++;
+            let currentSerial = categoryCounters[it.cat];
+            
             let rIdx = items.indexOf(it);
             return `<div class="item-row ${it.sel?'sel-bg':''}">
-                <span onclick="toggleI(${rIdx})"><b>${i+1}.${it.name}</b></span>
+                <span onclick="toggleI(${rIdx})"><b>${currentSerial}.${it.name}</b></span>
                 <input type="number" step="0.1" value="${it.qty}" oninput="items[${rIdx}].qty=this.value;save()" class="u-box">
                 <select onchange="items[${rIdx}].unit=this.value;save()" style="width:45px; font-size:9px;">
                     <option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
@@ -157,7 +162,6 @@
     function delMasterItem(i) { if(confirm("Del?")){ items.splice(i,1); save(); } }
     function setFilter(f) { activeF = f; renderMaster(); }
 
-    // CLR Button: Now unselects instead of clearing
     function unselectAll() {
         if(confirm("Unselect All Items?")) {
             items.forEach(it => it.sel = false);
@@ -165,7 +169,25 @@
         }
     }
 
-    // Daily Kharch functions
+    // Final List with Serial Number Reset per Category
+    function showFinalList() {
+        let sel = items.filter(it => it.sel); if(!sel.length) return alert("Select items");
+        let out = document.getElementById('fOut');
+        out.innerHTML = `<h3 style="text-align:center; border-bottom:2px solid #000;">${currLang==='HI'?'खरीदारी की सूची':'Shopping List'}</h3>`;
+        
+        ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {
+            let f = sel.filter(it => it.cat === c);
+            if(f.length) {
+                // Numbering starts from 1 for each category section
+                out.innerHTML += `<div style="background:#eee;padding:5px;font-weight:bold;font-size:11px;">${c}</div>` + 
+                f.map((it, j) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #ddd;font-size:12px;">
+                <span><b>${j+1}.${it.name}</b></span><span style="font-weight:bold;">${getSmartUnit(it.qty, it.unit, currLang)}</span><span style="border-bottom:1px solid #000;width:35px;"></span></div>`).join('');
+            }
+        });
+        openPage('listPage');
+    }
+
+    // Daily Kharch, Calc, History etc remain same as they don't use categories for sorting
     function addK() {
         let n = document.getElementById('kName').value, q = parseFloat(document.getElementById('kQty').value)||1, p = parseFloat(document.getElementById('kPrice').value)||0;
         if(n && p) {
@@ -196,7 +218,6 @@
     function delDKItem(d, idx) { if(confirm("Del?")){ history.expense.find(h => h.date === d).items.splice(idx,1); save(); renderDK(d); } }
     function openDailyKharch() { let d = new Date().toLocaleDateString('en-GB'); renderDK(d); openPage('kInPage'); }
 
-    // Calc and Smart Addition Logic
     function openCalc() {
         tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, unit: it.unit, price: '', done: false, lastQty: 0, lastPrice: 0 }));
         renderC(); tCalc.forEach((_, i) => smartAddition(i, 'qty', tCalc[i].qty)); openPage('calcPage');
@@ -228,15 +249,16 @@
     function lockToggleCalc(idx) { tCalc[idx].done = !tCalc[idx].done; let d = new Date().toLocaleDateString('en-GB'); let histItem = history.shopping.find(h=>h.date===d).items.find(o=>o.name.toLowerCase()===tCalc[idx].name.toLowerCase()); if(histItem) histItem.done = tCalc[idx].done; save(); renderC(); }
     function closeCalc() { tCalc = []; document.getElementById('cList').innerHTML=""; closePage('calcPage'); }
 
-    // History Timeline
+    function openHistory(type) { hType = type; renderH(); openPage('hPage'); }
     function renderH() {
         let area = document.getElementById('hArea'); area.innerHTML = '';
-        let data = [...(history[hType] || [])].sort((a,b) => {
+        let dataArr = (history[hType] || []);
+        let sortedData = [...dataArr].sort((a,b) => {
             let da = a.date.split('/'), db = b.date.split('/');
             return new Date(db[2], db[1]-1, db[0]) - new Date(da[2], da[1]-1, da[0]);
         });
         let currentMonth = "", monthTotal = 0, tempHtml = "";
-        data.forEach((h, i) => {
+        sortedData.forEach((h) => {
             let parts = h.date.split('/'), mName = months[parseInt(parts[1])-1] + " " + parts[2], dayTotal = h.items.reduce((a, b) => a + (parseFloat(b.price)||0), 0);
             if (currentMonth !== "" && currentMonth !== mName) {
                 area.innerHTML += `<div class="month-label"><span>${currentMonth} Total:</span><span>₹${monthTotal}</span></div>` + tempHtml;
@@ -271,31 +293,14 @@
     function updateHistItem(hIdx, iIdx, f, v) { history[hType][hIdx].items[iIdx][f] = v; save(); let sum = history[hType][hIdx].items.reduce((a,b)=>a+(parseFloat(b.price)||0),0); document.getElementById('eSum').innerText = `TOTAL: ₹${sum}`; }
     function toggleLock(hIdx, iIdx) { history[hType][hIdx].items[iIdx].done = !history[hType][hIdx].items[iIdx].done; save(); editHistory(hIdx); }
     function delHistItem(hIdx, iIdx) { if(confirm("Del?")){ history[hType][hIdx].items.splice(iIdx,1); save(); editHistory(hIdx); } }
-    function openHistory(type) { hType = type; renderH(); openPage('hPage'); }
     function delH(i) { if(confirm("Del?")){ history[hType].splice(i,1); save(); renderH(); } }
 
-    // Final List View & Utilities
     function getSmartUnit(val, unit, lang) {
         let v = parseFloat(val); if (!v) return "";
-        let u = { HI: { Kg: "किलो", Pc: "पीस", Ltr: "लीटर", Rs: "रु", Gram: "ग्राम", Half: "आधा किलो", Pav: "पाव किलो" }, EN: { Kg: "Kg", Pc: "Pc", Ltr: "Ltr", Rs: "Rs", Gram: "gm", Half: "Half Kg", Pav: "Pav Kg", ML: "ml", HalfL: "Half Ltr", PavL: "Pav Ltr" } }[lang];
+        let u = { HI: { Kg: "किलो", Pc: "पीस", Ltr: "लीटर", Rs: "रु", Gram: "ग्राम", Half: "आधा kilo", Pav: "पाव kilo" }, EN: { Kg: "Kg", Pc: "Pc", Ltr: "Ltr", Rs: "Rs", Gram: "gm", Half: "Half Kg", Pav: "Pav Kg", ML: "ml", HalfL: "Half Ltr", PavL: "Pav Ltr" } }[lang];
         if (unit === 'Kg') { if (v === 0.5) return u.Half; if (v === 0.25) return u.Pav; if (v === 0.2) return "200 " + u.Gram; if (v < 1) return (v * 1000) + " " + u.Gram; }
         if (unit === 'Ltr') { if (v === 0.5) return (lang==='EN'?u.HalfL:u.Half); if (v === 0.25) return (lang==='EN'?u.PavL:u.Pav); if (v === 0.2) return "200 " + (lang==='EN'?u.ML:'ML'); if (v < 1) return (v * 1000) + " " + (lang==='EN'?u.ML:'ML'); }
         return v + " " + u[unit];
-    }
-
-    function showFinalList() {
-        let sel = items.filter(it => it.sel); if(!sel.length) return alert("Select items");
-        let out = document.getElementById('fOut');
-        out.innerHTML = `<h3 style="text-align:center; border-bottom:2px solid #000;">${currLang==='HI'?'खरीदारी की सूची':'Shopping List'}</h3>`;
-        ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {
-            let f = sel.filter(it => it.cat === c);
-            if(f.length) {
-                out.innerHTML += `<div style="background:#eee;padding:5px;font-weight:bold;font-size:11px;">${c}</div>` + 
-                f.map((it, j) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #ddd;font-size:12px;">
-                <span><b>${j+1}.${it.name}</b></span><span style="font-weight:bold;">${getSmartUnit(it.qty, it.unit, currLang)}</span><span style="border-bottom:1px solid #000;width:35px;"></span></div>`).join('');
-            }
-        });
-        openPage('listPage');
     }
 
     function toggleLang() { currLang = (currLang === 'HI') ? 'EN' : 'HI'; showFinalList(); }
