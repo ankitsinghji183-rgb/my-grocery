@@ -11,7 +11,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
-        /* आपका पुराना style यहाँ रहेगा (कॉपी कर लें) */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
         .top-hist { display: flex; gap: 4px; padding: 6px; }
@@ -40,8 +39,72 @@
 </head>
 <body>
 
-<!-- आपका पुराना HTML body content (सभी divs) यहाँ paste कर दो -->
-<!-- मैंने space बचाने के लिए छोड़ दिया है, आप अपना पूरा HTML body paste कर लें -->
+<div id="mainView">
+    <div class="top-hist">
+        <div class="h-box" onclick="openHistory('shopping')">ITEM HISTORY</div>
+        <div class="h-box" onclick="openHistory('expense')">KHARCHA HISTORY</div>
+    </div>
+    <div class="card">
+        <div class="in-row">
+            <input type="text" id="itemName" placeholder="Item Name..." style="flex:1;">
+            <select id="catSelect" style="width:60px;">
+                <option value="GROCERY">GROC</option>
+                <option value="SABJI">SABJI</option>
+                <option value="BODY">BODY</option>
+                <option value="OTHER">ANYA</option>
+            </select>
+            <button onclick="addItem()" class="btn" style="background:#28a745; padding:8px 10px;">ADD</button>
+        </div>
+        <div style="display:flex; gap:2px; flex-wrap: wrap;">
+            <button onclick="setFilter('All')" class="btn f-btn">ALL</button>
+            <button onclick="setFilter('GROCERY')" class="btn f-btn" style="background:#17a2b8;">GROC</button>
+            <button onclick="setFilter('SABJI')" class="btn f-btn" style="background:#6f42c1;">SABJI</button>
+            <button onclick="setFilter('BODY')" class="btn f-btn" style="background:#e83e8c;">BODY</button>
+            <button onclick="setFilter('OTHER')" class="btn f-btn" style="background:#ffc107; color:#333;">ANYA</button>
+            <button onclick="clearList()" class="btn f-btn" style="background:#dc3545;">CLR</button>
+        </div>
+    </div>
+    <div id="masterList" style="padding-bottom: 70px;"></div>
+    <div class="b-nav">
+        <button class="btn" style="background:#1a73e8; flex:1; padding:12px;" onclick="showFinalList()">MAKE LIST</button>
+        <button class="btn" style="background:#ff9800; flex:1; padding:12px;" onclick="openDailyKharch()">DAILY KHARCH</button>
+    </div>
+</div>
+
+<div id="kInPage" class="full-page">
+    <div class="p-head"><span onclick="closePage('kInPage')">Back</span><span>Daily Kharch</span></div>
+    <div class="card"><div class="in-row">
+        <input type="text" id="kName" style="flex:1" placeholder="Item Name">
+        <input type="number" id="kQty" class="u-box" placeholder="Qty">
+        <input type="number" id="kPrice" class="p-box" placeholder="Rs">
+        <button class="btn" onclick="addK()" style="background:#28a745; padding:8px 10px;">ADD</button>
+    </div></div>
+    <div class="scroll" id="dkList"></div>
+    <div id="dkSum" class="sum-box"></div>
+</div>
+
+<div id="calcPage" class="full-page">
+    <div class="p-head"><span onclick="closeCalc()">Back</span><span>Calculation</span></div>
+    <div class="scroll" id="cList"></div>
+    <div id="cSum" class="sum-box"></div>
+</div>
+
+<div id="editPage" class="full-page">
+    <div class="p-head"><span onclick="closePage('editPage')">Back</span><span>Edit Record</span></div>
+    <div class="scroll" id="eList"></div>
+    <div id="eSum" class="sum-box"></div>
+</div>
+
+<div id="hPage" class="full-page">
+    <div class="p-head"><span onclick="closePage('hPage')">Back</span><span id="hTitle">History Timeline</span></div>
+    <div class="scroll" id="hArea"></div>
+</div>
+
+<div id="listPage" class="full-page">
+    <div class="p-head"><span onclick="closePage('listPage')">Back</span><span>Final List</span><button onclick="toggleLang()" style="background:#fff; color:#1a73e8; border:none; padding:4px 8px; border-radius:4px; font-size:10px;">HI/EN</button></div>
+    <div class="scroll"><div id="shotArea" style="background:white; padding:10px;"><div id="fOut"></div></div></div>
+    <div class="b-nav" style="position:static;"><button class="btn" style="background:#ff9800; flex:1; padding:15px;" onclick="takeShot()">PHOTO</button><button class="btn" style="background:#28a745; flex:1; padding:15px;" onclick="openCalc()">CALC</button></div>
+</div>
 
 <script>
 // ==================== Firebase Config ====================
@@ -51,13 +114,14 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const ref = db.ref("grocery/3");   // आपका दिया हुआ path
+const ref = db.ref("grocery/3");
 
 let items = [];
 let history = { shopping: [], expense: [] };
 let currLang = 'HI', activeF = 'All', hType = 'shopping', tCalc = [];
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-// ==================== Load Data from Firebase ====================
+// ==================== Firebase Save & Load ====================
 function loadData() {
     ref.once('value', (snapshot) => {
         const data = snapshot.val();
@@ -66,43 +130,29 @@ function loadData() {
             history = data.history || { shopping: [], expense: [] };
         }
         renderMaster();
-    }, (error) => {
-        console.error("Firebase Load Error:", error);
-        alert("Firebase से डेटा लोड करने में समस्या!");
     });
 }
 
-// ==================== Save Data to Firebase ====================
 function saveToFirebase() {
-    const dataToSave = {
+    ref.set({
         items: items,
         history: history,
         lastUpdated: new Date().toISOString()
-    };
-
-    ref.set(dataToSave)
-    .then(() => {
-        console.log("✅ Data saved to Firebase");
-    })
-    .catch((error) => {
-        console.error("Firebase Save Error:", error);
-        alert("Save failed! Check internet.");
-    });
+    }).catch(err => console.error("Firebase Save Error:", err));
 }
 
-// ==================== Original Functions (Modified) ====================
-const save = () => { saveToFirebase(); };
+const save = () => saveToFirebase();
 
+// ==================== Master List ====================
 function renderMaster() {
-    // आपका पुराना renderMaster code यहीं paste कर दो
     let cont = document.getElementById('masterList');
-    let sorted = [...items].sort((a, b) => b.sel - a.sel);
+    let sorted = [...items].sort((a, b) => (b.sel||0) - (a.sel||0));
     cont.innerHTML = sorted.map((it, i) => {
         if(activeF !== 'All' && it.cat !== activeF) return '';
         let rIdx = items.indexOf(it);
         return `<div class="item-row ${it.sel?'sel-bg':''}">
             <span onclick="toggleI(\( {rIdx})"><b> \){i+1}.${it.name}</b></span>
-            <input type="number" step="0.1" value="\( {it.qty}" oninput="items[ \){rIdx}].qty=this.value;save()" class="u-box">
+            <input type="number" step="0.1" value="\( {it.qty||''}" oninput="items[ \){rIdx}].qty=this.value;save()" class="u-box">
             <select onchange="items[${rIdx}].unit=this.value;save()" style="width:45px; font-size:9px;">
                 <option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option>
                 <option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
@@ -115,15 +165,246 @@ function renderMaster() {
     }).join('');
 }
 
-// बाकी सभी functions (addItem, toggleI, delMasterItem, setFilter, clearList, openDailyKharch, renderDK, editHistory, showFinalList आदि) 
-// **बिल्कुल वैसा ही** रखें जैसा आपके पुराने कोड में है। सिर्फ save() को call करते रहें।
+function addItem() {
+    let n = document.getElementById('itemName').value.trim();
+    let c = document.getElementById('catSelect').value;
+    if(n){
+        items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'});
+        renderMaster();
+        save();
+        document.getElementById('itemName').value='';
+    }
+}
 
-// Load data on start
+function toggleI(i) { items[i].sel = !items[i].sel; renderMaster(); save(); }
+function delMasterItem(i) { if(confirm("Del?")){ items.splice(i,1); renderMaster(); save(); } }
+function setFilter(f) { activeF = f; renderMaster(); }
+function clearList() { if(confirm("Clear All?")){ items=[]; renderMaster(); save(); } }
+
+// ==================== Page Controls ====================
+function openPage(id) {
+    document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none');
+    document.getElementById(id).style.display = 'flex';
+}
+function closePage(id) { document.getElementById(id).style.display = 'none'; }
+
+// ==================== Daily Kharch ====================
+function openDailyKharch() {
+    let d = new Date().toLocaleDateString('en-GB');
+    renderDK(d); openPage('kInPage');
+}
+
+function addK() {
+    let n = document.getElementById('kName').value.trim();
+    let q = parseFloat(document.getElementById('kQty').value)||1;
+    let p = parseFloat(document.getElementById('kPrice').value)||0;
+    if(n && p){
+        let d = new Date().toLocaleDateString('en-GB');
+        let ex = history.expense.find(h => h.date === d);
+        if(!ex){ ex = {date: d, items: []}; history.expense.unshift(ex); }
+        let old = ex.items.find(o => o.name.toLowerCase() === n.toLowerCase());
+        if(old){ old.qty += q; old.price += p; } else { ex.items.push({name: n, qty: q, price: p, done: false}); }
+        save(); renderDK(d);
+        document.getElementById('kName').value=''; document.getElementById('kQty').value=''; document.getElementById('kPrice').value='';
+    }
+}
+
+function renderDK(date) {
+    let ex = history.expense.find(h => h.date === date), t = 0, area = document.getElementById('dkList');
+    if(!ex) { area.innerHTML = ""; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; }
+    area.innerHTML = ex.items.map((it, i) => { 
+        t += parseFloat(it.price)||0; 
+        let locked = it.done || false;
+        return `<div class="c-grid" style="grid-template-columns: 1fr 42px 52px 35px 35px;"><b>${it.name}</b>
+        <input type="number" value="${it.qty}" \( {locked?'disabled':''} oninput="updateDKItem(' \){date}',${i},'qty',this.value)" class="u-box">
+        <input type="number" value="${it.price}" \( {locked?'disabled':''} oninput="updateDKItem(' \){date}',${i},'price',this.value)" class="p-box">
+        <button class="btn \( {locked?'ok-btn':'lock-btn'}" onclick="lockDK(' \){date}',\( {i})"> \){locked?'OK':'CON'}</button>
+        <button class="btn del-btn" onclick="delDKItem('\( {date}', \){i})">DEL</button></div>`;
+    }).join('');
+    document.getElementById('dkSum').innerText = `TOTAL: ₹${t}`;
+}
+
+function updateDKItem(d, idx, f, v) { 
+    let ex = history.expense.find(h => h.date === d); 
+    if(ex){ ex.items[idx][f] = v; save(); renderDK(d); } 
+}
+function lockDK(d, idx) { 
+    let ex = history.expense.find(h => h.date === d); 
+    if(ex){ ex.items[idx].done = !ex.items[idx].done; save(); renderDK(d); } 
+}
+function delDKItem(d, idx) { 
+    if(confirm("Del?")){ 
+        history.expense.find(h => h.date === d).items.splice(idx,1); 
+        save(); renderDK(d); 
+    } 
+}
+
+// ==================== Calculation & Smart Save ====================
+function openCalc() {
+    tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, unit: it.unit, price: '', done: false, lastQty: 0, lastPrice: 0 }));
+    renderC(); 
+    openPage('calcPage');
+}
+
+function smartAddition(idx, field, val) {
+    let it = tCalc[idx];
+    let d = new Date().toLocaleDateString('en-GB');
+    let ex = history.shopping.find(h => h.date === d);
+    if(!ex){ ex = {date: d, items: []}; history.shopping.unshift(ex); }
+    let histItem = ex.items.find(o => o.name.toLowerCase() === it.name.toLowerCase());
+    if(!histItem){ histItem = {name: it.name, qty: 0, price: 0, unit: it.unit, done: false}; ex.items.push(histItem); }
+
+    if(field === 'qty'){ 
+        let newVal = parseFloat(val)||0; 
+        histItem.qty = (parseFloat(histItem.qty)||0) - it.lastQty + newVal; 
+        it.lastQty = newVal; it.qty = val; 
+    }
+    if(field === 'price'){ 
+        let newVal = parseFloat(val)||0; 
+        histItem.price = (parseFloat(histItem.price)||0) - it.lastPrice + newVal; 
+        it.lastPrice = newVal; it.price = val; 
+    }
+    if(field === 'unit'){ histItem.unit = val; it.unit = val; }
+    save();
+    renderC();
+}
+
+function renderC() {
+    let area = document.getElementById('cList'), gt = 0;
+    area.innerHTML = tCalc.map((it, i) => { 
+        gt += parseFloat(it.price)||0;
+        return `<div class="c-grid" style="grid-template-columns: 1fr 42px 42px 52px 35px;">
+            <b>${it.name}</b>
+            <input type="number" step="0.1" value="\( {it.qty}" oninput="smartAddition( \){i}, 'qty', this.value)" class="u-box">
+            <select onchange="smartAddition(${i}, 'unit', this.value)" style="width:42px;">
+                <option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option>
+                <option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
+                <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option>
+                <option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option>
+            </select>
+            <input type="number" value="\( {it.price}" oninput="smartAddition( \){i}, 'price', this.value)" class="p-box">
+            <div class="btn \( {it.done?'ok-btn':'lock-btn'}" onclick="lockToggleCalc( \){i})">${it.done?'OK':'CON'}</div>
+        </div>`;
+    }).join('');
+    document.getElementById('cSum').innerText = `TOTAL: ₹${gt}`;
+}
+
+function lockToggleCalc(idx) { 
+    tCalc[idx].done = !tCalc[idx].done; 
+    let d = new Date().toLocaleDateString('en-GB'); 
+    let histItem = history.shopping.find(h=>h.date===d)?.items.find(o=>o.name.toLowerCase()===tCalc[idx].name.toLowerCase());
+    if(histItem) histItem.done = tCalc[idx].done;
+    save(); renderC(); 
+}
+function closeCalc() { tCalc = []; closePage('calcPage'); }
+
+// ==================== History & Edit ====================
+function renderH() {
+    let area = document.getElementById('hArea'); area.innerHTML = '';
+    let data = [...history[hType]].sort((a,b) => {
+        let da = a.date.split('/'), db = b.date.split('/');
+        return new Date(db[2], db[1]-1, db[0]) - new Date(da[2], da[1]-1, da[0]);
+    });
+    let currentMonth = "", monthTotal = 0, tempHtml = "";
+    data.forEach((h) => {
+        let parts = h.date.split('/'), mName = months[parseInt(parts[1])-1] + " " + parts[2];
+        let dayTotal = h.items.reduce((a, b) => a + (parseFloat(b.price)||0), 0);
+        if (currentMonth !== "" && currentMonth !== mName) {
+            area.innerHTML += `<div class="month-label"><span>\( {currentMonth} Total:</span><span>₹ \){monthTotal}</span></div>` + tempHtml;
+            tempHtml = ""; monthTotal = 0;
+        }
+        currentMonth = mName; monthTotal += dayTotal;
+        tempHtml += `<div class="item-row" style="grid-template-columns: 1fr 60px 45px 40px;">
+            <span>\( {h.date}</span><b>₹ \){dayTotal}</b>
+            <button onclick="editHistory(${history[hType].indexOf(h)})" style="background:orange;color:white;border:none;padding:6px;border-radius:4px;font-size:9px;">EDIT</button>
+            <button class="btn del-btn" onclick="delH(${history[hType].indexOf(h)})">DEL</button>
+        </div>`;
+    });
+    if(currentMonth) area.innerHTML += `<div class="month-label"><span>\( {currentMonth} Total:</span><span>₹ \){monthTotal}</span></div>` + tempHtml;
+}
+
+function editHistory(idx) {
+    let dataArr = history[hType][idx].items;
+    let area = document.getElementById('eList');
+    area.innerHTML = dataArr.map((it, i) => {
+        let isLocked = it.done || false;
+        return `<div class="c-grid"><b>${it.name}</b>
+            <input type="number" step="0.1" value="${it.qty}" \( {isLocked?'disabled':''} oninput="updateHistItem( \){idx},${i},'qty',this.value)" class="u-box">
+            <select \( {isLocked?'disabled':''} onchange="updateHistItem( \){idx},${i},'unit',this.value)" style="width:42px;">
+                <option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option>
+                <option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
+                <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option>
+                <option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option>
+            </select>
+            <input type="number" value="${it.price}" \( {isLocked?'disabled':''} oninput="updateHistItem( \){idx},${i},'price',this.value)" class="p-box">
+            <button class="btn \( {isLocked?'ok-btn':'lock-btn'}" onclick="toggleLock( \){idx},\( {i})"> \){isLocked?'OK':'CON'}</button>
+            <button class="btn del-btn" onclick="delHistItem(\( {idx}, \){i})">DEL</button></div>`;
+    }).join('');
+    document.getElementById('eSum').innerText = `TOTAL: ₹${dataArr.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`;
+    openPage('editPage');
+}
+
+function updateHistItem(hIdx, iIdx, f, v) { 
+    history[hType][hIdx].items[iIdx][f] = v; save(); 
+    let sum = history[hType][hIdx].items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
+    document.getElementById('eSum').innerText = `TOTAL: ₹${sum}`;
+}
+function toggleLock(hIdx, iIdx) { 
+    history[hType][hIdx].items[iIdx].done = !history[hType][hIdx].items[iIdx].done; 
+    save(); editHistory(hIdx); 
+}
+function delHistItem(hIdx, iIdx) { 
+    if(confirm("Del?")){ history[hType][hIdx].items.splice(iIdx,1); save(); editHistory(hIdx); } 
+}
+function delH(i) { 
+    if(confirm("Del whole day?")){ history[hType].splice(i,1); save(); renderH(); } 
+}
+function openHistory(type) { hType = type; renderH(); openPage('hPage'); }
+
+// ==================== Final List ====================
+function getSmartUnit(val, unit, lang) {
+    let v = parseFloat(val); if (!v) return "";
+    let u = { HI: { Kg: "किलो", Pc: "पीस", Ltr: "लीटर", Rs: "रु" }, EN: { Kg: "Kg", Pc: "Pc", Ltr: "Ltr", Rs: "Rs" } }[lang];
+    if (unit === 'Kg') {
+        if (v === 0.5) return lang==='HI' ? "आधा किलो" : "Half Kg";
+        if (v === 0.25) return lang==='HI' ? "पाव किलो" : "Pav Kg";
+        if (v < 1) return (v * 1000) + (lang==='HI' ? " ग्राम" : " gm");
+    }
+    return v + " " + u[unit];
+}
+
+function showFinalList() {
+    let sel = items.filter(it => it.sel); 
+    if(!sel.length) return alert("Select items first");
+    let out = document.getElementById('fOut');
+    out.innerHTML = `<h3 style="text-align:center; border-bottom:2px solid #000;">${currLang==='HI'?'खरीदारी की सूची':'Shopping List'}</h3>`;
+    ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {
+        let f = sel.filter(it => it.cat === c);
+        if(f.length) {
+            out.innerHTML += `<div style="background:#eee;padding:5px;font-weight:bold;font-size:11px;">${c}</div>` + 
+            f.map((it, j) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #ddd;font-size:12px;">
+            <span><b>\( {j+1}. \){it.name}</b></span><span style="font-weight:bold;">${getSmartUnit(it.qty, it.unit, currLang)}</span><span style="border-bottom:1px solid #000;width:35px;"></span></div>`).join('');
+        }
+    });
+    openPage('listPage');
+}
+
+function toggleLang() { currLang = (currLang === 'HI') ? 'EN' : 'HI'; showFinalList(); }
+function takeShot() { 
+    html2canvas(document.getElementById('shotArea')).then(c => { 
+        let a = document.createElement('a'); 
+        a.download = 'Shopping_List.png'; 
+        a.href = c.toDataURL(); 
+        a.click(); 
+    }); 
+}
+
+// ==================== Start App ====================
 window.onload = () => {
     loadData();
 };
 
-// Optional: Real-time listening (Auto sync)
+// Real-time Sync
 ref.on('value', (snapshot) => {
     const data = snapshot.val();
     if (data) {
