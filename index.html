@@ -3,40 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Manager v62 Updated</title>
+    <title>Grocery Manager v63 Final</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
+        
+        /* Fixed Background for Overlay Pages */
+        .full-page { 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: #f0f2f5; /* Match body background */
+            display: none; 
+            flex-direction: column; 
+            z-index: 9999; 
+            overflow: hidden; /* Prevent background scroll */
+        }
+
         .top-hist { display: flex; gap: 4px; padding: 6px; }
         .h-box { flex: 1; background: #fff; border: 1px solid #ccc; padding: 10px 0; text-align: center; border-radius: 6px; font-weight: bold; font-size: 10px; color: #1a73e8; }
         .card { background: white; padding: 6px; margin: 5px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .in-row { display: flex; gap: 4px; margin-bottom: 5px; width: 100%; align-items: center; }
-        input, select { padding: 8px 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; outline: none; height: 32px; }
+        input, select { padding: 8px 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; outline: none; height: 35px; }
         
         /* Uniform Box Sizes */
         .u-box { width: 50px !important; text-align: center; flex-shrink: 0; }
         .p-box { width: 65px !important; flex-shrink: 0; }
         .unit-sel { width: 55px !important; flex-shrink: 0; font-size: 10px; }
         
-        .btn { border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; text-align: center; font-size: 10px; height: 32px; display: flex; align-items: center; justify-content: center; }
+        .btn { border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; text-align: center; font-size: 10px; height: 35px; display: flex; align-items: center; justify-content: center; }
         .f-btn { flex: 1; padding: 7px 0; background: #6c757d; font-size: 8px; }
         .del-btn { background: #dc3545 !important; min-width: 40px; }
         .ok-btn { background: #28a745 !important; min-width: 40px; }
         .lock-btn { background: #ffc107 !important; color: #000; min-width: 40px; }
         
         .item-row { display: grid; grid-template-columns: 1fr 50px 55px 30px 40px; gap: 6px; align-items: center; padding: 10px 6px; border-bottom: 1px solid #eee; background: white; }
-        .c-grid { display: grid; grid-template-columns: 1fr 50px 55px 65px 40px 40px; gap: 4px; align-items: center; padding: 8px 4px; border-bottom: 1px solid #eee; font-size: 11px; }
-        
-        /* Specific Grid for Daily Kharch */
-        .dk-grid { display: grid; grid-template-columns: 1fr 50px 65px 40px 40px; gap: 4px; align-items: center; padding: 8px 4px; border-bottom: 1px solid #eee; }
+        .c-grid { display: grid; grid-template-columns: 1fr 50px 55px 65px 40px 40px; gap: 4px; align-items: center; padding: 8px 4px; border-bottom: 1px solid #eee; font-size: 11px; background: white; }
+        .dk-grid { display: grid; grid-template-columns: 1fr 50px 65px 40px 40px; gap: 4px; align-items: center; padding: 8px 4px; border-bottom: 1px solid #eee; background: white; }
 
         .sel-bg { background: #fff9c4 !important; }
-        .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display: none; flex-direction: column; z-index: 9999; }
-        .p-head { background: #1a73e8; color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; }
-        .scroll { flex: 1; overflow-y: auto; padding: 4px; padding-bottom: 80px; }
+        .p-head { background: #1a73e8; color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; position: sticky; top: 0; z-index: 10001; }
+        .scroll { flex: 1; overflow-y: auto; padding: 4px; padding-bottom: 80px; -webkit-overflow-scrolling: touch; }
         .month-label { background: #e8f0fe; color: #1a73e8; padding: 8px; font-weight: bold; font-size: 12px; border-left: 4px solid #1a73e8; margin-top: 10px; display: flex; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
         .sum-box { padding: 12px; background: #e8f0fe; font-weight: bold; text-align: right; border-top: 2px solid #1a73e8; font-size: 13px; color: #1a73e8; }
         .b-nav { position: fixed; bottom: 0; width: 100%; background: white; padding: 6px; border-top: 1px solid #eee; display: flex; gap: 5px; z-index: 1000; }
@@ -52,7 +62,7 @@
     </div>
     <div class="card">
         <div class="in-row">
-            <input type="text" id="itemName" placeholder="Item Name..." style="flex:1;">
+            <input type="text" id="itemName" placeholder="Search or Add Item..." style="flex:1;" oninput="renderMaster()">
             <select id="catSelect" style="width:65px;">
                 <option value="GROCERY">GROC</option>
                 <option value="SABJI">SABJI</option>
@@ -72,8 +82,8 @@
     </div>
     <div id="masterList" style="padding-bottom: 70px;"></div>
     <div class="b-nav">
-        <button class="btn" style="background:#1a73e8; flex:1; height:45px;" onclick="showFinalList()">MAKE LIST</button>
-        <button class="btn" style="background:#ff9800; flex:1; height:45px;" onclick="openDailyKharch()">DAILY KHARCH</button>
+        <button class="btn" style="background:#1a73e8; flex:1; height:48px;" onclick="showFinalList()">MAKE LIST</button>
+        <button class="btn" style="background:#ff9800; flex:1; height:48px;" onclick="openDailyKharch()">DAILY KHARCH</button>
     </div>
 </div>
 
@@ -85,7 +95,7 @@
 
 <div id="hPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">Back</span><span id="hTitle">History Timeline</span></div><div class="scroll" id="hArea"></div></div>
 
-<div id="listPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Final List</span><button onclick="toggleLang()" style="background:#fff; color:#1a73e8; border:none; padding:4px 8px; border-radius:4px; font-size:10px;">HI/EN</button></div><div class="scroll"><div id="shotArea" style="background:white; padding:10px;"><div id="fOut"></div></div></div><div class="b-nav" style="position:static;"><button class="btn" style="background:#ff9800; flex:1; height:45px;" onclick="takeShot()">PHOTO</button><button class="btn" style="background:#28a745; flex:1; height:45px;" onclick="openCalc()">CALC</button></div></div>
+<div id="listPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Final List</span><button onclick="toggleLang()" style="background:#fff; color:#1a73e8; border:none; padding:4px 8px; border-radius:4px; font-size:10px;">HI/EN</button></div><div class="scroll"><div id="shotArea" style="background:white; padding:10px;"><div id="fOut"></div></div></div><div class="b-nav" style="position:static;"><button class="btn" style="background:#ff9800; flex:1; height:48px;" onclick="takeShot()">PHOTO</button><button class="btn" style="background:#28a745; flex:1; height:48px;" onclick="openCalc()">CALC</button></div></div>
 
 <script>
     const firebaseConfig = { databaseURL: "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/" };
@@ -96,14 +106,15 @@
     let currLang = 'HI', activeF = 'All', hType = 'shopping', tCalc = [];
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    // Browser Back Button Logic
     window.onpopstate = function() {
         document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none');
+        document.body.style.overflow = "auto";
     };
 
     function openPage(id) { 
         document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); 
         document.getElementById(id).style.display = 'flex'; 
+        document.body.style.overflow = "hidden"; // Fix background scroll
         window.history.pushState({page: id}, ""); 
     }
 
@@ -127,12 +138,16 @@
 
     function renderMaster() {
         let cont = document.getElementById('masterList');
+        let query = document.getElementById('itemName').value.toLowerCase();
         let sorted = [...items].sort((a, b) => b.sel - a.sel);
         let globalCounter = 0;
         let categoryCounters = { GROCERY: 0, SABJI: 0, BODY: 0, OTHER: 0 };
 
         cont.innerHTML = sorted.map((it) => {
+            // Apply Search + Category Filter
             if(activeF !== 'All' && it.cat !== activeF) return '';
+            if(query && !it.name.toLowerCase().includes(query)) return '';
+
             let displaySerial = (activeF === 'All') ? ++globalCounter : ++categoryCounters[it.cat];
             let rIdx = items.indexOf(it);
             
@@ -151,7 +166,17 @@
 
     function updateQty(idx, val) { items[idx].qty = val; save(false); }
     function updateUnit(idx, val) { items[idx].unit = val; save(false); }
-    function addItem() { let n = document.getElementById('itemName').value, c = document.getElementById('catSelect').value; if(n){ items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); save(true); document.getElementById('itemName').value=''; } }
+    
+    function addItem() { 
+        let n = document.getElementById('itemName').value, c = document.getElementById('catSelect').value; 
+        if(n){ 
+            items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); 
+            save(true); 
+            document.getElementById('itemName').value=''; 
+            renderMaster();
+        } 
+    }
+
     function toggleI(i) { items[i].sel = !items[i].sel; save(true); }
     function delMasterItem(i) { if(confirm("Del?")){ items.splice(i,1); save(true); } }
     function setFilter(f) { activeF = f; renderMaster(); }
@@ -256,7 +281,7 @@
             let parts = h.date.split('/'), mName = months[parseInt(parts[1])-1] + " " + parts[2], dayTotal = h.items.reduce((a, b) => a + (parseFloat(b.price)||0), 0); 
             if (currentMonth !== "" && currentMonth !== mName) { area.innerHTML += `<div class="month-label"><span>${currentMonth} Total:</span><span>₹${monthTotal}</span></div>` + tempHtml; tempHtml = ""; monthTotal = 0; } 
             currentMonth = mName; monthTotal += dayTotal; 
-            tempHtml += `<div class="item-row" style="grid-template-columns: 1fr 60px 45px 40px;"><span>${h.date}</span><b>₹${dayTotal}</b><button onclick="editHistory(${history[hType].indexOf(h)})" style="background:orange;color:white;border:none;padding:6px;border-radius:4px;font-size:9px;">EDIT</button><button class="btn del-btn" onclick="delH(${history[hType].indexOf(h)})">DEL</button></div>`; 
+            tempHtml += `<div class="item-row" style="grid-template-columns: 1fr 60px 45px 40px; background:white;"><span>${h.date}</span><b>₹${dayTotal}</b><button onclick="editHistory(${history[hType].indexOf(h)})" style="background:orange;color:white;border:none;padding:6px;border-radius:4px;font-size:9px;">EDIT</button><button class="btn del-btn" onclick="delH(${history[hType].indexOf(h)})">DEL</button></div>`; 
         }); 
         if(currentMonth) area.innerHTML += `<div class="month-label"><span>${currentMonth} Total:</span><span>₹${monthTotal}</span></div>` + tempHtml; 
     }
