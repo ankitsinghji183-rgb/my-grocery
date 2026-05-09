@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Manager v66 Full Perfect</title>
+    <title>Grocery Manager v63 Final</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
@@ -12,9 +12,14 @@
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
         
         .full-page { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #f0f2f5; display: none; flex-direction: column; 
-            z-index: 9999; overflow: hidden; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: #f0f2f5; 
+            display: none; 
+            flex-direction: column; 
+            z-index: 9999; 
+            overflow: hidden; 
         }
 
         .top-hist { display: flex; gap: 4px; padding: 6px; }
@@ -107,13 +112,15 @@
     function openPage(id) { 
         document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); 
         document.getElementById(id).style.display = 'flex'; 
-        document.body.style.overflow = "hidden";
+        document.body.style.overflow = "hidden"; 
         window.history.pushState({page: id}, ""); 
     }
 
-    function closeCurrentPage() { window.history.back(); }
+    function closeCurrentPage() {
+        window.history.back();
+    }
 
-    db.on('value', (snapshot) => {
+    db.once('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
             items = data.items || [];
@@ -137,8 +144,10 @@
         cont.innerHTML = sorted.map((it) => {
             if(activeF !== 'All' && it.cat !== activeF) return '';
             if(query && !it.name.toLowerCase().includes(query)) return '';
+
             let displaySerial = (activeF === 'All') ? ++globalCounter : ++categoryCounters[it.cat];
             let rIdx = items.indexOf(it);
+            
             return `<div class="item-row ${it.sel?'sel-bg':''}">
                 <span onclick="toggleI(${rIdx})"><b>${displaySerial}.${it.name}</b></span>
                 <input type="number" step="0.001" value="${it.qty}" oninput="updateQty(${rIdx}, this.value)" class="u-box">
@@ -154,10 +163,17 @@
 
     function updateQty(idx, val) { items[idx].qty = val; save(false); }
     function updateUnit(idx, val) { items[idx].unit = val; save(false); }
+    
     function addItem() { 
         let n = document.getElementById('itemName').value, c = document.getElementById('catSelect').value; 
-        if(n){ items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); save(true); document.getElementById('itemName').value=''; } 
+        if(n){ 
+            items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); 
+            save(true); 
+            document.getElementById('itemName').value=''; 
+            renderMaster();
+        } 
     }
+
     function toggleI(i) { items[i].sel = !items[i].sel; save(true); }
     function delMasterItem(i) { if(confirm("Del?")){ items.splice(i,1); save(true); } }
     function setFilter(f) { activeF = f; renderMaster(); }
@@ -194,20 +210,14 @@
         openPage('listPage');
     }
 
-    // Daily Kharch Smart Merge - Fix
     function addK() { 
         let n = document.getElementById('kName').value, q = parseFloat(document.getElementById('kQty').value)||1, p = parseFloat(document.getElementById('kPrice').value)||0; 
         if(n && p) { 
             let d = new Date().toLocaleDateString('en-GB'), ex = (history.expense || []).find(h => h.date === d); 
             if(!ex){ ex = {date: d, items: []}; if(!history.expense) history.expense = []; history.expense.unshift(ex); } 
-            
             let old = ex.items.find(o => o.name.toLowerCase() === n.toLowerCase()); 
-            if(old){ 
-                old.qty = parseFloat(old.qty) + q; 
-                old.price = parseFloat(old.price) + p; 
-            } else { 
-                ex.items.push({name: n, qty: q, price: p, done: false}); 
-            } 
+            if(old){ old.qty = parseFloat(old.qty) + q; old.price = parseFloat(old.price) + p; } 
+            else { ex.items.push({name: n, qty: q, price: p, done: false}); } 
             save(false); renderDK(d); 
             document.getElementById('kName').value=''; document.getElementById('kQty').value=''; document.getElementById('kPrice').value=''; 
         } 
@@ -223,48 +233,44 @@
         }).join(''); 
         document.getElementById('dkSum').innerText = `TOTAL: ₹${t}`; 
     }
+
     function updateDKItem(d, idx, f, v) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx][f] = v; save(false); } }
     function lockDK(d, idx) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx].done = !ex.items[idx].done; save(false); renderDK(ex.date); } }
     function delDKItem(d, idx) { if(confirm("Del?")){ history.expense.find(h => h.date === d).items.splice(idx,1); save(false); renderDK(d); } }
     function openDailyKharch() { let d = new Date().toLocaleDateString('en-GB'); renderDK(d); openPage('kInPage'); }
 
-    // Calc Logic - Perfect Merge & Immediate Save
     function openCalc() { 
-        let d = new Date().toLocaleDateString('en-GB');
-        let ex = (history.shopping || []).find(h => h.date === d);
-        
-        tCalc = items.filter(it => it.sel).map(it => {
-            let histMatch = ex ? ex.items.find(h => h.name.toLowerCase() === it.name.toLowerCase()) : null;
-            return { 
-                name: it.name, 
-                qty: histMatch ? histMatch.qty : it.qty, 
-                unit: histMatch ? histMatch.unit : it.unit, 
-                price: histMatch ? histMatch.price : '', 
-                done: histMatch ? histMatch.done : false,
-                lastQty: histMatch ? histMatch.qty : 0,
-                lastPrice: histMatch ? histMatch.price : 0
-            };
-        });
+        tCalc = items.filter(it => it.sel).map(it => ({ 
+            name: it.name, qty: it.qty, unit: it.unit, price: '', done: false, lastQty: 0, lastPrice: 0 
+        })); 
         renderC(); 
         openPage('calcPage'); 
     }
 
     function smartAddition(idx, field, val) { 
+        let it = tCalc[idx];
+        if(field === 'qty') it.qty = val;
+        if(field === 'unit') it.unit = val;
+        if(field === 'price') {
+            it.price = val;
+            if(val !== '' && !isNaN(parseFloat(val))) {
+                syncToHistory(idx);
+            }
+        }
+        document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; 
+    }
+
+    function syncToHistory(idx) {
         let it = tCalc[idx], d = new Date().toLocaleDateString('en-GB'), ex = (history.shopping || []).find(h => h.date === d); 
         if(!ex){ ex = {date: d, items: []}; if(!history.shopping) history.shopping = []; history.shopping.unshift(ex); } 
-        
         let histItem = ex.items.find(o => o.name.toLowerCase() === it.name.toLowerCase()); 
-        if(!histItem){ 
-            histItem = {name: it.name, qty: 0, price: 0, unit: it.unit, done: false}; 
-            ex.items.push(histItem); 
-        } 
+        if(!histItem){ histItem = {name: it.name, qty: 0, price: 0, unit: it.unit, done: it.done}; ex.items.push(histItem); } 
         
-        if(field === 'qty'){ it.qty = val; histItem.qty = parseFloat(val)||0; } 
-        if(field === 'price'){ it.price = val; histItem.price = parseFloat(val)||0; } 
-        if(field === 'unit'){ it.unit = val; histItem.unit = val; } 
-        
-        save(false); 
-        document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; 
+        histItem.qty = parseFloat(it.qty) || 0;
+        histItem.price = parseFloat(it.price) || 0;
+        histItem.unit = it.unit;
+        histItem.done = it.done;
+        save(false);
     }
 
     function renderC() { 
@@ -278,13 +284,10 @@
 
     function lockToggleCalc(idx) { 
         tCalc[idx].done = !tCalc[idx].done; 
-        let d = new Date().toLocaleDateString('en-GB'); 
-        let histItem = history.shopping.find(h=>h.date===d).items.find(o=>o.name.toLowerCase()===tCalc[idx].name.toLowerCase()); 
-        if(histItem) histItem.done = tCalc[idx].done; 
-        save(false); renderC(); 
+        syncToHistory(idx);
+        renderC(); 
     }
 
-    // History & Edit Functions
     function renderH() { 
         let area = document.getElementById('hArea'); area.innerHTML = ''; 
         let dataArr = (history[hType] || []); 
