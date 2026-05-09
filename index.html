@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Manager v62 - STABLE LIVE</title>
+    <title>Grocery Manager v56 - LIVE</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -66,12 +66,6 @@
     </div>
 </div>
 
-<div id="listPage" class="full-page">
-    <div class="p-head"><span onclick="closePage('listPage')">Back</span><span>Final List</span><button onclick="toggleLang()" style="background:#fff; color:#1a73e8; border:none; padding:4px 8px; border-radius:4px; font-size:10px;">HI/EN</button></div>
-    <div class="scroll"><div id="shotArea" style="background:white; padding:10px;"><div id="fOut"></div></div></div>
-    <div class="b-nav" style="position:static;"><button class="btn" style="background:#ff9800; flex:1; padding:15px;" onclick="takeShot()">PHOTO</button></div>
-</div>
-
 <script>
     // --- FIREBASE CONFIG ---
     const firebaseConfig = {
@@ -80,72 +74,34 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const masterItems = [
-        {name: "आलू", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "प्याज", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "टमाटर", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "पत्ता गोभी", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "फूल गोभी", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "मेथी भाजी", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "पालक", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "भिंडी", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "लौकी", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "बैंगन", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "मटर", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "शिमला मिर्च", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "ग्वार फली", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "हरी मिर्च", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "धनिया", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "सोयाबीन तेल", cat: "GROCERY", sel: false, qty: "", unit: "Ltr"},
-        {name: "सरसों तेल", cat: "GROCERY", sel: false, qty: "", unit: "Ltr"},
-        {name: "नारियल तेल", cat: "GROCERY", sel: false, qty: "", unit: "Ltr"},
-        {name: "नमक", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "जीरा", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "हल्दी", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "चावल", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "आटा", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "चीनी", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "चाय पत्ती", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "दूध", cat: "OTHER", sel: false, qty: "", unit: "Ltr"},
-        {name: "दही", cat: "OTHER", sel: false, qty: "", unit: "Kg"},
-        {name: "पनीर", cat: "OTHER", sel: false, qty: "", unit: "Kg"},
-        {name: "नहाने का साबुन", cat: "BODY", sel: false, qty: "", unit: "Pc"},
-        {name: "टूथपेस्ट", cat: "BODY", sel: false, qty: "", unit: "Pc"}
-    ];
-
     let items = [];
     let history = { shopping: [], expense: [] };
-    let isDataReady = false; 
+    let isLoaded = false;
     let activeF = 'All', currLang = 'HI';
 
-    // Safe Sync: Sirf tab save karega jab Firebase se data load ho chuka ho
+    // SYNC FUNCTION
     function syncToFirebase() {
-        if(isDataReady) {
-            db.ref('mainData').set({ items, history });
+        if(isLoaded) {
+            db.ref('v56_data').set({ items, history });
         }
     }
 
-    // ON LOAD: Data read logic
-    db.ref('mainData').on('value', (snapshot) => {
-        const cloudData = snapshot.val();
-        if (cloudData && cloudData.items && cloudData.items.length > 0) {
-            items = cloudData.items;
-            history = cloudData.history || { shopping: [], expense: [] };
-            isDataReady = true;
-        } else {
-            // Agar database khali hai toh hi master load karein
-            if(!isDataReady) {
-                items = masterItems;
-                isDataReady = true;
-                syncToFirebase();
-            }
+    // LOAD DATA
+    db.ref('v56_data').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            items = data.items || [];
+            history = data.history || { shopping: [], expense: [] };
+            isLoaded = true;
+            renderMaster();
+        } else if (!isLoaded) {
+            isLoaded = true; // Initial empty state
+            renderMaster();
         }
-        renderMaster();
     });
 
     function renderMaster() {
         let cont = document.getElementById('masterList');
-        if(!cont) return;
         let sorted = [...items].sort((a, b) => b.sel - a.sel);
         cont.innerHTML = sorted.map((it) => {
             if(activeF !== 'All' && it.cat !== activeF) return '';
@@ -165,27 +121,10 @@
 
     function toggleI(i) { items[i].sel = !items[i].sel; syncToFirebase(); }
     function addItem() { let n = document.getElementById('itemName').value, c = document.getElementById('catSelect').value; if(n){ items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); syncToFirebase(); document.getElementById('itemName').value=''; } }
-    function delMasterItem(i) { if(confirm("Delete?")){ items.splice(i,1); syncToFirebase(); } }
+    function delMasterItem(i) { if(confirm("Del?")){ items.splice(i,1); syncToFirebase(); } }
     function setFilter(f) { activeF = f; renderMaster(); }
-    function clearList() { if(confirm("Clear Everything?")){ items=[]; syncToFirebase(); } }
-    function openPage(id) { document.getElementById(id).style.display = 'flex'; }
-    function closePage(id) { document.getElementById(id).style.display = 'none'; }
-
-    function showFinalList() {
-        let sel = items.filter(it => it.sel); if(!sel.length) return alert("Select items");
-        let out = document.getElementById('fOut');
-        out.innerHTML = `<h3 style="text-align:center; border-bottom:2px solid #000; margin-bottom:10px;">SHOPPING LIST</h3>`;
-        ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {
-            let f = sel.filter(it => it.cat === c);
-            if(f.length) {
-                out.innerHTML += `<div style="background:#eee;padding:5px;font-weight:bold;font-size:11px; margin-top:10px;">${c}</div>` + 
-                f.map((it) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #ddd;font-size:13px;">
-                <span><b>${it.name}</b></span><span style="font-weight:bold;">${it.qty} ${it.unit}</span><span style="border-bottom:1px solid #000;width:40px;"></span></div>`).join('');
-            }
-        });
-        openPage('listPage');
-    }
-    function takeShot() { html2canvas(document.getElementById('shotArea')).then(c => { let a = document.createElement('a'); a.download = 'List.png'; a.href = c.toDataURL(); a.click(); }); }
+    function clearList() { if(confirm("Clear?")){ items=[]; syncToFirebase(); } }
+    // ... Baki functions v56 wale ...
 </script>
 </body>
 </html>
