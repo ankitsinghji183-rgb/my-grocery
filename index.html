@@ -149,9 +149,16 @@
         openPage('listPage');
     }
 
-    // --- Calculation & Smart Merge Core Logic ---
+    // --- CALCULATION LOGIC (V65) ---
     function openCalc() { 
-        tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, unit: it.unit, price: '', done: false })); 
+        // Fresh temporary list for calculation, no auto-save yet
+        tCalc = items.filter(it => it.sel).map(it => ({ 
+            name: it.name, 
+            qty: it.qty, 
+            unit: it.unit, 
+            price: '', 
+            done: false 
+        })); 
         renderC(); 
         openPage('calcPage'); 
     }
@@ -162,15 +169,15 @@
         if(field === 'price') it.price = val;
         if(field === 'unit') it.unit = val;
         
-        // Auto-save only if price is entered
-        if (field === 'price' && val !== '') { syncToHistory(idx, false); }
+        // Auto-save to history only if price is being typed
+        if (field === 'price' && val !== '') { 
+            syncToHistory(idx, false); 
+        }
         document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; 
     }
 
     function syncToHistory(idx, isConfirmAction) {
         let it = tCalc[idx];
-        if(!it.price && !isConfirmAction) return; // Don't save if no price and not a confirm click
-        
         let d = new Date().toLocaleDateString('en-GB');
         if(!history.shopping) history.shopping = [];
         let ex = history.shopping.find(h => h.date === d);
@@ -179,14 +186,19 @@
         let histItem = ex.items.find(o => o.name.toLowerCase() === it.name.toLowerCase()); 
         
         if(!histItem){ 
-            ex.items.push({ name: it.name, qty: parseFloat(it.qty)||0, price: parseFloat(it.price)||0, unit: it.unit, done: it.done }); 
+            ex.items.push({ 
+                name: it.name, 
+                qty: parseFloat(it.qty)||0, 
+                price: parseFloat(it.price)||0, 
+                unit: it.unit, 
+                done: it.done 
+            }); 
         } else {
-            // Smart Merge: If item exists in today's list, Add new values to old ones
+            // IF confirmed, then ADD to old value. IF just typing, update current entry.
             if(isConfirmAction && it.done) {
                 histItem.qty = (parseFloat(histItem.qty)||0) + (parseFloat(it.qty)||0);
                 histItem.price = (parseFloat(histItem.price)||0) + (parseFloat(it.price)||0);
             } else {
-                // Just updating current entry during typing
                 histItem.qty = parseFloat(it.qty)||0;
                 histItem.price = parseFloat(it.price)||0;
             }
@@ -206,16 +218,20 @@
 
     function lockToggleCalc(idx) { 
         tCalc[idx].done = !tCalc[idx].done; 
-        syncToHistory(idx, true); // True means it's a final addition action
+        syncToHistory(idx, true); // Final merge into history
         if(tCalc[idx].done) {
+            // Remove from Master List selection once confirmed
             let mIdx = items.findIndex(m => m.name.toLowerCase() === tCalc[idx].name.toLowerCase());
-            if(mIdx !== -1) { items[mIdx].sel = false; items[mIdx].qty = ''; }
+            if(mIdx !== -1) { 
+                items[mIdx].sel = false; 
+                items[mIdx].qty = ''; 
+            }
             save(true);
         }
         renderC(); 
     }
 
-    // --- Daily Kharch ---
+    // --- OTHER UTILS ---
     function addK() { 
         let n = document.getElementById('kName').value, q = parseFloat(document.getElementById('kQty').value)||1, p = parseFloat(document.getElementById('kPrice').value)||0; 
         if(n && p) { 
@@ -237,7 +253,6 @@
     function delDKItem(d, idx) { if(confirm("Del?")){ history.expense.find(h => h.date === d).items.splice(idx,1); save(false); renderDK(d); } }
     function openDailyKharch() { let d = new Date().toLocaleDateString('en-GB'); renderDK(d); openPage('kInPage'); }
 
-    // --- History Timeline ---
     function renderH() { 
         let area = document.getElementById('hArea'); area.innerHTML = ''; 
         let dataArr = (history[hType] || []); 
