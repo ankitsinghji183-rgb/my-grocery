@@ -3,29 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Manager v65 - THE COMPLETE RECOVERY</title>
+    <title>Grocery v66 (v56 Logic)</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
         .top-hist { display: flex; gap: 4px; padding: 6px; }
-        .h-box { flex: 1; background: #fff; border: 1px solid #ccc; padding: 10px 0; text-align: center; border-radius: 6px; font-weight: bold; font-size: 10px; color: #1a73e8; cursor: pointer; }
+        .h-box { flex: 1; background: #fff; border: 1px solid #ccc; padding: 10px 0; text-align: center; border-radius: 6px; font-weight: bold; font-size: 10px; color: #1a73e8; }
         .card { background: white; padding: 6px; margin: 5px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .in-row { display: flex; gap: 2px; margin-bottom: 5px; width: 100%; align-items: center; }
+        .in-row { display: flex; gap: 2px; margin-bottom: 5px; align-items: center; }
         input, select { padding: 8px 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; outline: none; }
         .u-box { width: 42px !important; text-align: center; }
         .btn { border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; text-align: center; font-size: 10px; }
         .f-btn { flex: 1; padding: 7px 0; background: #6c757d; font-size: 8px; }
         .del-btn { background: #dc3545 !important; padding: 6px; font-size: 9px; }
-        .item-row { display: grid; grid-template-columns: 1fr 45px 55px 30px 35px; gap: 4px; align-items: center; padding: 10px 6px; border-bottom: 1px solid #eee; background: white; }
+        .item-row { display: grid; grid-template-columns: 1fr 45px 60px 30px 35px; gap: 4px; align-items: center; padding: 10px 6px; border-bottom: 1px solid #eee; background: white; }
         .sel-bg { background: #fff9c4 !important; }
         .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display: none; flex-direction: column; z-index: 9999; }
         .p-head { background: #1a73e8; color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; }
         .scroll { flex: 1; overflow-y: auto; padding: 4px; padding-bottom: 80px; }
         .b-nav { position: fixed; bottom: 0; width: 100%; background: white; padding: 6px; border-top: 1px solid #eee; display: flex; gap: 5px; z-index: 1000; }
-        .k-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -41,7 +40,7 @@
             <select id="catSelect" style="width:60px;"><option value="GROCERY">GROC</option><option value="SABJI">SABJI</option><option value="BODY">BODY</option><option value="OTHER">ANYA</option></select>
             <button onclick="addItem()" class="btn" style="background:#28a745; padding:8px;">ADD</button>
         </div>
-        <div style="display:flex; gap:2px; flex-wrap: wrap;">
+        <div style="display:flex; gap:2px;">
             <button onclick="setFilter('All')" class="btn f-btn">ALL</button>
             <button onclick="setFilter('GROCERY')" class="btn f-btn" style="background:#17a2b8;">GROC</button>
             <button onclick="setFilter('SABJI')" class="btn f-btn" style="background:#6f42c1;">SABJI</button>
@@ -50,34 +49,28 @@
     </div>
     <div id="masterList" style="padding-bottom: 80px;"></div>
     <div class="b-nav">
-        <button class="btn" style="background:#1a73e8; flex:1; padding:15px;" onclick="showFinalList()">GENERATE LIST</button>
+        <button class="btn" style="background:#1a73e8; flex:1; padding:15px;" onclick="showFinal()">GENERATE LIST</button>
         <button class="btn" style="background:#ff9800; flex:1; padding:15px;" onclick="openDaily()">DAILY KHARCH</button>
     </div>
 </div>
 
 <div id="listPage" class="full-page">
-    <div class="p-head"><span onclick="closeP('listPage')">← Back</span><span>Final List</span><button onclick="toggleLang()" style="background:#fff; color:#1a73e8; border:none; padding:4px; border-radius:4px; font-size:10px;">HI/EN</button></div>
-    <div class="scroll"><div id="shotArea" style="background:white; padding:10px;"><div id="fOut"></div></div></div>
-    <div class="b-nav" style="position:static;"><button class="btn" style="background:#ff9800; flex:1; padding:15px;" onclick="takeShot()">DOWNLOAD PHOTO</button></div>
+    <div class="p-head"><span onclick="closeP('listPage')">Back</span><span>Final List</span><button onclick="toggleLang()" style="font-size:10px;">HI/EN</button></div>
+    <div class="scroll"><div id="shotArea" style="background:#fff; padding:10px;"><div id="fOut"></div></div></div>
+    <div class="b-nav" style="position:static;"><button class="btn" style="background:#ff9800; flex:1; padding:15px;" onclick="takeShot()">PHOTO</button></div>
 </div>
-
 <div id="dailyPage" class="full-page">
-    <div class="p-head"><span onclick="closeP('dailyPage')">← Close</span><span>Add Expense</span></div>
-    <div class="card" style="margin-top:20px;">
-        <input type="text" id="kName" placeholder="Item Name..." style="width:100%; margin-bottom:10px; padding:12px;">
-        <input type="number" id="kPrice" placeholder="Price (₹)..." style="width:100%; margin-bottom:10px; padding:12px;">
-        <button onclick="saveKharcha()" class="btn" style="background:#28a745; width:100%; padding:15px;">SAVE EXPENSE</button>
-    </div>
+    <div class="p-head"><span onclick="closeP('dailyPage')">Back</span><span>Add Kharch</span></div>
+    <div class="card"><input type="text" id="kN" placeholder="Item..."><input type="number" id="kP" placeholder="Price..."><button onclick="saveK()" class="btn" style="background:#28a745; width:100%; padding:10px; margin-top:10px;">SAVE</button></div>
 </div>
-
 <div id="hPage" class="full-page">
-    <div class="p-head"><span onclick="closeP('hPage')">← Back</span><span id="hTitle">History</span><button onclick="clearHistory()" class="del-btn btn">CLR ALL</button></div>
+    <div class="p-head"><span onclick="closeP('hPage')">Back</span><span id="hT"></span><button onclick="clearH()">CLR ALL</button></div>
     <div class="scroll" id="hOut"></div>
 </div>
 
 <script>
-    const firebaseConfig = { databaseURL: "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/" };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const firebaseConfig = { databaseURL: "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/grocery/3" };
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     const masterItems = [
@@ -95,18 +88,17 @@
     ];
 
     let items = [], history = { shopping: [], expense: [] };
-    let isReady = false, activeF = 'All', currL = 'HI';
+    let isR = false, activeF = 'All', currL = 'HI';
 
-    db.ref('v65Store').on('value', (snap) => {
-        const d = snap.val();
-        if(d && d.items) { items = d.items; history = d.history || {shopping:[], expense:[]}; isReady = true; }
-        else if(!isReady) { items = masterItems; isReady = true; sync(); }
-        renderMaster();
+    db.ref().on('value', (s) => {
+        const d = s.val();
+        if(d && d.items) { items = d.items; history = d.history || {shopping:[], expense:[]}; isR = true; }
+        else if(!isR) { items = masterItems; isR = true; sync(); }
+        render();
     });
 
-    function sync() { if(isReady) db.ref('v65Store').set({items, history}); }
-
-    function renderMaster() {
+    function sync() { if(isR) db.ref().set({items, history}); }
+    function render() {
         let cont = document.getElementById('masterList');
         let sorted = [...items].sort((a,b) => b.sel - a.sel);
         cont.innerHTML = sorted.map(it => {
@@ -114,11 +106,10 @@
             let i = items.indexOf(it);
             return `<div class="item-row ${it.sel?'sel-bg':''}">
                 <span onclick="toggleI(${i})"><b>${it.name}</b></span>
-                <input type="number" step="0.1" value="${it.qty}" oninput="items[${i}].qty=this.value;sync()" class="u-box">
+                <input type="number" value="${it.qty}" oninput="items[${i}].qty=this.value;sync()" class="u-box">
                 <select onchange="items[${i}].unit=this.value;sync()" style="font-size:9px;">
                     <option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option>
                     <option value="Gram" ${it.unit=='Gram'?'selected':''}>Gram</option>
-                    <option value="1/2 Kg" ${it.unit=='1/2 Kg'?'selected':''}>1/2 Kg</option>
                     <option value="1 Pao" ${it.unit=='1 Pao'?'selected':''}>1 Pao</option>
                     <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option>
                     <option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
@@ -130,70 +121,41 @@
     }
 
     function toggleI(i) { items[i].sel = !items[i].sel; sync(); }
-    function addItem() { 
-        let n = document.getElementById('itemName').value;
-        if(n) { items.unshift({name: n, en: n, cat: document.getElementById('catSelect').value, sel: true, qty: '', unit: 'Kg'}); sync(); document.getElementById('itemName').value=''; }
-    }
-    function delI(i) { if(confirm("Del?")) { items.splice(i,1); sync(); } }
+    function addItem() { let n = document.getElementById('itemName').value; if(n){ items.unshift({name:n, en:n, cat:document.getElementById('catSelect').value, sel:true, qty:'', unit:'Kg'}); sync(); document.getElementById('itemName').value=''; } }
+    function delI(i) { if(confirm("Del?")){ items.splice(i,1); sync(); } }
     function unselectAll() { items.forEach(it => it.sel = false); sync(); }
-    function setFilter(f) { activeF = f; renderMaster(); }
+    function setFilter(f) { activeF = f; render(); }
     function closeP(id) { document.getElementById(id).style.display='none'; }
     function openP(id) { document.getElementById(id).style.display='flex'; }
 
-    // --- Final List & Language ---
-    function toggleLang() { currL = (currL==='HI'?'EN':'HI'); showFinalList(); }
-    function showFinalList() {
-        let sel = items.filter(it => it.sel);
-        if(!sel.length) return alert("Select items!");
+    function toggleLang() { currL = (currL==='HI'?'EN':'HI'); showFinal(); }
+    function showFinal() {
+        let sel = items.filter(it => it.sel); if(!sel.length) return alert("Select!");
         let out = document.getElementById('fOut');
-        let date = new Date().toLocaleDateString();
-        out.innerHTML = `<center><h3>${currL==='HI'?'खरीदारी सूची':'SHOPPING LIST'}</h3><small>${date}</small></center>`;
-        ['GROCERY','SABJI','BODY','OTHER'].forEach(cat => {
-            let filt = sel.filter(it => it.cat === cat);
-            if(filt.length) {
-                out.innerHTML += `<div style="background:#f0f0f0; padding:5px; font-weight:bold; margin-top:10px;">${cat}</div>`;
-                out.innerHTML += filt.map(it => `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #ccc;">
-                    <span>${currL==='HI'?it.name:it.en}</span><span><b>${it.qty} ${it.unit}</b></span><span style="width:40px; border-bottom:1px solid #000;"></span>
-                </div>`).join('');
+        out.innerHTML = `<h3 style="text-align:center;">${currL==='HI'?'सूची':'LIST'}</h3>`;
+        ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {
+            let f = sel.filter(it => it.cat === c);
+            if(f.length) {
+                out.innerHTML += `<div style="background:#eee; padding:4px; font-weight:bold;">${c}</div>`;
+                out.innerHTML += f.map(it => `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #ccc;">
+                <span>${currL==='HI'?it.name:it.en}</span><span><b>${it.qty} ${it.unit}</b></span></div>`).join('');
             }
         });
         openP('listPage');
-        // Auto-save to History
-        let historyEntry = { date: date, items: sel.map(s => `${s.name}(${s.qty}${s.unit})`).join(', ') };
-        if(!history.shopping.some(h => h.items === historyEntry.items)) {
-            history.shopping.unshift(historyEntry); sync();
-        }
+        history.shopping.unshift({date: new Date().toLocaleDateString(), items: sel.map(s=>s.name).join(', ')}); sync();
     }
 
-    // --- Daily Kharcha ---
     function openDaily() { openP('dailyPage'); }
-    function saveKharcha() {
-        let n = document.getElementById('kName').value, p = document.getElementById('kPrice').value;
-        if(n && p) {
-            history.expense.unshift({ date: new Date().toLocaleString(), name: n, price: p });
-            sync(); alert("Saved!");
-            document.getElementById('kName').value=''; document.getElementById('kPrice').value='';
-            closeP('dailyPage');
-        }
-    }
-
-    // --- History Control ---
-    let currHType = '';
-    function openH(type) {
-        currHType = type;
-        document.getElementById('hTitle').innerText = type.toUpperCase() + " HISTORY";
-        let out = document.getElementById('hOut');
-        let data = history[type] || [];
-        out.innerHTML = data.map((h, i) => `<div class="k-item">
-            <div><b>${h.date}</b><br>${type==='expense'? h.name + ' - ₹' + h.price : h.items}</div>
-            <button onclick="delH(${i})" style="color:red; background:none; border:none;">X</button>
-        </div>`).join('');
+    function saveK() { let n=document.getElementById('kN').value, p=document.getElementById('kP').value; if(n&&p){ history.expense.unshift({date:new Date().toLocaleString(), name:n, price:p}); sync(); closeP('dailyPage'); } }
+    
+    let curH = '';
+    function openH(t) { curH=t; document.getElementById('hT').innerText=t.toUpperCase(); let hO=document.getElementById('hOut');
+        hO.innerHTML = history[t].map((h,i)=>`<div style="padding:10px; border-bottom:1px solid #eee;"><b>${h.date}</b><br>${t==='expense'?h.name+' - ₹'+h.price:h.items} <button onclick="delH(${i})">X</button></div>`).join('');
         openP('hPage');
     }
-    function delH(i) { history[currHType].splice(i,1); sync(); openH(currHType); }
-    function clearHistory() { if(confirm("Clear All?")) { history[currHType]=[]; sync(); openH(currHType); } }
-
-    function takeShot() { html2canvas(document.getElementById('shotArea')).then(c => { let a = document.createElement('a'); a.download='List.png'; a.href=c.toDataURL(); a.click(); }); }
+    function delH(i) { history[curH].splice(i,1); sync(); openH(curH); }
+    function clearH() { history[curH]=[]; sync(); openH(curH); }
+    function takeShot() { html2canvas(document.getElementById('shotArea')).then(c => { let a=document.createElement('a'); a.download='List.png'; a.href=c.toDataURL(); a.click(); }); }
 </script>
 </body>
 </html>
