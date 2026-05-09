@@ -1,146 +1,298 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Manager v66 - Final Fix</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
-        .top-hist { display: flex; gap: 4px; padding: 6px; }
-        .h-box { flex: 1; background: #fff; border: 1px solid #ccc; padding: 10px 0; text-align: center; border-radius: 6px; font-weight: bold; font-size: 10px; color: #1a73e8; cursor: pointer; }
-        .card { background: white; padding: 6px; margin: 5px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .in-row { display: flex; gap: 2px; margin-bottom: 5px; width: 100%; align-items: center; }
-        input, select { padding: 8px 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; outline: none; }
-        .u-box { width: 42px !important; text-align: center; }
-        .p-box { width: 52px !important; }
-        .btn { border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; text-align: center; font-size: 10px; }
-        .f-btn { flex: 1; padding: 7px 0; background: #6c757d; font-size: 8px; }
-        .del-btn { background: #dc3545 !important; padding: 6px 6px; font-size: 9px; min-width: 35px; }
-        .item-row { display: grid; grid-template-columns: 1fr 42px 45px 30px 35px; gap: 4px; align-items: center; padding: 10px 6px; border-bottom: 1px solid #eee; background: white; }
-        .sel-bg { background: #fff9c4 !important; }
-        .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display: none; flex-direction: column; z-index: 9999; }
-        .p-head { background: #1a73e8; color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; }
-        .scroll { flex: 1; overflow-y: auto; padding: 4px; padding-bottom: 80px; }
-        .b-nav { position: fixed; bottom: 0; width: 100%; background: white; padding: 6px; border-top: 1px solid #eee; display: flex; gap: 5px; z-index: 1000; }
-        b { color: #000; font-size: 12px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Grocery Manager v56 Firebase</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
+.top-hist { display: flex; gap: 4px; padding: 6px; }
+.h-box { flex: 1; background: #fff; border: 1px solid #ccc; padding: 10px 0; text-align: center; border-radius: 6px; font-weight: bold; font-size: 10px; color: #1a73e8; }
+.card { background: white; padding: 6px; margin: 5px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.in-row { display: flex; gap: 2px; margin-bottom: 5px; width: 100%; align-items: center; }
+input, select { padding: 8px 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; outline: none; }
+.u-box { width: 42px !important; text-align: center; }
+.p-box { width: 52px !important; }
+.btn { border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; text-align: center; font-size: 10px; }
+.f-btn { flex: 1; padding: 7px 0; background: #6c757d; font-size: 8px; }
+.del-btn { background: #dc3545 !important; padding: 6px 6px; font-size: 9px; min-width: 35px; }
+.ok-btn { background: #28a745 !important; color: white; padding: 6px; font-size: 9px; min-width: 35px; }
+.lock-btn { background: #ffc107 !important; color: #000; padding: 6px; font-size: 9px; min-width: 35px; }
+.item-row { display: grid; grid-template-columns: 1fr 42px 45px 30px 35px; gap: 4px; align-items: center; padding: 10px 6px; border-bottom: 1px solid #eee; background: white; }
+.sel-bg { background: #fff9c4 !important; }
+.full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display: none; flex-direction: column; z-index: 9999; }
+.p-head { background: #1a73e8; color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; }
+.scroll { flex: 1; overflow-y: auto; padding: 4px; padding-bottom: 80px; }
+.month-label { background: #e8f0fe; color: #1a73e8; padding: 8px; font-weight: bold; font-size: 12px; border-left: 4px solid #1a73e8; margin-top: 10px; display: flex; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+.c-grid { display: grid; grid-template-columns: 1fr 42px 42px 52px 35px 35px; gap: 3px; align-items: center; padding: 8px 2px; border-bottom: 1px solid #eee; font-size: 10px; }
+.sum-box { padding: 12px; background: #e8f0fe; font-weight: bold; text-align: right; border-top: 2px solid #1a73e8; font-size: 13px; color: #1a73e8; }
+.b-nav { position: fixed; bottom: 0; width: 100%; background: white; padding: 6px; border-top: 1px solid #eee; display: flex; gap: 5px; z-index: 1000; }
+b { color: #000; font-size: 12px; }
+</style>
 </head>
+
 <body>
 
 <div id="mainView">
-    <div class="top-hist">
-        <div class="h-box" onclick="openHistory('shopping')">ITEM HISTORY</div>
-        <div class="h-box" onclick="openHistory('expense')">KHARCHA HISTORY</div>
-    </div>
-    <div class="card">
-        <div class="in-row">
-            <input type="text" id="itemName" placeholder="Item Name..." style="flex:1;">
-            <select id="catSelect" style="width:60px;"><option value="GROCERY">GROC</option><option value="SABJI">SABJI</option><option value="BODY">BODY</option><option value="OTHER">ANYA</option></select>
-            <button onclick="addItem()" class="btn" style="background:#28a745; padding:8px 10px;">ADD</button>
-        </div>
-        <div style="display:flex; gap:2px; flex-wrap: wrap;">
-            <button onclick="setFilter('All')" class="btn f-btn">ALL</button>
-            <button onclick="setFilter('GROCERY')" class="btn f-btn" style="background:#17a2b8;">GROC</button>
-            <button onclick="setFilter('SABJI')" class="btn f-btn" style="background:#6f42c1;">SABJI</button>
-            <button onclick="clearList()" class="btn f-btn" style="background:#dc3545;">CLR SEL</button>
-        </div>
-    </div>
-    <div id="masterList" style="padding-bottom: 70px;"></div>
-    <div class="b-nav">
-        <button class="btn" style="background:#1a73e8; flex:1; padding:12px;" onclick="showFinalList()">MAKE LIST</button>
-        <button class="btn" style="background:#ff9800; flex:1; padding:12px;" onclick="openDailyKharch()">DAILY KHARCH</button>
-    </div>
+<div class="top-hist">
+<div class="h-box" onclick="openHistory('shopping')">ITEM HISTORY</div>
+<div class="h-box" onclick="openHistory('expense')">KHARCHA HISTORY</div>
 </div>
 
-<div id="listPage" class="full-page">
-    <div class="p-head"><span onclick="closePage('listPage')">Back</span><span>Final List</span></div>
-    <div class="scroll"><div id="shotArea" style="background:white; padding:10px;"><div id="fOut"></div></div></div>
-    <div class="b-nav" style="position:static;"><button class="btn" style="background:#ff9800; flex:1; padding:15px;" onclick="takeShot()">PHOTO</button></div>
+<div class="card">
+<div class="in-row">
+<input type="text" id="itemName" placeholder="Item Name..." style="flex:1;">
+<select id="catSelect" style="width:60px;">
+<option value="GROCERY">GROC</option>
+<option value="SABJI">SABJI</option>
+<option value="BODY">BODY</option>
+<option value="OTHER">ANYA</option>
+</select>
+
+<button onclick="addItem()" class="btn" style="background:#28a745; padding:8px 10px;">ADD</button>
 </div>
 
-<script>
-    // --- AAPKA NAYA ASIA URL ---
-    const firebaseConfig = {
-        databaseURL: "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/"
-    };
-    
-    // Database initialize
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-    const db = firebase.database().ref('grocery/3'); // Aapka exact path
+<div style="display:flex; gap:2px; flex-wrap: wrap;">
+<button onclick="setFilter('All')" class="btn f-btn">ALL</button>
+<button onclick="setFilter('GROCERY')" class="btn f-btn" style="background:#17a2b8;">GROC</button>
+<button onclick="setFilter('SABJI')" class="btn f-btn" style="background:#6f42c1;">SABJI</button>
+<button onclick="setFilter('BODY')" class="btn f-btn" style="background:#e83e8c;">BODY</button>
+<button onclick="setFilter('OTHER')" class="btn f-btn" style="background:#ffc107; color:#333;">ANYA</button>
+<button onclick="clearList()" class="btn f-btn" style="background:#dc3545;">CLR</button>
+</div>
+</div>
 
-    let items = [], history = { shopping: [], expense: [] };
-    let isReady = false, activeF = 'All';
+<div id="masterList" style="padding-bottom: 70px;"></div>
 
-    // Firebase loading
-    db.on('value', (snap) => {
-        const data = snap.val();
-        if (data && data.items) {
-            items = data.items;
-            history = data.history || { shopping: [], expense: [] };
-            isReady = true;
-            renderMaster();
-        } else {
-            // Agar pehli baar hai toh default list
-            if(!isReady) {
-                items = [
-                    {name: "आलू", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-                    {name: "प्याज", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-                    {name: "सोयाबीन तेल", cat: "GROCERY", sel: false, qty: "", unit: "Ltr"},
-                    {name: "सरसों तेल", cat: "GROCERY", sel: false, qty: "", unit: "Ltr"},
-                    {name: "पत्ता गोभी", cat: "SABJI", sel: false, qty: "", unit: "Kg"}
-                ];
-                isReady = true;
-                save();
-            }
-        }
-    });
+<div class="b-nav">
+<button class="btn" style="background:#1a73e8; flex:1; padding:12px;" onclick="showFinalList()">MAKE LIST</button>
+<button class="btn" style="background:#ff9800; flex:1; padding:12px;" onclick="openDailyKharch()">DAILY KHARCH</button>
+</div>
+</div>
 
-    const save = () => { if(isReady) db.set({ items, history }); };
+<script type="module">
 
-    function renderMaster() {
-        let cont = document.getElementById('masterList');
-        let sorted = [...items].sort((a, b) => b.sel - a.sel);
-        cont.innerHTML = sorted.map((it) => {
-            if(activeF !== 'All' && it.cat !== activeF) return '';
-            let rIdx = items.indexOf(it);
-            return `<div class="item-row ${it.sel?'sel-bg':''}">
-                <span onclick="toggleI(${rIdx})"><b>${it.name}</b></span>
-                <input type="number" step="0.1" value="${it.qty}" oninput="items[${rIdx}].qty=this.value;save()" class="u-box">
-                <select onchange="items[${rIdx}].unit=this.value;save()" style="width:45px;">
-                    <option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option>
-                    <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option>
-                    <option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
-                </select>
-                <input type="checkbox" ${it.sel?'checked':''} onclick="toggleI(${rIdx})">
-                <button class="btn del-btn" onclick="delMasterItem(${rIdx})">DEL</button>
-            </div>`;
-        }).join('');
-    }
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+getDatabase,
+ref,
+set,
+get
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-    function toggleI(i) { items[i].sel = !items[i].sel; save(); }
-    function addItem() { 
-        let n = document.getElementById('itemName').value, c = document.getElementById('catSelect').value; 
-        if(n){ items.unshift({name: n, cat: c, sel: true, qty: '', unit: 'Kg'}); save(); document.getElementById('itemName').value=''; } 
-    }
-    function delMasterItem(i) { if(confirm("Del?")){ items.splice(i,1); save(); } }
-    function setFilter(f) { activeF = f; renderMaster(); }
-    function clearList() { if(confirm("Unselect all?")){ items.forEach(it => it.sel = false); save(); } }
-    function closePage(id) { document.getElementById(id).style.display = 'none'; }
-    function openPage(id) { document.getElementById(id).style.display = 'flex'; }
+const firebaseConfig = {
+databaseURL: "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
 
-    function showFinalList() {
-        let sel = items.filter(it => it.sel);
-        if(!sel.length) return alert("Select items");
-        let out = document.getElementById('fOut');
-        out.innerHTML = `<h3>SHOPPING LIST</h3>` + sel.map(it => `<div>${it.name} - ${it.qty} ${it.unit}</div>`).join('');
-        openPage('listPage');
-    }
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const DB_PATH = "grocery/3";
+
+let items = JSON.parse(localStorage.getItem('v56_items')) || [];
+let history = JSON.parse(localStorage.getItem('v56_hist')) || {
+shopping: [],
+expense: []
+};
+
+let currLang = 'HI',
+activeF = 'All';
+
+const save = async () => {
+
+localStorage.setItem('v56_items', JSON.stringify(items));
+localStorage.setItem('v56_hist', JSON.stringify(history));
+
+await set(ref(db, DB_PATH), {
+items,
+history
+});
+
+};
+
+async function loadFirebase() {
+
+try {
+
+const snap = await get(ref(db, DB_PATH));
+
+if (snap.exists()) {
+
+const data = snap.val();
+
+items = data.items || [];
+history = data.history || {
+shopping: [],
+expense: []
+};
+
+localStorage.setItem('v56_items', JSON.stringify(items));
+localStorage.setItem('v56_hist', JSON.stringify(history));
+
+}
+
+} catch(e) {
+console.log(e);
+}
+
+renderMaster();
+
+}
+
+window.addEventListener('load', loadFirebase);
+
+window.openHistory = function(type){
+alert(type + " History Open");
+}
+
+window.openDailyKharch = function(){
+alert("Daily Kharch Open");
+}
+
+window.showFinalList = function(){
+
+let sel = items.filter(it => it.sel);
+
+if(!sel.length){
+alert("Select items");
+return;
+}
+
+alert("Final List Ready");
+
+}
+
+window.setFilter = function(f){
+
+activeF = f;
+renderMaster();
+
+}
+
+window.clearList = function(){
+
+if(confirm("Clear Selected?")){
+
+items.forEach(it => it.sel = false);
+
+renderMaster();
+save();
+
+}
+
+}
+
+window.toggleI = function(i){
+
+items[i].sel = !items[i].sel;
+
+renderMaster();
+save();
+
+}
+
+window.delMasterItem = function(i){
+
+if(confirm("Delete?")){
+
+items.splice(i,1);
+
+renderMaster();
+save();
+
+}
+
+}
+
+window.addItem = function(){
+
+let n = document.getElementById('itemName').value;
+let c = document.getElementById('catSelect').value;
+
+if(n){
+
+items.unshift({
+name:n,
+cat:c,
+sel:false,
+qty:'',
+unit:'Kg'
+});
+
+document.getElementById('itemName').value='';
+
+renderMaster();
+save();
+
+}
+
+}
+
+function renderMaster(){
+
+let cont = document.getElementById('masterList');
+
+let sorted = [...items].sort((a,b)=>b.sel-a.sel);
+
+cont.innerHTML = sorted.map((it,i)=>{
+
+if(activeF !== 'All' && it.cat !== activeF) return '';
+
+let rIdx = items.indexOf(it);
+
+return `
+<div class="item-row ${it.sel?'sel-bg':''}">
+
+<span onclick="toggleI(${rIdx})">
+<b>${i+1}.${it.name}</b>
+</span>
+
+<input
+type="number"
+step="0.1"
+value="${it.qty}"
+oninput="items[${rIdx}].qty=this.value;save()"
+class="u-box">
+
+<select
+onchange="items[${rIdx}].unit=this.value;save()"
+style="width:45px; font-size:9px;">
+
+<option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option>
+<option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
+<option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option>
+<option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option>
+
+</select>
+
+<input
+type="checkbox"
+${it.sel?'checked':''}
+onclick="toggleI(${rIdx})">
+
+<button
+class="btn del-btn"
+onclick="delMasterItem(${rIdx})">
+
+DEL
+
+</button>
+
+</div>
+`;
+
+}).join('');
+
+}
+
+window.items = items;
+window.save = save;
+
 </script>
+
 </body>
 </html>
