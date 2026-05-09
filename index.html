@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Manager v59 - LIVE FIREBASE</title>
+    <title>Grocery Manager v61 - STABLE FIREBASE</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -27,8 +27,6 @@
         .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display: none; flex-direction: column; z-index: 9999; }
         .p-head { background: #1a73e8; color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; }
         .scroll { flex: 1; overflow-y: auto; padding: 4px; padding-bottom: 80px; }
-        .month-label { background: #e8f0fe; color: #1a73e8; padding: 8px; font-weight: bold; font-size: 12px; border-left: 4px solid #1a73e8; margin-top: 10px; display: flex; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
-        .c-grid { display: grid; grid-template-columns: 1fr 42px 42px 52px 35px 35px; gap: 3px; align-items: center; padding: 8px 2px; border-bottom: 1px solid #eee; font-size: 10px; }
         .sum-box { padding: 12px; background: #e8f0fe; font-weight: bold; text-align: right; border-top: 2px solid #1a73e8; font-size: 13px; color: #1a73e8; }
         .b-nav { position: fixed; bottom: 0; width: 100%; background: white; padding: 6px; border-top: 1px solid #eee; display: flex; gap: 5px; z-index: 1000; }
         b { color: #000; font-size: 12px; }
@@ -68,47 +66,17 @@
     </div>
 </div>
 
-<div id="kInPage" class="full-page">
-    <div class="p-head"><span onclick="closePage('kInPage')">Back</span><span>Daily Kharch</span></div>
-    <div class="card"><div class="in-row">
-        <input type="text" id="kName" style="flex:1" placeholder="Item Name">
-        <input type="number" id="kQty" class="u-box" placeholder="Qty">
-        <input type="number" id="kPrice" class="p-box" placeholder="Rs">
-        <button class="btn" onclick="addK()" style="background:#28a745; padding:8px 10px;">ADD</button>
-    </div></div>
-    <div class="scroll" id="dkList"></div>
-    <div id="dkSum" class="sum-box"></div>
-</div>
-
-<div id="calcPage" class="full-page">
-    <div class="p-head"><span onclick="closeCalc()">Back</span><span>Calculation</span></div>
-    <div class="scroll" id="cList"></div>
-    <div id="cSum" class="sum-box"></div>
-</div>
-
-<div id="editPage" class="full-page">
-    <div class="p-head"><span onclick="closePage('editPage')">Back</span><span>Edit Record</span></div>
-    <div class="scroll" id="eList"></div>
-    <div id="eSum" class="sum-box"></div>
-</div>
-
-<div id="hPage" class="full-page">
-    <div class="p-head"><span onclick="closePage('hPage')">Back</span><span id="hTitle">History Timeline</span></div>
-    <div class="scroll" id="hArea"></div>
-</div>
-
 <div id="listPage" class="full-page">
     <div class="p-head"><span onclick="closePage('listPage')">Back</span><span>Final List</span><button onclick="toggleLang()" style="background:#fff; color:#1a73e8; border:none; padding:4px 8px; border-radius:4px; font-size:10px;">HI/EN</button></div>
     <div class="scroll"><div id="shotArea" style="background:white; padding:10px;"><div id="fOut"></div></div></div>
-    <div class="b-nav" style="position:static;"><button class="btn" style="background:#ff9800; flex:1; padding:15px;" onclick="takeShot()">PHOTO</button><button class="btn" style="background:#28a745; flex:1; padding:15px;" onclick="openCalc()">CALC</button></div>
+    <div class="b-nav" style="position:static;"><button class="btn" style="background:#ff9800; flex:1; padding:15px;" onclick="takeShot()">PHOTO</button></div>
 </div>
-
 <script>
-    // --- FIREBASE CONFIGURATION ---
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-        databaseURL: "https://shoping-list-555e0-default-rtdb.firebaseio.com/", // Aapka Firebase URL
+        authDomain: "shoping-list-555e0.firebaseapp.com",
+        databaseURL: "https://shoping-list-555e0-default-rtdb.firebaseio.com/", 
         projectId: "shoping-list-555e0",
         storageBucket: "shoping-list-555e0.appspot.com",
         messagingSenderId: "SENDER_ID",
@@ -117,17 +85,21 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const initialItems = [
-        // SABJI
+    const masterItems = [
+        // SABJI (Indian Varieties)
         {name: "आलू", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
         {name: "प्याज", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
         {name: "टमाटर", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "मेथी भाजी", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
+        {name: "पत्ता गोभी", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
+        {name: "फूल गोभी", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
         {name: "पालक", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
+        {name: "मेथी भाजी", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
         {name: "बैंगन", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
         {name: "भिंडी", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
         {name: "लौकी", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
-        {name: "गोभी (फूल)", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
+        {name: "मटर", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
+        {name: "शिमला मिर्च", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
+        {name: "ग्वार फली", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
         {name: "हरी मिर्च", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
         {name: "धनिया", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
         {name: "अदरक", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
@@ -135,53 +107,50 @@
         {name: "मूली", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
         {name: "गाजर", cat: "SABJI", sel: false, qty: "", unit: "Kg"},
         {name: "नींबू", cat: "SABJI", sel: false, qty: "", unit: "Pc"},
-        // KIRANA
+        // OILS & GROCERY
+        {name: "सोयाबीन तेल", cat: "GROCERY", sel: false, qty: "", unit: "Ltr"},
+        {name: "सरसों तेल", cat: "GROCERY", sel: false, qty: "", unit: "Ltr"},
+        {name: "नारियल तेल", cat: "GROCERY", sel: false, qty: "", unit: "Ltr"},
+        {name: "घी", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
         {name: "जीरा", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "मेथी दाना", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
         {name: "नमक", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "सेंधा नमक", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "काला नमक", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "हींग", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "हल्दी पाउडर", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "लाल मिर्च पाउडर", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "धनिया पाउडर", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
         {name: "चावल", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
         {name: "गेहूँ आटा", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
         {name: "चीनी (शक्कर)", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
         {name: "चाय पत्ती", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        {name: "खाद्य तेल", cat: "GROCERY", sel: false, qty: "", unit: "Ltr"},
-        {name: "घी", cat: "GROCERY", sel: false, qty: "", unit: "Kg"},
-        // OTHER
+        // DAIRY & BODY
         {name: "दूध", cat: "OTHER", sel: false, qty: "", unit: "Ltr"},
         {name: "दही", cat: "OTHER", sel: false, qty: "", unit: "Kg"},
         {name: "पनीर", cat: "OTHER", sel: false, qty: "", unit: "Kg"},
         {name: "नहाने का साबुन", cat: "BODY", sel: false, qty: "", unit: "Pc"},
-        {name: "कपड़े का साबुन", cat: "OTHER", sel: false, qty: "", unit: "Pc"},
-        {name: "शैम्पू", cat: "BODY", sel: false, qty: "", unit: "Pc"},
         {name: "टूथपेस्ट", cat: "BODY", sel: false, qty: "", unit: "Pc"}
     ];
 
     let items = [];
     let history = { shopping: [], expense: [] };
-    let currLang = 'HI', activeF = 'All', hType = 'shopping', tCalc = [];
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    let isLoaded = false;
+    let currLang = 'HI', activeF = 'All';
 
-    function syncToFirebase() { db.ref('v59Data').set({ items, history }); }
+    // SYNC FUNCTION: Only write if data was loaded once
+    function syncToFirebase() {
+        if(isLoaded) {
+            db.ref('v61Data').set({ items, history });
+        }
+    }
 
-    db.ref('v59Data').on('value', (snapshot) => {
+    // LOAD DATA: From Firebase, fallback to masterItems if empty
+    db.ref('v61Data').on('value', (snapshot) => {
         const data = snapshot.val();
-        if (data && data.items) {
+        if (data && data.items && data.items.length > 0) {
             items = data.items;
             history = data.history || { shopping: [], expense: [] };
-        } else {
-            items = initialItems;
-            syncToFirebase();
+        } else if (!isLoaded) {
+            items = masterItems;
+            db.ref('v61Data').set({ items, history });
         }
+        isLoaded = true;
         renderMaster();
     });
-
-    function openPage(id) { document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); document.getElementById(id).style.display = 'flex'; }
-    function closePage(id) { document.getElementById(id).style.display = 'none'; }
 
     function renderMaster() {
         let cont = document.getElementById('masterList');
@@ -202,121 +171,13 @@
         }).join('');
     }
 
-    function addItem() { let n = document.getElementById('itemName').value, c = document.getElementById('catSelect').value; if(n){ items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); syncToFirebase(); document.getElementById('itemName').value=''; } }
     function toggleI(i) { items[i].sel = !items[i].sel; syncToFirebase(); }
+    function addItem() { let n = document.getElementById('itemName').value, c = document.getElementById('catSelect').value; if(n){ items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); syncToFirebase(); document.getElementById('itemName').value=''; } }
     function delMasterItem(i) { if(confirm("Del?")){ items.splice(i,1); syncToFirebase(); } }
     function setFilter(f) { activeF = f; renderMaster(); }
-    function clearList() { if(confirm("Clear All?")){ items=[]; syncToFirebase(); } }
-
-    function renderH() {
-        let area = document.getElementById('hArea'); area.innerHTML = '';
-        let data = [...history[hType]].sort((a,b) => {
-            let da = a.date.split('/'), db = b.date.split('/');
-            return new Date(db[2], db[1]-1, db[0]) - new Date(da[2], da[1]-1, da[0]);
-        });
-        let currentMonth = "", monthTotal = 0, tempHtml = "";
-        data.forEach((h, i) => {
-            let parts = h.date.split('/'), mName = months[parseInt(parts[1])-1] + " " + parts[2], dayTotal = h.items.reduce((a, b) => a + (parseFloat(b.price)||0), 0);
-            if (currentMonth !== "" && currentMonth !== mName) {
-                area.innerHTML += `<div class="month-label"><span>${currentMonth} Total:</span><span>₹${monthTotal}</span></div>` + tempHtml;
-                tempHtml = ""; monthTotal = 0;
-            }
-            currentMonth = mName; monthTotal += dayTotal;
-            tempHtml += `<div class="item-row" style="grid-template-columns: 1fr 60px 45px 40px;">
-                <span>${h.date}</span><b>₹${dayTotal}</b>
-                <button onclick="editHistory(${history[hType].indexOf(h)})" style="background:orange;color:white;border:none;padding:6px;border-radius:4px;font-size:9px;">EDIT</button>
-                <button class="btn del-btn" onclick="delH(${history[hType].indexOf(h)})">DEL</button>
-            </div>`;
-        });
-        if(currentMonth) area.innerHTML += `<div class="month-label"><span>${currentMonth} Total:</span><span>₹${monthTotal}</span></div>` + tempHtml;
-    }
-
-    function editHistory(idx) {
-        let dataArr = history[hType][idx].items;
-        let area = document.getElementById('eList');
-        area.innerHTML = dataArr.map((it, i) => {
-            let isLocked = it.done || false;
-            return `<div class="c-grid"><b>${it.name}</b>
-                <input type="number" step="0.1" value="${it.qty}" ${isLocked?'disabled':''} oninput="updateHistItem(${idx},${i},'qty',this.value)" class="u-box">
-                <select ${isLocked?'disabled':''} onchange="updateHistItem(${idx},${i},'unit',this.value)" style="width:42px;"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select>
-                <input type="number" value="${it.price}" ${isLocked?'disabled':''} oninput="updateHistItem(${idx},${i},'price',this.value)" class="p-box">
-                <button class="btn ${isLocked?'ok-btn':'lock-btn'}" onclick="toggleLock(${idx},${i})">${isLocked?'OK':'CON'}</button>
-                <button class="btn del-btn" onclick="delHistItem(${idx},${i})">DEL</button></div>`;
-        }).join('');
-        document.getElementById('eSum').innerText = `TOTAL: ₹${dataArr.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`;
-        openPage('editPage');
-    }
-
-    function updateHistItem(hIdx, iIdx, f, v) { history[hType][hIdx].items[iIdx][f] = v; syncToFirebase(); editHistory(hIdx); }
-    function toggleLock(hIdx, iIdx) { history[hType][hIdx].items[iIdx].done = !history[hType][hIdx].items[iIdx].done; syncToFirebase(); editHistory(hIdx); }
-    function delHistItem(hIdx, iIdx) { if(confirm("Del?")){ history[hType][hIdx].items.splice(iIdx,1); syncToFirebase(); editHistory(hIdx); } }
-
-    function addK() {
-        let n = document.getElementById('kName').value, q = parseFloat(document.getElementById('kQty').value)||1, p = parseFloat(document.getElementById('kPrice').value)||0;
-        if(n && p) {
-            let d = new Date().toLocaleDateString('en-GB'), ex = history.expense.find(h => h.date === d);
-            if(!ex){ ex = {date: d, items: []}; history.expense.unshift(ex); }
-            let old = ex.items.find(o => o.name.toLowerCase() === n.toLowerCase());
-            if(old){ old.qty += q; old.price += p; } else { ex.items.push({name: n, qty: q, price: p, done: false}); }
-            syncToFirebase(); renderDK(d); document.getElementById('kName').value=''; document.getElementById('kQty').value=''; document.getElementById('kPrice').value='';
-        }
-    }
-
-    function renderDK(date) {
-        let ex = history.expense.find(h => h.date === date), t = 0, area = document.getElementById('dkList');
-        if(!ex) { area.innerHTML = ""; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; }
-        area.innerHTML = ex.items.map((it, i) => { t += parseFloat(it.price) || 0; let isLocked = it.done || false;
-            return `<div class="c-grid" style="grid-template-columns: 1fr 42px 52px 35px 35px;"><b>${it.name}</b>
-            <input type="number" value="${it.qty}" ${isLocked?'disabled':''} oninput="updateDKItem('${date}',${i},'qty',this.value)" class="u-box">
-            <input type="number" value="${it.price}" ${isLocked?'disabled':''} oninput="updateDKItem('${date}',${i},'price',this.value)" class="p-box">
-            <button class="btn ${isLocked?'ok-btn':'lock-btn'}" onclick="lockDK('${date}',${i})">${isLocked?'OK':'CON'}</button>
-            <button class="btn del-btn" onclick="delDKItem('${date}',${i})">DEL</button></div>`;
-        }).join('');
-        document.getElementById('dkSum').innerText = `TOTAL: ₹${t}`;
-    }
-
-    function updateDKItem(d, idx, f, v) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx][f] = v; syncToFirebase(); renderDK(d); } }
-    function lockDK(d, idx) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx].done = !ex.items[idx].done; syncToFirebase(); renderDK(d); } }
-    function delDKItem(d, idx) { if(confirm("Del?")){ history.expense.find(h => h.date === d).items.splice(idx,1); syncToFirebase(); renderDK(d); } }
-    function openDailyKharch() { let d = new Date().toLocaleDateString('en-GB'); renderDK(d); openPage('kInPage'); }
-
-    function openCalc() {
-        tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, unit: it.unit, price: '', done: false, lastQty: 0, lastPrice: 0 }));
-        renderC(); tCalc.forEach((_, i) => smartAddition(i, 'qty', tCalc[i].qty)); openPage('calcPage');
-    }
-
-    function smartAddition(idx, field, val) {
-        let it = tCalc[idx], d = new Date().toLocaleDateString('en-GB'), ex = history.shopping.find(h => h.date === d);
-        if(!ex){ ex = {date: d, items: []}; history.shopping.unshift(ex); }
-        let histItem = ex.items.find(o => o.name.toLowerCase() === it.name.toLowerCase());
-        if(!histItem){ histItem = {name: it.name, qty: 0, price: 0, unit: it.unit, done: false}; ex.items.push(histItem); }
-        if(field === 'qty'){ let newVal = parseFloat(val)||0; histItem.qty = (parseFloat(histItem.qty)-it.lastQty)+newVal; it.lastQty=newVal; it.qty=val; }
-        if(field === 'price'){ let newVal = parseFloat(val)||0; histItem.price = (parseFloat(histItem.price)-it.lastPrice)+newVal; it.lastPrice=newVal; it.price=val; }
-        if(field === 'unit'){ histItem.unit = val; it.unit = val; }
-        syncToFirebase(); document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`;
-    }
-
-    function renderC() {
-        let area = document.getElementById('cList'), gt = 0;
-        area.innerHTML = tCalc.map((it, i) => { gt += parseFloat(it.price) || 0;
-            return `<div class="c-grid" style="grid-template-columns: 1fr 42px 42px 52px 35px;"><b>${it.name}</b>
-            <input type="number" step="0.1" value="${it.qty}" oninput="smartAddition(${i}, 'qty', this.value)" class="u-box">
-            <select onchange="smartAddition(${i}, 'unit', this.value)" style="width:42px;"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select>
-            <input type="number" value="${it.price}" oninput="smartAddition(${i}, 'price', this.value)" class="p-box">
-            <div class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="lockToggleCalc(${i})">${it.done?'OK':'CON'}</div></div>`;
-        }).join('');
-        document.getElementById('cSum').innerText = `TOTAL: ₹${gt}`;
-    }
-
-    function lockToggleCalc(idx) { tCalc[idx].done = !tCalc[idx].done; let d = new Date().toLocaleDateString('en-GB'); let histItem = history.shopping.find(h=>h.date===d).items.find(o=>o.name.toLowerCase()===tCalc[idx].name.toLowerCase()); if(histItem) histItem.done = tCalc[idx].done; syncToFirebase(); renderC(); }
-    function closeCalc() { tCalc = []; document.getElementById('cList').innerHTML=""; closePage('calcPage'); }
-
-    function getSmartUnit(val, unit, lang) {
-        let v = parseFloat(val); if (!v) return "";
-        let u = { HI: { Kg: "किलो", Pc: "पीस", Ltr: "लीटर", Rs: "रु", Gram: "ग्राम", Half: "आधा किलो", Pav: "पाव किलो" }, EN: { Kg: "Kg", Pc: "Pc", Ltr: "Ltr", Rs: "Rs", Gram: "gm", Half: "Half Kg", Pav: "Pav Kg", ML: "ml" } }[lang];
-        if (unit === 'Kg') { if (v === 0.5) return u.Half; if (v === 0.25) return u.Pav; if (v < 1) return (v * 1000) + " " + u.Gram; }
-        return v + " " + u[unit];
-    }
+    function clearList() { if(confirm("Clear?")){ items=[]; syncToFirebase(); } }
+    function closePage(id) { document.getElementById(id).style.display = 'none'; }
+    function openPage(id) { document.getElementById(id).style.display = 'flex'; }
 
     function showFinalList() {
         let sel = items.filter(it => it.sel); if(!sel.length) return alert("Select items");
@@ -326,16 +187,12 @@
             let f = sel.filter(it => it.cat === c);
             if(f.length) {
                 out.innerHTML += `<div style="background:#eee;padding:5px;font-weight:bold;font-size:11px;">${c}</div>` + 
-                f.map((it, j) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #ddd;font-size:12px;">
-                <span><b>${it.name}</b></span><span style="font-weight:bold;">${getSmartUnit(it.qty, it.unit, currLang)}</span><span style="border-bottom:1px solid #000;width:35px;"></span></div>`).join('');
+                f.map((it) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #ddd;font-size:12px;">
+                <span><b>${it.name}</b></span><span style="font-weight:bold;">${it.qty} ${it.unit}</span><span style="border-bottom:1px solid #000;width:35px;"></span></div>`).join('');
             }
         });
         openPage('listPage');
     }
-
-    function openHistory(type) { hType = type; renderH(); openPage('hPage'); }
-    function delH(i) { if(confirm("Del?")){ history[hType].splice(i,1); syncToFirebase(); renderH(); } }
-    function toggleLang() { currLang = (currLang === 'HI') ? 'EN' : 'HI'; showFinalList(); }
     function takeShot() { html2canvas(document.getElementById('shotArea')).then(c => { let a = document.createElement('a'); a.download = 'List.png'; a.href = c.toDataURL(); a.click(); }); }
 </script>
 </body>
