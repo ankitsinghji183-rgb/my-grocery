@@ -3,30 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Manager v66 Final</title>
+    <title>Grocery Manager v66 Full Perfect</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
-        .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0f2f5; display: none; flex-direction: column; z-index: 9999; overflow: hidden; }
+        
+        .full-page { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #f0f2f5; display: none; flex-direction: column; 
+            z-index: 9999; overflow: hidden; 
+        }
+
         .top-hist { display: flex; gap: 4px; padding: 6px; }
         .h-box { flex: 1; background: #fff; border: 1px solid #ccc; padding: 10px 0; text-align: center; border-radius: 6px; font-weight: bold; font-size: 10px; color: #1a73e8; }
         .card { background: white; padding: 6px; margin: 5px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .in-row { display: flex; gap: 4px; margin-bottom: 5px; width: 100%; align-items: center; }
         input, select { padding: 8px 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; outline: none; height: 35px; }
+        
         .u-box { width: 50px !important; text-align: center; flex-shrink: 0; }
         .p-box { width: 65px !important; flex-shrink: 0; }
         .unit-sel { width: 55px !important; flex-shrink: 0; font-size: 10px; }
+        
         .btn { border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; text-align: center; font-size: 10px; height: 35px; display: flex; align-items: center; justify-content: center; }
         .f-btn { flex: 1; padding: 7px 0; background: #6c757d; font-size: 8px; }
         .del-btn { background: #dc3545 !important; min-width: 40px; }
         .ok-btn { background: #28a745 !important; min-width: 40px; }
         .lock-btn { background: #ffc107 !important; color: #000; min-width: 40px; }
+        
         .item-row { display: grid; grid-template-columns: 1fr 50px 55px 30px 40px; gap: 6px; align-items: center; padding: 10px 6px; border-bottom: 1px solid #eee; background: white; }
         .c-grid { display: grid; grid-template-columns: 1fr 50px 55px 65px 40px 40px; gap: 4px; align-items: center; padding: 8px 4px; border-bottom: 1px solid #eee; font-size: 11px; background: white; }
         .dk-grid { display: grid; grid-template-columns: 1fr 50px 65px 40px 40px; gap: 4px; align-items: center; padding: 8px 4px; border-bottom: 1px solid #eee; background: white; }
+
         .sel-bg { background: #fff9c4 !important; }
         .p-head { background: #1a73e8; color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; position: sticky; top: 0; z-index: 10001; }
         .scroll { flex: 1; overflow-y: auto; padding: 4px; padding-bottom: 80px; -webkit-overflow-scrolling: touch; }
@@ -151,7 +161,7 @@
     function toggleI(i) { items[i].sel = !items[i].sel; save(true); }
     function delMasterItem(i) { if(confirm("Del?")){ items.splice(i,1); save(true); } }
     function setFilter(f) { activeF = f; renderMaster(); }
-    function unselectAll() { if(confirm("Unselect All?")) { items.forEach(it => it.sel = false); save(true); } }
+    function unselectAll() { if(confirm("Unselect All Items?")) { items.forEach(it => it.sel = false); save(true); } }
 
     function getSmartUnit(val, unit, lang) {
         let v = parseFloat(val);
@@ -184,7 +194,7 @@
         openPage('listPage');
     }
 
-    // Daily Kharch Smart Merge Logic (Quantity + Price Added)
+    // Daily Kharch Smart Merge - Fix
     function addK() { 
         let n = document.getElementById('kName').value, q = parseFloat(document.getElementById('kQty').value)||1, p = parseFloat(document.getElementById('kPrice').value)||0; 
         if(n && p) { 
@@ -218,51 +228,63 @@
     function delDKItem(d, idx) { if(confirm("Del?")){ history.expense.find(h => h.date === d).items.splice(idx,1); save(false); renderDK(d); } }
     function openDailyKharch() { let d = new Date().toLocaleDateString('en-GB'); renderDK(d); openPage('kInPage'); }
 
-    // Calc Page Smart Merge Logic
+    // Calc Logic - Perfect Merge & Immediate Save
     function openCalc() { 
-        tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, unit: it.unit, price: '', done: false })); 
+        let d = new Date().toLocaleDateString('en-GB');
+        let ex = (history.shopping || []).find(h => h.date === d);
+        
+        tCalc = items.filter(it => it.sel).map(it => {
+            let histMatch = ex ? ex.items.find(h => h.name.toLowerCase() === it.name.toLowerCase()) : null;
+            return { 
+                name: it.name, 
+                qty: histMatch ? histMatch.qty : it.qty, 
+                unit: histMatch ? histMatch.unit : it.unit, 
+                price: histMatch ? histMatch.price : '', 
+                done: histMatch ? histMatch.done : false,
+                lastQty: histMatch ? histMatch.qty : 0,
+                lastPrice: histMatch ? histMatch.price : 0
+            };
+        });
         renderC(); 
         openPage('calcPage'); 
+    }
+
+    function smartAddition(idx, field, val) { 
+        let it = tCalc[idx], d = new Date().toLocaleDateString('en-GB'), ex = (history.shopping || []).find(h => h.date === d); 
+        if(!ex){ ex = {date: d, items: []}; if(!history.shopping) history.shopping = []; history.shopping.unshift(ex); } 
+        
+        let histItem = ex.items.find(o => o.name.toLowerCase() === it.name.toLowerCase()); 
+        if(!histItem){ 
+            histItem = {name: it.name, qty: 0, price: 0, unit: it.unit, done: false}; 
+            ex.items.push(histItem); 
+        } 
+        
+        if(field === 'qty'){ it.qty = val; histItem.qty = parseFloat(val)||0; } 
+        if(field === 'price'){ it.price = val; histItem.price = parseFloat(val)||0; } 
+        if(field === 'unit'){ it.unit = val; histItem.unit = val; } 
+        
+        save(false); 
+        document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; 
     }
 
     function renderC() { 
         let area = document.getElementById('cList'), gt = 0; 
         area.innerHTML = tCalc.map((it, i) => { 
             gt += parseFloat(it.price) || 0; 
-            return `<div class="c-grid"><b>${it.name}</b><input type="number" step="0.1" value="${it.qty}" oninput="tCalc[${i}].qty=this.value" class="u-box"><select onchange="tCalc[${i}].unit=this.value" class="unit-sel"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select><input type="number" value="${it.price}" oninput="updateCalcPrice(${i}, this.value)" class="p-box"><div class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="lockToggleCalc(${i})">${it.done?'OK':'CON'}</div></div>`; 
+            return `<div class="c-grid"><b>${it.name}</b><input type="number" step="0.1" value="${it.qty}" oninput="smartAddition(${i}, 'qty', this.value)" class="u-box"><select onchange="smartAddition(${i}, 'unit', this.value)" class="unit-sel"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select><input type="number" value="${it.price}" oninput="smartAddition(${i}, 'price', this.value)" class="p-box"><div class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="lockToggleCalc(${i})">${it.done?'OK':'CON'}</div></div>`; 
         }).join(''); 
         document.getElementById('cSum').innerText = `TOTAL: ₹${gt}`; 
     }
 
-    function updateCalcPrice(idx, val) {
-        tCalc[idx].price = val;
-        document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`;
-    }
-
     function lockToggleCalc(idx) { 
         tCalc[idx].done = !tCalc[idx].done; 
-        if(tCalc[idx].done) {
-            mergeCalcToHistory(idx); 
-        }
-        renderC(); 
+        let d = new Date().toLocaleDateString('en-GB'); 
+        let histItem = history.shopping.find(h=>h.date===d).items.find(o=>o.name.toLowerCase()===tCalc[idx].name.toLowerCase()); 
+        if(histItem) histItem.done = tCalc[idx].done; 
+        save(false); renderC(); 
     }
 
-    function mergeCalcToHistory(idx) {
-        let it = tCalc[idx], d = new Date().toLocaleDateString('en-GB'), ex = (history.shopping || []).find(h => h.date === d); 
-        if(!ex){ ex = {date: d, items: []}; if(!history.shopping) history.shopping = []; history.shopping.unshift(ex); } 
-        
-        let histItem = ex.items.find(o => o.name.toLowerCase() === it.name.toLowerCase()); 
-        if(histItem){
-            // Merge logic: Add new qty and price to existing today's record
-            histItem.qty = parseFloat(histItem.qty) + (parseFloat(it.qty)||0);
-            histItem.price = parseFloat(histItem.price) + (parseFloat(it.price)||0);
-            histItem.done = true;
-        } else {
-            ex.items.push({name: it.name, qty: parseFloat(it.qty)||0, price: parseFloat(it.price)||0, unit: it.unit, done: true});
-        }
-        save(false);
-    }
-
+    // History & Edit Functions
     function renderH() { 
         let area = document.getElementById('hArea'); area.innerHTML = ''; 
         let dataArr = (history[hType] || []); 
