@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Manager v65 Final</title>
+    <title>Grocery Manager v66 Final</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
@@ -17,16 +17,24 @@
         .card { background: white; padding: 6px; margin: 5px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .in-row { display: flex; gap: 4px; margin-bottom: 5px; width: 100%; align-items: center; }
         input, select { padding: 8px 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; outline: none; height: 35px; }
+        
+        /* Daily Kharch Alignment Improvements */
         .u-box { width: 50px !important; text-align: center; flex-shrink: 0; }
         .p-box { width: 65px !important; flex-shrink: 0; }
         .unit-sel { width: 55px !important; flex-shrink: 0; font-size: 10px; }
+        
         .btn { border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; text-align: center; font-size: 10px; height: 35px; display: flex; align-items: center; justify-content: center; }
         .f-btn { flex: 1; padding: 7px 0; background: #6c757d; font-size: 8px; }
         .del-btn { background: #dc3545 !important; min-width: 40px; }
         .ok-btn { background: #28a745 !important; min-width: 40px; }
         .lock-btn { background: #ffc107 !important; color: #000; min-width: 40px; }
+        
         .item-row { display: grid; grid-template-columns: 1fr 50px 55px 30px 40px; gap: 6px; align-items: center; padding: 10px 6px; border-bottom: 1px solid #eee; background: white; }
         .c-grid { display: grid; grid-template-columns: 1fr 50px 55px 65px 40px 40px; gap: 4px; align-items: center; padding: 8px 4px; border-bottom: 1px solid #eee; font-size: 11px; background: white; }
+        
+        /* Daily Kharch Specific List Alignment */
+        .dk-grid { display: grid; grid-template-columns: 1fr 45px 60px 40px 40px; gap: 4px; align-items: center; padding: 8px 4px; border-bottom: 1px solid #eee; background: white; }
+
         .sel-bg { background: #fff9c4 !important; }
         .p-head { background: #1a73e8; color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; position: sticky; top: 0; z-index: 10001; }
         .scroll { flex: 1; overflow-y: auto; padding: 4px; padding-bottom: 80px; -webkit-overflow-scrolling: touch; }
@@ -70,7 +78,19 @@
     </div>
 </div>
 
-<div id="kInPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Daily Kharch</span></div><div class="card"><div class="in-row"><input type="text" id="kName" style="flex:1" placeholder="Item Name"><input type="number" id="kQty" class="u-box" placeholder="Qty"><input type="number" id="kPrice" class="p-box" placeholder="Rs"><button class="btn" onclick="addK()" style="background:#28a745; width:50px;">ADD</button></div></div><div class="scroll" id="dkList"></div><div id="dkSum" class="sum-box"></div></div>
+<div id="kInPage" class="full-page">
+    <div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Daily Kharch</span></div>
+    <div class="card">
+        <div class="in-row">
+            <input type="text" id="kName" style="flex:1" placeholder="Item Name">
+            <input type="number" id="kQty" class="u-box" placeholder="Qty">
+            <input type="number" id="kPrice" class="p-box" placeholder="Rs">
+            <button class="btn" onclick="addK()" style="background:#28a745; min-width:45px;">ADD</button>
+        </div>
+    </div>
+    <div class="scroll" id="dkList"></div>
+    <div id="dkSum" class="sum-box"></div>
+</div>
 
 <div id="calcPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Calculation</span></div><div class="scroll" id="cList"></div><div id="cSum" class="sum-box"></div></div>
 
@@ -149,16 +169,9 @@
         openPage('listPage');
     }
 
-    // --- CALCULATION LOGIC (V65) ---
+    // --- CALCULATION LOGIC ---
     function openCalc() { 
-        // Fresh temporary list for calculation, no auto-save yet
-        tCalc = items.filter(it => it.sel).map(it => ({ 
-            name: it.name, 
-            qty: it.qty, 
-            unit: it.unit, 
-            price: '', 
-            done: false 
-        })); 
+        tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, unit: it.unit, price: '', done: false })); 
         renderC(); 
         openPage('calcPage'); 
     }
@@ -168,11 +181,7 @@
         if(field === 'qty') it.qty = val;
         if(field === 'price') it.price = val;
         if(field === 'unit') it.unit = val;
-        
-        // Auto-save to history only if price is being typed
-        if (field === 'price' && val !== '') { 
-            syncToHistory(idx, false); 
-        }
+        if (field === 'price' && val !== '') { syncToHistory(idx, false); }
         document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; 
     }
 
@@ -182,19 +191,10 @@
         if(!history.shopping) history.shopping = [];
         let ex = history.shopping.find(h => h.date === d);
         if(!ex){ ex = {date: d, items: []}; history.shopping.unshift(ex); } 
-
         let histItem = ex.items.find(o => o.name.toLowerCase() === it.name.toLowerCase()); 
-        
         if(!histItem){ 
-            ex.items.push({ 
-                name: it.name, 
-                qty: parseFloat(it.qty)||0, 
-                price: parseFloat(it.price)||0, 
-                unit: it.unit, 
-                done: it.done 
-            }); 
+            ex.items.push({ name: it.name, qty: parseFloat(it.qty)||0, price: parseFloat(it.price)||0, unit: it.unit, done: it.done }); 
         } else {
-            // IF confirmed, then ADD to old value. IF just typing, update current entry.
             if(isConfirmAction && it.done) {
                 histItem.qty = (parseFloat(histItem.qty)||0) + (parseFloat(it.qty)||0);
                 histItem.price = (parseFloat(histItem.price)||0) + (parseFloat(it.price)||0);
@@ -218,20 +218,16 @@
 
     function lockToggleCalc(idx) { 
         tCalc[idx].done = !tCalc[idx].done; 
-        syncToHistory(idx, true); // Final merge into history
+        syncToHistory(idx, true); 
         if(tCalc[idx].done) {
-            // Remove from Master List selection once confirmed
             let mIdx = items.findIndex(m => m.name.toLowerCase() === tCalc[idx].name.toLowerCase());
-            if(mIdx !== -1) { 
-                items[mIdx].sel = false; 
-                items[mIdx].qty = ''; 
-            }
+            if(mIdx !== -1) { items[mIdx].sel = false; items[mIdx].qty = ''; }
             save(true);
         }
         renderC(); 
     }
 
-    // --- OTHER UTILS ---
+    // --- DAILY KHARCH (FIXED ALIGNMENT) ---
     function addK() { 
         let n = document.getElementById('kName').value, q = parseFloat(document.getElementById('kQty').value)||1, p = parseFloat(document.getElementById('kPrice').value)||0; 
         if(n && p) { 
@@ -245,7 +241,16 @@
     function renderDK(date) { 
         let ex = (history.expense || []).find(h => h.date === date), t = 0, area = document.getElementById('dkList'); 
         if(!ex) { area.innerHTML = ""; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; } 
-        area.innerHTML = ex.items.map((it, i) => { t += it.price; let l = it.done; return `<div class="dk-grid"><b>${it.name}</b><input type="number" value="${it.qty}" ${l?'disabled':''} oninput="updateDKItem('${date}',${i},'qty',this.value)" class="u-box"><input type="number" value="${it.price}" ${l?'disabled':''} oninput="updateDKItem('${date}',${i},'price',this.value)" class="p-box"><button class="btn ${l?'ok-btn':'lock-btn'}" onclick="lockDK('${date}',${i})">${l?'OK':'CON'}</button><button class="btn del-btn" onclick="delDKItem('${date}',${i})">DEL</button></div>`; }).join(''); 
+        area.innerHTML = ex.items.map((it, i) => { 
+            t += it.price; let l = it.done; 
+            return `<div class="dk-grid">
+                <b>${it.name}</b>
+                <input type="number" value="${it.qty}" ${l?'disabled':''} oninput="updateDKItem('${date}',${i},'qty',this.value)" class="u-box">
+                <input type="number" value="${it.price}" ${l?'disabled':''} oninput="updateDKItem('${date}',${i},'price',this.value)" class="p-box">
+                <button class="btn ${l?'ok-btn':'lock-btn'}" onclick="lockDK('${date}',${i})">${l?'OK':'CON'}</button>
+                <button class="btn del-btn" onclick="delDKItem('${date}',${i})">DEL</button>
+            </div>`; 
+        }).join(''); 
         document.getElementById('dkSum').innerText = `TOTAL: ₹${t}`; 
     }
     function updateDKItem(d, idx, f, v) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx][f] = parseFloat(v); save(false); } }
@@ -253,6 +258,7 @@
     function delDKItem(d, idx) { if(confirm("Del?")){ history.expense.find(h => h.date === d).items.splice(idx,1); save(false); renderDK(d); } }
     function openDailyKharch() { let d = new Date().toLocaleDateString('en-GB'); renderDK(d); openPage('kInPage'); }
 
+    // --- HISTORY ---
     function renderH() { 
         let area = document.getElementById('hArea'); area.innerHTML = ''; 
         let dataArr = (history[hType] || []); 
