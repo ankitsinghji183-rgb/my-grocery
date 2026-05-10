@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Manager v64 Smart Update</title>
+    <title>Grocery Manager v65 Smart Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
@@ -11,7 +11,6 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
         
-        /* Fixed Background for Overlay Pages */
         .full-page { 
             position: fixed; 
             top: 0; left: 0; 
@@ -86,19 +85,7 @@
     </div>
 </div>
 
-<div id="kInPage" class="full-page">
-    <div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Daily Kharch (Smart)</span></div>
-    <div class="card">
-        <div class="in-row">
-            <input type="text" id="kName" style="flex:1" placeholder="Item Name">
-            <input type="number" id="kQty" class="u-box" placeholder="Qty">
-            <input type="number" id="kPrice" class="p-box" placeholder="Rs">
-            <button class="btn" onclick="addK()" style="background:#28a745; width:50px;">ADD</button>
-        </div>
-    </div>
-    <div class="scroll" id="dkList"></div>
-    <div id="dkSum" class="sum-box"></div>
-</div>
+<div id="kInPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Daily Kharch</span></div><div class="card"><div class="in-row"><input type="text" id="kName" style="flex:1" placeholder="Item Name"><input type="number" id="kQty" class="u-box" placeholder="Qty"><input type="number" id="kPrice" class="p-box" placeholder="Rs"><button class="btn" onclick="addK()" style="background:#28a745; width:50px;">ADD</button></div></div><div class="scroll" id="dkList"></div><div id="dkSum" class="sum-box"></div></div>
 
 <div id="calcPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Calculation</span></div><div class="scroll" id="cList"></div><div id="cSum" class="sum-box"></div></div>
 
@@ -157,10 +144,8 @@
         cont.innerHTML = sorted.map((it) => {
             if(activeF !== 'All' && it.cat !== activeF) return '';
             if(query && !it.name.toLowerCase().includes(query)) return '';
-
             let displaySerial = (activeF === 'All') ? ++globalCounter : ++categoryCounters[it.cat];
             let rIdx = items.indexOf(it);
-            
             return `<div class="item-row ${it.sel?'sel-bg':''}">
                 <span onclick="toggleI(${rIdx})"><b>${displaySerial}.${it.name}</b></span>
                 <input type="number" step="0.001" value="${it.qty}" oninput="updateQty(${rIdx}, this.value)" class="u-box">
@@ -223,7 +208,7 @@
         openPage('listPage');
     }
 
-    // UPDATED: Smart Addition for Daily Kharch
+    // --- SMART ADDITION LOGIC FOR DAILY KHARCH ---
     function addK() { 
         let n = document.getElementById('kName').value, q = parseFloat(document.getElementById('kQty').value)||1, p = parseFloat(document.getElementById('kPrice').value)||0; 
         if(n && p) { 
@@ -232,13 +217,12 @@
             let ex = history.expense.find(h => h.date === d); 
             if(!ex){ ex = {date: d, items: []}; history.expense.unshift(ex); } 
             
-            // SMART ADDITION LOGIC: Merge if same name exists today
             let old = ex.items.find(o => o.name.toLowerCase().trim() === n.toLowerCase().trim()); 
             if(old){ 
                 old.qty = parseFloat(old.qty) + q; 
                 old.price = parseFloat(old.price) + p; 
             } else { 
-                ex.items.push({name: n, qty: q, price: p, done: true}); // Default locked on add
+                ex.items.push({name: n, qty: q, price: p, done: true}); 
             } 
             save(false); renderDK(d); 
             document.getElementById('kName').value=''; document.getElementById('kQty').value=''; document.getElementById('kPrice').value=''; 
@@ -261,9 +245,8 @@
     function delDKItem(d, idx) { if(confirm("Del?")){ history.expense.find(h => h.date === d).items.splice(idx,1); save(false); renderDK(d); } }
     function openDailyKharch() { let d = new Date().toLocaleDateString('en-GB'); renderDK(d); openPage('kInPage'); }
 
-    // UPDATED: Calculation logic with Smart Addition only on Confirm
+    // --- SMART CALCULATION SCREEN LOGIC ---
     function openCalc() { 
-        // Initializing tCalc but not saving to History yet
         tCalc = items.filter(it => it.sel).map(it => ({ 
             name: it.name, qty: it.qty, unit: it.unit, price: '', done: false 
         })); 
@@ -276,34 +259,35 @@
         area.innerHTML = tCalc.map((it, i) => { 
             let pVal = parseFloat(it.price) || 0;
             gt += pVal; 
-            return `<div class="c-grid"><b>${it.name}</b><input type="number" step="0.1" value="${it.qty}" oninput="updateTCalc(${i}, 'qty', this.value)" class="u-box"><select onchange="updateTCalc(${i}, 'unit', this.value)" class="unit-sel"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select><input type="number" value="${it.price}" oninput="updateTCalc(${i}, 'price', this.value)" class="p-box"><div class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="confirmCalcItem(${i})">${it.done?'OK':'CON'}</div></div>`; 
+            return `<div class="c-grid"><b>${it.name}</b><input type="number" step="0.1" value="${it.qty}" oninput="smartAutoSave(${i}, 'qty', this.value)" class="u-box"><select onchange="smartAutoSave(${i}, 'unit', this.value)" class="unit-sel"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select><input type="number" value="${it.price}" oninput="smartAutoSave(${i}, 'price', this.value)" class="p-box"><div class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="confirmAndMerge(${i})">${it.done?'OK':'CON'}</div></div>`; 
         }).join(''); 
         document.getElementById('cSum').innerText = `TOTAL: ₹${gt}`; 
     }
 
-    function updateTCalc(idx, field, val) {
+    function smartAutoSave(idx, field, val) {
         tCalc[idx][field] = val;
+        // Auto-save logic: If price is entered, we can trigger merge automatically or wait for CON
+        if(field === 'price' && val !== '') {
+            // Optional: You can call confirmAndMerge(idx) here for real-time save
+        }
         document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`;
     }
 
-    // SMART ADDITION logic triggered only by CON/Confirm Button
-    function confirmCalcItem(idx) {
+    function confirmAndMerge(idx) {
         let it = tCalc[idx];
-        if(!it.price || it.done) return; // Prevent saving without price or already saved
-
         let d = new Date().toLocaleDateString('en-GB');
         if(!history.shopping) history.shopping = [];
         let ex = history.shopping.find(h => h.date === d);
         if(!ex){ ex = {date: d, items: []}; history.shopping.unshift(ex); }
 
         let histItem = ex.items.find(o => o.name.toLowerCase().trim() === it.name.toLowerCase().trim());
+        
         if(histItem){
-            // Smart Merge: Summing up
+            // Smart addition in Item History Edit
             histItem.qty = parseFloat(histItem.qty) + (parseFloat(it.qty)||0);
             histItem.price = parseFloat(histItem.price) + (parseFloat(it.price)||0);
             histItem.done = true;
         } else {
-            // New Entry for today
             ex.items.push({name: it.name, qty: it.qty, price: it.price, unit: it.unit, done: true});
         }
         
