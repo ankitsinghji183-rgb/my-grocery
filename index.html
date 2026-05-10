@@ -3,73 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Manager v63 Final</title>
+    <title>Grocery Manager Ultimate v66</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
         
-        .full-page { 
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            background: #f0f2f5; 
-            display: none; 
-            flex-direction: column; 
-            z-index: 9999; 
-            overflow: hidden; 
-        }
-
-        .top-hist { display: flex; gap: 4px; padding: 6px; }
-        .h-box { flex: 1; background: #fff; border: 1px solid #ccc; padding: 10px 0; text-align: center; border-radius: 6px; font-weight: bold; font-size: 10px; color: #1a73e8; }
-        .card { background: white; padding: 6px; margin: 5px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        /* Full Page Layers */
+        .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0f2f5; display: none; flex-direction: column; z-index: 9999; overflow: hidden; }
+        
+        /* UI Components */
+        .top-hist { display: flex; gap: 4px; padding: 6px; background: #fff; border-bottom: 1px solid #ddd; }
+        .h-box { flex: 1; background: #fff; border: 1px solid #1a73e8; padding: 10px 0; text-align: center; border-radius: 6px; font-weight: bold; font-size: 11px; color: #1a73e8; cursor: pointer; }
+        .card { background: white; padding: 8px; margin: 5px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .in-row { display: flex; gap: 4px; margin-bottom: 5px; width: 100%; align-items: center; }
-        input, select { padding: 8px 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; outline: none; height: 35px; }
+        input, select { padding: 8px 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; outline: none; height: 38px; }
         
-        .u-box { width: 50px !important; text-align: center; flex-shrink: 0; }
-        .p-box { width: 65px !important; flex-shrink: 0; }
-        .unit-sel { width: 55px !important; flex-shrink: 0; font-size: 10px; }
+        .u-box { width: 55px !important; text-align: center; flex-shrink: 0; }
+        .p-box { width: 70px !important; flex-shrink: 0; }
+        .unit-sel { width: 60px !important; flex-shrink: 0; font-size: 11px; }
         
-        .btn { border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; text-align: center; font-size: 10px; height: 35px; display: flex; align-items: center; justify-content: center; }
-        .f-btn { flex: 1; padding: 7px 0; background: #6c757d; font-size: 8px; }
-        .del-btn { background: #dc3545 !important; min-width: 40px; }
-        .ok-btn { background: #28a745 !important; min-width: 40px; }
-        .lock-btn { background: #ffc107 !important; color: #000; min-width: 40px; }
+        .btn { border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; text-align: center; font-size: 11px; height: 38px; display: flex; align-items: center; justify-content: center; }
+        .f-btn { flex: 1; padding: 7px 0; background: #6c757d; font-size: 9px; min-width: 45px; }
+        .del-btn { background: #dc3545 !important; min-width: 45px; }
+        .ok-btn { background: #28a745 !important; min-width: 45px; }
+        .lock-btn { background: #ffc107 !important; color: #000; min-width: 45px; }
         
-        .item-row { display: grid; grid-template-columns: 1fr 50px 55px 30px 40px; gap: 6px; align-items: center; padding: 10px 6px; border-bottom: 1px solid #eee; background: white; }
-        .c-grid { display: grid; grid-template-columns: 1fr 50px 55px 65px 40px 40px; gap: 4px; align-items: center; padding: 8px 4px; border-bottom: 1px solid #eee; font-size: 11px; background: white; }
-        .dk-grid { display: grid; grid-template-columns: 1fr 50px 65px 40px 40px; gap: 4px; align-items: center; padding: 8px 4px; border-bottom: 1px solid #eee; background: white; }
+        /* Lists & Grids */
+        .item-row { display: grid; grid-template-columns: 1fr 55px 60px 35px 45px; gap: 5px; align-items: center; padding: 12px 8px; border-bottom: 1px solid #eee; background: white; }
+        .c-grid { display: grid; grid-template-columns: 1fr 50px 55px 65px 45px 45px; gap: 4px; align-items: center; padding: 10px 5px; border-bottom: 1px solid #eee; font-size: 12px; background: white; }
+        .dk-grid { display: grid; grid-template-columns: 1fr 50px 65px 45px 45px; gap: 4px; align-items: center; padding: 10px 5px; border-bottom: 1px solid #eee; background: white; }
 
         .sel-bg { background: #fff9c4 !important; }
-        .p-head { background: #1a73e8; color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; position: sticky; top: 0; z-index: 10001; }
-        .scroll { flex: 1; overflow-y: auto; padding: 4px; padding-bottom: 80px; -webkit-overflow-scrolling: touch; }
-        .month-label { background: #e8f0fe; color: #1a73e8; padding: 8px; font-weight: bold; font-size: 12px; border-left: 4px solid #1a73e8; margin-top: 10px; display: flex; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
-        .sum-box { padding: 12px; background: #e8f0fe; font-weight: bold; text-align: right; border-top: 2px solid #1a73e8; font-size: 13px; color: #1a73e8; }
-        .b-nav { position: fixed; bottom: 0; width: 100%; background: white; padding: 6px; border-top: 1px solid #eee; display: flex; gap: 5px; z-index: 1000; }
-        b { color: #000; font-size: 12px; word-break: break-word; }
+        .p-head { background: #1a73e8; color: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 15px; position: sticky; top: 0; z-index: 10001; }
+        .scroll { flex: 1; overflow-y: auto; padding: 5px; padding-bottom: 90px; -webkit-overflow-scrolling: touch; }
+        .month-label { background: #e8f0fe; color: #1a73e8; padding: 10px; font-weight: bold; font-size: 13px; border-left: 5px solid #1a73e8; margin-top: 12px; display: flex; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+        .sum-box { padding: 15px; background: #e8f0fe; font-weight: bold; text-align: right; border-top: 2px solid #1a73e8; font-size: 14px; color: #1a73e8; }
+        .b-nav { position: fixed; bottom: 0; width: 100%; background: white; padding: 8px; border-top: 1px solid #eee; display: flex; gap: 8px; z-index: 1000; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); }
+        b { color: #000; font-size: 13px; word-break: break-word; }
     </style>
 </head>
 <body>
 
 <div id="mainView">
     <div class="top-hist">
-        <div class="h-box" onclick="openPage('hPage'); hType='shopping'; renderH();">ITEM HISTORY</div>
-        <div class="h-box" onclick="openPage('hPage'); hType='expense'; renderH();">KHARCHA HISTORY</div>
+        <div class="h-box" onclick="hType='shopping'; renderH(); openPage('hPage');">ITEM HISTORY</div>
+        <div class="h-box" onclick="hType='expense'; renderH(); openPage('hPage');">KHARCHA HISTORY</div>
     </div>
     <div class="card">
         <div class="in-row">
-            <input type="text" id="itemName" placeholder="Search or Add Item..." style="flex:1;" oninput="renderMaster()">
-            <select id="catSelect" style="width:65px;">
+            <input type="text" id="itemName" placeholder="Saman ka naam..." style="flex:1;" oninput="renderMaster()">
+            <select id="catSelect" style="width:75px;">
                 <option value="GROCERY">GROC</option>
                 <option value="SABJI">SABJI</option>
                 <option value="BODY">BODY</option>
                 <option value="OTHER">ANYA</option>
             </select>
-            <button onclick="addItem()" class="btn" style="background:#28a745; width:50px;">ADD</button>
+            <button onclick="addItem()" class="btn" style="background:#28a745; width:55px;">ADD</button>
         </div>
-        <div style="display:flex; gap:2px; flex-wrap: wrap;">
+        <div style="display:flex; gap:3px; flex-wrap: wrap;">
             <button onclick="setFilter('All')" class="btn f-btn">ALL</button>
             <button onclick="setFilter('GROCERY')" class="btn f-btn" style="background:#17a2b8;">GROC</button>
             <button onclick="setFilter('SABJI')" class="btn f-btn" style="background:#6f42c1;">SABJI</button>
@@ -78,24 +72,25 @@
             <button onclick="unselectAll()" class="btn f-btn" style="background:#dc3545;">CLR</button>
         </div>
     </div>
-    <div id="masterList" style="padding-bottom: 70px;"></div>
+    <div id="masterList" style="padding-bottom: 80px;"></div>
     <div class="b-nav">
-        <button class="btn" style="background:#1a73e8; flex:1; height:48px;" onclick="showFinalList()">MAKE LIST</button>
-        <button class="btn" style="background:#ff9800; flex:1; height:48px;" onclick="openDailyKharch()">DAILY KHARCH</button>
+        <button class="btn" style="background:#1a73e8; flex:1; height:50px; font-size:14px;" onclick="showFinalList()">MAKE LIST</button>
+        <button class="btn" style="background:#ff9800; flex:1; height:50px; font-size:14px;" onclick="openDailyKharch()">DAILY KHARCH</button>
     </div>
 </div>
 
-<div id="kInPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Daily Kharch</span></div><div class="card"><div class="in-row"><input type="text" id="kName" style="flex:1" placeholder="Item Name"><input type="number" id="kQty" class="u-box" placeholder="Qty"><input type="number" id="kPrice" class="p-box" placeholder="Rs"><button class="btn" onclick="addK()" style="background:#28a745; width:50px;">ADD</button></div></div><div class="scroll" id="dkList"></div><div id="dkSum" class="sum-box"></div></div>
+<div id="kInPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">← Back</span><span>Daily Kharch</span></div><div class="card"><div class="in-row"><input type="text" id="kName" style="flex:1" placeholder="Item Name"><input type="number" id="kQty" class="u-box" placeholder="Qty"><input type="number" id="kPrice" class="p-box" placeholder="Rs"><button class="btn" onclick="addK()" style="background:#28a745; width:55px;">ADD</button></div></div><div class="scroll" id="dkList"></div><div id="dkSum" class="sum-box"></div></div>
 
-<div id="calcPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Calculation</span></div><div class="scroll" id="cList"></div><div id="cSum" class="sum-box"></div></div>
+<div id="calcPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">← Back</span><span>Calculation</span></div><div class="scroll" id="cList"></div><div id="cSum" class="sum-box"></div></div>
 
-<div id="editPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Edit Record</span></div><div class="scroll" id="eList"></div><div id="eSum" class="sum-box"></div></div>
+<div id="editPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">← Back</span><span>Edit Record</span></div><div class="scroll" id="eList"></div><div id="eSum" class="sum-box"></div></div>
 
-<div id="hPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">Back</span><span id="hTitle">History Timeline</span></div><div class="scroll" id="hArea"></div></div>
+<div id="hPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">← Back</span><span id="hTitle">History</span></div><div class="scroll" id="hArea"></div></div>
 
-<div id="listPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Final List</span><button onclick="toggleLang()" style="background:#fff; color:#1a73e8; border:none; padding:4px 8px; border-radius:4px; font-size:10px;">HI/EN</button></div><div class="scroll"><div id="shotArea" style="background:white; padding:10px;"><div id="fOut"></div></div></div><div class="b-nav" style="position:static;"><button class="btn" style="background:#ff9800; flex:1; height:48px;" onclick="takeShot()">PHOTO</button><button class="btn" style="background:#28a745; flex:1; height:48px;" onclick="openCalc()">CALC</button></div></div>
+<div id="listPage" class="full-page"><div class="p-head"><span onclick="closeCurrentPage()">← Back</span><span>Final List</span><button onclick="toggleLang()" style="background:#fff; color:#1a73e8; border:none; padding:5px 10px; border-radius:4px; font-size:11px;">HI/EN</button></div><div class="scroll"><div id="shotArea" style="background:white; padding:15px;"><div id="fOut"></div></div></div><div class="b-nav" style="position:static;"><button class="btn" style="background:#ff9800; flex:1; height:50px;" onclick="takeShot()">PHOTO</button><button class="btn" style="background:#28a745; flex:1; height:50px;" onclick="openCalc()">CALC</button></div></div>
 
 <script>
+    // Firebase Config
     const firebaseConfig = { databaseURL: "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database().ref('grocery/3');
@@ -104,50 +99,36 @@
     let currLang = 'HI', activeF = 'All', hType = 'shopping', tCalc = [];
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    window.onpopstate = function() {
-        document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none');
-        document.body.style.overflow = "auto";
-    };
-
-    function openPage(id) { 
-        document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); 
-        document.getElementById(id).style.display = 'flex'; 
-        document.body.style.overflow = "hidden"; 
-        window.history.pushState({page: id}, ""); 
-    }
-
+    // Navigation
+    window.onpopstate = () => { document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); document.body.style.overflow = "auto"; };
+    function openPage(id) { document.getElementById(id).style.display = 'flex'; document.body.style.overflow = "hidden"; window.history.pushState({page: id}, ""); }
     function closeCurrentPage() { window.history.back(); }
 
+    // Firebase Sync
     db.on('value', (snapshot) => {
         const data = snapshot.val();
-        if (data) {
-            items = data.items || [];
-            history = data.history || { shopping: [], expense: [] };
-            renderMaster();
+        if (data) { 
+            items = data.items || []; 
+            history = data.history || { shopping: [], expense: [] }; 
+            renderMaster(); 
         }
     });
 
-    const save = (shouldRender = false) => { 
-        db.set({ items, history }); 
-        if(shouldRender) renderMaster(); 
-    };
+    const save = (render = false) => { db.set({ items, history }); if(render) renderMaster(); };
 
+    // Master List Functions
     function renderMaster() {
-        let cont = document.getElementById('masterList');
-        let query = document.getElementById('itemName').value.toLowerCase();
-        let sorted = [...items].sort((a, b) => b.sel - a.sel);
-        let globalCounter = 0;
-        let categoryCounters = { GROCERY: 0, SABJI: 0, BODY: 0, OTHER: 0 };
-
+        let cont = document.getElementById('masterList'), query = document.getElementById('itemName').value.toLowerCase();
+        let sorted = [...items].sort((a, b) => b.sel - a.sel), globalCount = 0, catCounts = { GROCERY: 0, SABJI: 0, BODY: 0, OTHER: 0 };
+        
         cont.innerHTML = sorted.map((it) => {
             if(activeF !== 'All' && it.cat !== activeF) return '';
             if(query && !it.name.toLowerCase().includes(query)) return '';
-            let displaySerial = (activeF === 'All') ? ++globalCounter : ++categoryCounters[it.cat];
-            let rIdx = items.indexOf(it);
+            let rIdx = items.indexOf(it), disp = (activeF === 'All') ? ++globalCount : ++catCounts[it.cat];
             return `<div class="item-row ${it.sel?'sel-bg':''}">
-                <span onclick="toggleI(${rIdx})"><b>${displaySerial}.${it.name}</b></span>
-                <input type="number" step="0.001" value="${it.qty}" oninput="updateQty(${rIdx}, this.value)" class="u-box">
-                <select onchange="updateUnit(${rIdx}, this.value)" class="unit-sel">
+                <span onclick="toggleI(${rIdx})"><b>${disp}.${it.name}</b></span>
+                <input type="number" step="0.001" value="${it.qty}" oninput="items[${rIdx}].qty=this.value;save(false);" class="u-box">
+                <select onchange="items[${rIdx}].unit=this.value;save(false);" class="unit-sel">
                     <option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
                     <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option>
                 </select>
@@ -157,161 +138,139 @@
         }).join('');
     }
 
-    function updateQty(idx, val) { items[idx].qty = val; save(false); }
-    function updateUnit(idx, val) { items[idx].unit = val; save(false); }
-    function toggleI(i) { items[i].sel = !items[i].sel; save(true); }
-    function delMasterItem(i) { if(confirm("Del?")){ items.splice(i,1); save(true); } }
-    function setFilter(f) { activeF = f; renderMaster(); }
-    function unselectAll() { if(confirm("Unselect All Items?")) { items.forEach(it => it.sel = false); save(true); } }
     function addItem() { 
         let n = document.getElementById('itemName').value, c = document.getElementById('catSelect').value; 
         if(n){ items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); save(true); document.getElementById('itemName').value=''; } 
     }
+    function toggleI(i) { items[i].sel = !items[i].sel; save(true); }
+    function delMasterItem(i) { if(confirm("Delete this item?")){ items.splice(i,1); save(true); } }
+    function setFilter(f) { activeF = f; renderMaster(); }
+    function unselectAll() { if(confirm("Unselect All Items?")) { items.forEach(it => it.sel = false); save(true); } }
 
-    function getSmartUnit(val, unit, lang) {
-        let v = parseFloat(val); if (isNaN(v) || v === 0) return "";
-        let u = { 
-            HI: { Kg: "किलो", Pc: "पीस", Ltr: "लीटर", Rs: "रु", Gram: "ग्राम", HalfK: "आधा किलो", HalfL: "आधा लीटर", Pav: "पाव" }, 
-            EN: { Kg: "Kg", Pc: "Pc", Ltr: "Ltr", Rs: "Rs", Gram: "gm", HalfK: "Half Kg", HalfL: "Half Ltr", Pav: "Pav", ML: "ml" } 
-        }[lang];
-        if (unit === 'Kg') { if (v === 0.5) return u.HalfK; if (v === 0.25) return u.Pav + " " + u.Kg; if (v < 1) return (v * 1000) + " " + u.Gram; }
-        if (unit === 'Ltr' && v < 1) return (v * 1000) + " " + (lang==='HI'?'ML':'ml');
-        return v + " " + u[unit];
+    // Smart Units for Final List
+    function getSmartUnit(v, u, l) {
+        let val = parseFloat(v); if(isNaN(val)||val===0) return "";
+        let units = { 
+            HI: {Kg:"किलो",Pc:"पीस",Ltr:"लीटर",Rs:"रु",Gram:"ग्राम",HalfK:"आधा किलो",Pav:"पाव"}, 
+            EN: {Kg:"Kg",Pc:"Pc",Ltr:"Ltr",Rs:"Rs",Gram:"gm",HalfK:"Half Kg",Pav:"Pav"} 
+        }[l];
+        if(u==='Kg'){
+            if(val===0.5) return units.HalfK;
+            if(val===0.25) return units.Pav + " " + units.Kg;
+            if(val < 1) return (val * 1000) + " " + units.Gram;
+        }
+        if(u==='Ltr' && val < 1) return (val * 1000) + " ml";
+        return val + " " + units[u];
     }
 
     function showFinalList() {
-        let sel = items.filter(it => it.sel); if(!sel.length) return alert("Select items");
+        let sel = items.filter(it => it.sel); if(!sel.length) return alert("Items select karein!");
         let out = document.getElementById('fOut');
-        out.innerHTML = `<h3 style="text-align:center; border-bottom:2px solid #000;">${currLang==='HI'?'खरीदारी की सूची':'Shopping List'}</h3>`;
+        out.innerHTML = `<h3 style="text-align:center; border-bottom:2px solid #000; padding-bottom:5px;">${currLang==='HI'?'सामान की लिस्ट':'Shopping List'}</h3>`;
         ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {
-            let f = sel.filter(it => it.cat === c);
-            if(f.length) {
-                out.innerHTML += `<div style="background:#eee;padding:5px;font-weight:bold;font-size:11px;">${c}</div>` + 
-                f.map((it, j) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #ddd;font-size:12px;">
-                <span><b>${j+1}.${it.name}</b></span><span style="font-weight:bold;">${getSmartUnit(it.qty, it.unit, currLang)}</span><span style="border-bottom:1px solid #000;width:35px;"></span></div>`).join('');
+            let filtered = sel.filter(it => it.cat === c);
+            if(filtered.length){
+                out.innerHTML += `<div style="background:#f0f0f0;padding:6px;font-weight:bold;margin-top:10px;">${c}</div>` + 
+                filtered.map((it, j) => `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed #ccc;">
+                <span><b>${j+1}.${it.name}</b></span><b>${getSmartUnit(it.qty, it.unit, currLang)}</b><span style="border-bottom:1px solid #000;width:40px;"></span></div>`).join('');
             }
         });
         openPage('listPage');
     }
 
-    // --- CALC LOGIC UPDATED ---
+    // --- CALCULATION LOGIC (REFINED) ---
     function openCalc() { 
-        tCalc = items.filter(it => it.sel).map(it => ({ 
-            name: it.name, qty: it.qty, unit: it.unit, price: '', done: false, lastQty: 0, lastPrice: 0 
-        })); 
-        renderC(); 
-        openPage('calcPage'); 
+        tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, unit: it.unit, price: '', done: false })); 
+        renderC(); openPage('calcPage'); 
     }
 
-    function renderC() { 
-        let area = document.getElementById('cList'), gt = 0; 
-        area.innerHTML = tCalc.map((it, i) => { 
-            gt += parseFloat(it.price) || 0; 
+    function renderC() {
+        let area = document.getElementById('cList'), total = 0;
+        area.innerHTML = tCalc.map((it, i) => {
+            total += parseFloat(it.price) || 0;
             return `<div class="c-grid"><b>${it.name}</b>
-            <input type="number" step="0.1" value="${it.qty}" oninput="smartAddition(${i}, 'qty', this.value)" class="u-box">
-            <select onchange="smartAddition(${i}, 'unit', this.value)" class="unit-sel">
+            <input type="number" step="0.1" value="${it.qty}" oninput="tCalc[${i}].qty=this.value; syncCalcToHist(${i});" class="u-box">
+            <select onchange="tCalc[${i}].unit=this.value; syncCalcToHist(${i});" class="unit-sel">
                 <option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
                 <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option>
             </select>
-            <input type="number" value="${it.price}" oninput="smartAddition(${i}, 'price', this.value)" class="p-box">
-            <div class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="lockToggleCalc(${i})">${it.done?'OK':'CON'}</div></div>`; 
-        }).join(''); 
-        document.getElementById('cSum').innerText = `TOTAL: ₹${gt}`; 
+            <input type="number" value="${it.price}" placeholder="Rs" oninput="tCalc[${i}].price=this.value; syncCalcToHist(${i});" class="p-box">
+            <div class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="tCalc[${i}].done=!it.done; syncCalcToHist(${i}); renderC();">${it.done?'OK':'CON'}</div></div>`;
+        }).join('');
+        document.getElementById('cSum').innerText = `TOTAL: ₹${total}`;
     }
 
-    function smartAddition(idx, field, val) { 
-        let it = tCalc[idx], d = new Date().toLocaleDateString('en-GB'), ex = (history.shopping || []).find(h => h.date === d); 
-        if(!ex){ ex = {date: d, items: []}; if(!history.shopping) history.shopping = []; history.shopping.unshift(ex); } 
-        let histItem = ex.items.find(o => o.name.toLowerCase() === it.name.toLowerCase()); 
-        if(!histItem){ histItem = {name: it.name, qty: 0, price: 0, unit: it.unit, done: false}; ex.items.push(histItem); } 
+    function syncCalcToHist(idx) {
+        let it = tCalc[idx];
+        if(!it.price && !it.qty) return; // Khali hone par save na karein
         
-        if(field === 'qty'){ let newVal = parseFloat(val)||0; histItem.qty = (parseFloat(histItem.qty)-it.lastQty)+newVal; it.lastQty=newVal; it.qty=val; } 
-        if(field === 'price'){ let newVal = parseFloat(val)||0; histItem.price = (parseFloat(histItem.price)-it.lastPrice)+newVal; it.lastPrice=newVal; it.price=val; } 
-        if(field === 'unit'){ histItem.unit = val; it.unit = val; } 
-        
-        save(false); 
-        document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; 
-    }
-
-    function lockToggleCalc(idx) { 
-        tCalc[idx].done = !tCalc[idx].done; 
         let d = new Date().toLocaleDateString('en-GB');
         if(!history.shopping) history.shopping = [];
-        let ex = history.shopping.find(h => h.date === d);
-        if(!ex){ ex = {date: d, items: []}; history.shopping.unshift(ex); }
-        let histItem = ex.items.find(o => o.name.toLowerCase() === tCalc[idx].name.toLowerCase());
-        if(!histItem){ 
-            histItem = {name: tCalc[idx].name, qty: tCalc[idx].qty, price: tCalc[idx].price, unit: tCalc[idx].unit, done: tCalc[idx].done};
-            ex.items.push(histItem);
+        let dayRecord = history.shopping.find(h => h.date === d);
+        if(!dayRecord){ dayRecord = {date: d, items: []}; history.shopping.unshift(dayRecord); }
+        
+        let existing = dayRecord.items.find(o => o.name.toLowerCase() === it.name.toLowerCase());
+        if(existing){
+            existing.qty = it.qty; existing.price = it.price; existing.unit = it.unit; existing.done = it.done;
         } else {
-            histItem.done = tCalc[idx].done;
-            histItem.qty = tCalc[idx].qty;
-            histItem.price = tCalc[idx].price;
+            dayRecord.items.push({name: it.name, qty: it.qty, price: it.price, unit: it.unit, done: it.done});
         }
-        save(false); renderC(); 
+        save(false);
+        document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`;
     }
 
-    // --- OTHER FUNCTIONS ---
-    function addK() { 
-        let n = document.getElementById('kName').value, q = parseFloat(document.getElementById('kQty').value)||1, p = parseFloat(document.getElementById('kPrice').value)||0; 
-        if(n && p) { 
-            let d = new Date().toLocaleDateString('en-GB'), ex = (history.expense || []).find(h => h.date === d); 
-            if(!ex){ ex = {date: d, items: []}; if(!history.expense) history.expense = []; history.expense.unshift(ex); } 
-            let old = ex.items.find(o => o.name.toLowerCase() === n.toLowerCase()); 
-            if(old){ old.qty = parseFloat(old.qty) + q; old.price = parseFloat(old.price) + p; } 
-            else { ex.items.push({name: n, qty: q, price: p, done: false}); } 
-            save(false); renderDK(d); 
-            document.getElementById('kName').value=''; document.getElementById('kQty').value=''; document.getElementById('kPrice').value=''; 
-        } 
-    }
-
-    function renderDK(date) { 
-        let ex = (history.expense || []).find(h => h.date === date), t = 0, area = document.getElementById('dkList'); 
-        if(!ex) { area.innerHTML = ""; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; } 
-        area.innerHTML = ex.items.map((it, i) => { 
-            t += parseFloat(it.price) || 0; 
-            let isLocked = it.done || false; 
-            return `<div class="dk-grid"><b>${it.name}</b><input type="number" value="${it.qty}" ${isLocked?'disabled':''} oninput="updateDKItem('${date}',${i},'qty',this.value)" class="u-box"><input type="number" value="${it.price}" ${isLocked?'disabled':''} oninput="updateDKItem('${date}',${i},'price',this.value)" class="p-box"><button class="btn ${isLocked?'ok-btn':'lock-btn'}" onclick="lockDK('${date}',${i})">${isLocked?'OK':'CON'}</button><button class="btn del-btn" onclick="delDKItem('${date}',${i})">DEL</button></div>`; 
-        }).join(''); 
-        document.getElementById('dkSum').innerText = `TOTAL: ₹${t}`; 
-    }
-
-    function updateDKItem(d, idx, f, v) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx][f] = v; save(false); } }
-    function lockDK(d, idx) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx].done = !ex.items[idx].done; save(false); renderDK(ex.date); } }
-    function delDKItem(d, idx) { if(confirm("Del?")){ history.expense.find(h => h.date === d).items.splice(idx,1); save(false); renderDK(d); } }
+    // --- DAILY KHARCH LOGIC ---
     function openDailyKharch() { let d = new Date().toLocaleDateString('en-GB'); renderDK(d); openPage('kInPage'); }
-
-    function renderH() { 
-        let area = document.getElementById('hArea'); area.innerHTML = ''; 
-        let dataArr = (history[hType] || []); 
-        let sortedData = [...dataArr].sort((a,b) => { let da = a.date.split('/'), db = b.date.split('/'); return new Date(db[2], db[1]-1, db[0]) - new Date(da[2], da[1]-1, da[0]); }); 
-        let currentMonth = "", monthTotal = 0, tempHtml = ""; 
-        sortedData.forEach((h) => { 
-            let parts = h.date.split('/'), mName = months[parseInt(parts[1])-1] + " " + parts[2], dayTotal = h.items.reduce((a, b) => a + (parseFloat(b.price)||0), 0); 
-            if (currentMonth !== "" && currentMonth !== mName) { area.innerHTML += `<div class="month-label"><span>${currentMonth} Total:</span><span>₹${monthTotal}</span></div>` + tempHtml; tempHtml = ""; monthTotal = 0; } 
-            currentMonth = mName; monthTotal += dayTotal; 
-            tempHtml += `<div class="item-row" style="grid-template-columns: 1fr 60px 45px 40px; background:white;"><span>${h.date}</span><b>₹${dayTotal}</b><button onclick="editHistory(${history[hType].indexOf(h)})" style="background:orange;color:white;border:none;padding:6px;border-radius:4px;font-size:9px;">EDIT</button><button class="btn del-btn" onclick="delH(${history[hType].indexOf(h)})">DEL</button></div>`; 
-        }); 
-        if(currentMonth) area.innerHTML += `<div class="month-label"><span>${currentMonth} Total:</span><span>₹${monthTotal}</span></div>` + tempHtml; 
+    function addK() {
+        let n = document.getElementById('kName').value, q = parseFloat(document.getElementById('kQty').value)||1, p = parseFloat(document.getElementById('kPrice').value)||0;
+        if(n && p) {
+            let d = new Date().toLocaleDateString('en-GB');
+            if(!history.expense) history.expense = [];
+            let ex = history.expense.find(h => h.date === d);
+            if(!ex){ ex = {date: d, items: []}; history.expense.unshift(ex); }
+            let old = ex.items.find(o => o.name.toLowerCase() === n.toLowerCase());
+            if(old){ old.qty = parseFloat(old.qty)+q; old.price = parseFloat(old.price)+p; } 
+            else { ex.items.push({name: n, qty: q, price: p, done: false}); }
+            save(false); renderDK(d);
+            document.getElementById('kName').value=''; document.getElementById('kQty').value=''; document.getElementById('kPrice').value='';
+        }
+    }
+    function renderDK(date) {
+        let ex = (history.expense || []).find(h => h.date === date), t = 0, area = document.getElementById('dkList');
+        if(!ex){ area.innerHTML = ""; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; }
+        area.innerHTML = ex.items.map((it, i) => {
+            t += parseFloat(it.price) || 0;
+            return `<div class="dk-grid"><b>${it.name}</b><input type="number" value="${it.qty}" oninput="history.expense.find(h=>h.date=='${date}').items[${i}].qty=this.value;save(false);" class="u-box"><input type="number" value="${it.price}" oninput="history.expense.find(h=>h.date=='${date}').items[${i}].price=this.value;save(false);renderDK('${date}');" class="p-box"><button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="history.expense.find(h=>h.date=='${date}').items[${i}].done=!it.done;save(false);renderDK('${date}');">${it.done?'OK':'CON'}</button><button class="btn del-btn" onclick="if(confirm('Delete?')){history.expense.find(h=>h.date=='${date}').items.splice(${i},1);save(false);renderDK('${date}');}">DEL</button></div>`;
+        }).join('');
+        document.getElementById('dkSum').innerText = `TOTAL: ₹${t}`;
     }
 
-    function editHistory(idx) { 
-        let dataArr = history[hType][idx].items; 
-        let area = document.getElementById('eList'); 
-        area.innerHTML = dataArr.map((it, i) => { 
-            let isLocked = it.done || false; 
-            return `<div class="c-grid"><b>${it.name}</b><input type="number" step="0.1" value="${it.qty}" ${isLocked?'disabled':''} oninput="updateHistItem(${idx},${i},'qty',this.value)" class="u-box"><select ${isLocked?'disabled':''} onchange="updateHistItem(${idx},${i},'unit',this.value)" class="unit-sel"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select><input type="number" value="${it.price}" ${isLocked?'disabled':''} oninput="updateHistItem(${idx},${i},'price',this.value)" class="p-box"><button class="btn ${isLocked?'ok-btn':'lock-btn'}" onclick="toggleLock(${idx},${i})">${isLocked?'OK':'CON'}</button><button class="btn del-btn" onclick="delHistItem(${idx},${i})">DEL</button></div>`; 
-        }).join(''); 
-        document.getElementById('eSum').innerText = `TOTAL: ₹${dataArr.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; 
-        openPage('editPage'); 
+    // --- HISTORY TIMELINE ---
+    function renderH() {
+        let area = document.getElementById('hArea'), dataArr = (history[hType] || []); area.innerHTML = '';
+        let sorted = [...dataArr].sort((a,b) => { 
+            let da = a.date.split('/'), db = b.date.split('/'); 
+            return new Date(db[2], db[1]-1, db[0]) - new Date(da[2], da[1]-1, da[0]); 
+        });
+        let curM = "", mTot = 0, html = "";
+        sorted.forEach((h) => {
+            let p = h.date.split('/'), mN = months[p[1]-1] + " " + p[2], dTot = h.items.reduce((a, b) => a + (parseFloat(b.price)||0), 0);
+            if (curM !== "" && curM !== mN) { area.innerHTML += `<div class="month-label"><span>${curM} Total:</span><span>₹${mTot}</span></div>` + html; html = ""; mTot = 0; }
+            curM = mN; mTot += dTot;
+            html += `<div class="item-row" style="grid-template-columns: 1fr 70px 50px 45px;"><span>${h.date}</span><b>₹${dTot}</b><button onclick="editH(${history[hType].indexOf(h)})" style="background:orange;color:white;border:none;border-radius:4px;font-size:10px;height:30px;">EDIT</button><button class="btn del-btn" style="height:30px;" onclick="if(confirm('Delete this day history?')){history[hType].splice(${history[hType].indexOf(h)},1);save(false);renderH();}">DEL</button></div>`;
+        });
+        if(curM) area.innerHTML += `<div class="month-label"><span>${curM} Total:</span><span>₹${mTot}</span></div>` + html;
     }
 
-    function updateHistItem(hIdx, iIdx, f, v) { history[hType][hIdx].items[iIdx][f] = v; save(false); let sum = history[hType][hIdx].items.reduce((a,b)=>a+(parseFloat(b.price)||0),0); document.getElementById('eSum').innerText = `TOTAL: ₹${sum}`; }
-    function toggleLock(hIdx, iIdx) { history[hType][hIdx].items[iIdx].done = !history[hType][hIdx].items[iIdx].done; save(false); editHistory(hIdx); }
-    function delHistItem(hIdx, iIdx) { if(confirm("Del?")){ history[hType][hIdx].items.splice(iIdx,1); save(false); editHistory(hIdx); } }
-    function delH(i) { if(confirm("Del?")){ history[hType].splice(i,1); save(false); renderH(); } }
+    function editH(idx) {
+        let arr = history[hType][idx].items, area = document.getElementById('eList');
+        area.innerHTML = arr.map((it, i) => `<div class="c-grid"><b>${it.name}</b><input type="number" step="0.1" value="${it.qty}" oninput="history['${hType}'][${idx}].items[${i}].qty=this.value;save(false);" class="u-box"><select onchange="history['${hType}'][${idx}].items[${i}].unit=this.value;save(false);" class="unit-sel"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select><input type="number" value="${it.price}" oninput="history['${hType}'][${idx}].items[${i}].price=this.value;save(false);updateEditSum(${idx});" class="p-box"><button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="history['${hType}'][${idx}].items[${i}].done=!it.done;save(false);editH(${idx});">${it.done?'OK':'CON'}</button><button class="btn del-btn" onclick="if(confirm('Delete item?')){history['${hType}'][${idx}].items.splice(${i},1);save(false);editH(${idx});}">DEL</button></div>`).join('');
+        updateEditSum(idx); openPage('editPage');
+    }
+    function updateEditSum(idx){ document.getElementById('eSum').innerText = 'TOTAL: ₹' + history[hType][idx].items.reduce((a,b)=>a+(parseFloat(b.price)||0),0); }
+
     function toggleLang() { currLang = (currLang === 'HI') ? 'EN' : 'HI'; showFinalList(); }
-    function takeShot() { html2canvas(document.getElementById('shotArea')).then(c => { let a = document.createElement('a'); a.download = 'List.png'; a.href = c.toDataURL(); a.click(); }); }
+    function takeShot() { html2canvas(document.getElementById('shotArea')).then(c => { let a = document.createElement('a'); a.download = 'Grocery_List.png'; a.href = c.toDataURL(); a.click(); }); }
 </script>
 </body>
 </html>
