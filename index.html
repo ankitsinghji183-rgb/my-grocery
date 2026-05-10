@@ -3,94 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Master v79</title>
+    <title>Grocery Master v80</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; }
-        html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #2d3436; }
+        :root { --primary: #1a73e8; --success: #28a745; --danger: #dc3545; --bg: #f4f7f6; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #333; overflow-x: hidden; }
         
-        .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0f4f8; display: none; flex-direction: column; z-index: 100; }
-        #mainView { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; z-index: 1; }
+        /* Headers */
+        .card-header { background: white; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 10; }
+        .input-row { display: flex; gap: 5px; align-items: center; }
+        input, select { padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; height: 40px; }
         
-        .p-head { background: #0984e3; color: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; box-shadow: 0 3px 10px rgba(0,0,0,0.15); flex-shrink: 0; }
-        
-        /* Home Buttons */
-        .top-nav { display: flex; gap: 8px; padding: 10px; background: #fff; border-bottom: 1px solid #dfe6e9; }
-        .nav-btn { flex: 1; background: #f1f2f6; border: 1px solid #dfe6e9; padding: 12px; border-radius: 10px; text-align: center; font-weight: 800; font-size: 12px; color: #0984e3; }
+        /* Home Screen Nav */
+        .top-hist-nav { display: flex; gap: 6px; padding: 8px 10px; background: #fff; border-bottom: 1px solid #eee; }
+        .h-nav-btn { flex: 1; background: #f0f4f8; border: 1px solid #d1d9e0; padding: 10px; border-radius: 8px; text-align: center; font-weight: 800; font-size: 11px; color: var(--primary); cursor: pointer; }
 
-        .scroll { flex: 1; overflow-y: auto; padding: 10px; -webkit-overflow-scrolling: touch; }
-        .card { background: white; padding: 12px; margin-bottom: 10px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        
-        .in-row { display: flex; gap: 6px; align-items: center; width: 100%; }
-        input { padding: 8px; border: 1px solid #dfe6e9; border-radius: 8px; height: 42px; font-size: 14px; }
-        .qty-in { width: 60px !important; text-align: center; }
-        .price-in { width: 90px !important; font-weight: 800; color: #27ae60; }
-        
-        .btn { border: none; border-radius: 8px; color: white; font-weight: 700; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .ok-btn { background: #2ecc71 !important; }
-        .del-btn { background: #ff7675 !important; }
-        .lock-btn { background: #fdcb6e !important; color: #2d3436; }
+        /* Filter Bar */
+        .filter-container { display: flex; gap: 5px; padding: 8px 10px; overflow-x: auto; background: #fff; }
+        .f-btn { background: #eee; padding: 6px 12px; border-radius: 20px; font-size: 11px; border: none; font-weight: 600; flex-shrink: 0; }
+        .f-active { background: var(--primary); color: white; }
 
-        /* List Styling */
-        .list-item { display: grid; grid-template-columns: 1fr 50px 80px 35px 35px; gap: 5px; align-items: center; padding: 12px 8px; background: white; border-bottom: 1px solid #eee; border-radius: 8px; margin-bottom: 4px; }
-        .sum-box { padding: 15px; background: #e3f2fd; font-weight: 900; text-align: right; border-top: 3px solid #0984e3; font-size: 18px; color: #0984e3; }
-        .b-nav { padding: 10px; background: white; border-top: 1px solid #ddd; display: flex; gap: 10px; }
+        /* Lists */
+        .list-container { padding-bottom: 80px; }
+        .item-row { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #f0f0f0; background: #fff; gap: 8px; }
+        .selected-row { background: #e7f3ff; border-left: 4px solid var(--primary); }
+        .item-label { flex: 1; font-weight: 700; font-size: 15px; }
+
+        /* Daily Kharcha Grid */
+        .dk-grid { display: grid; grid-template-columns: 1fr 50px 80px 35px 35px; gap: 5px; align-items: center; padding: 10px; background: #fff; border-bottom: 1px solid #eee; }
+        
+        /* Pages */
+        .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: none; flex-direction: column; }
+        .p-head { background: var(--primary); color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; }
+        .scroll { flex: 1; overflow-y: auto; padding: 10px; }
+        
+        /* Buttons */
+        .btn-save { background: var(--success); color: white; border: none; padding: 0 15px; border-radius: 6px; font-weight: bold; height: 40px; }
+        .del-btn { background: var(--danger); color: white; border: none; border-radius: 4px; height: 32px; width: 32px; font-weight: bold; }
+        .lock-btn { background: #fdcb6e; border: none; border-radius: 4px; height: 32px; width: 32px; }
+        .sum-box { background: #e3f2fd; padding: 15px; text-align: right; font-weight: 900; font-size: 18px; color: var(--primary); border-top: 2px solid var(--primary); }
+        
+        .generate-btn { position: fixed; bottom: 10px; left: 10px; right: 10px; background: var(--primary); color: white; text-align: center; padding: 15px; border-radius: 12px; font-weight: bold; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
-    <div id="mainView">
-        <div class="p-head"><span>GROCERY MASTER v79</span></div>
-        <div class="top-nav">
-            <div class="nav-btn" onclick="hType='shopping'; renderHistory(); openPage('historyPage')">📦 SAMAN HISTORY</div>
-            <div class="nav-btn" onclick="hType='expense'; renderHistory(); openPage('historyPage')">💰 KHARCH HISTORY</div>
-        </div>
-        
-        <div class="scroll">
-            <div class="card">
-                <div class="in-row">
-                    <input type="text" id="mName" placeholder="Item naam..." style="flex:1;">
-                    <button class="btn ok-btn" onclick="addMaster()" style="width:60px;">ADD</button>
-                </div>
-            </div>
-            <div id="masterList"></div>
-        </div>
-        <div class="b-nav">
-            <button class="btn lock-btn" style="flex:1;" onclick="openDailyKharch()">💸 DAILY KHARCH KAREIN</button>
+<div id="mainView">
+    <div class="card-header">
+        <div class="input-row">
+            <input type="text" id="mName" placeholder="Item Name..." style="flex:1;" oninput="renderMaster()">
+            <select id="mCat">
+                <option value="GROCERY">Groc</option><option value="SABJI">Sabji</option><option value="OTHER">Misc</option>
+            </select>
+            <button class="btn-save" onclick="addMaster()">ADD</button>
         </div>
     </div>
 
-    <div id="dailyKharchPage" class="full-page">
-        <div class="p-head"><span onclick="closePage()">← BACK</span><span id="dkDate"></span></div>
-        <div class="scroll">
-            <div class="card">
-                <div class="in-row">
-                    <input type="text" id="kName" placeholder="Item..." style="flex:1;">
-                    <input type="number" id="kQty" placeholder="Qty" class="qty-in" inputmode="decimal">
-                    <input type="number" id="kPrice" placeholder="₹ Price" class="price-in" inputmode="decimal">
-                    <button class="btn ok-btn" onclick="addExpense()" style="width:50px;">ADD</button>
-                </div>
-            </div>
-            <div id="dkList"></div>
-        </div>
-        <div class="sum-box" id="dkSum">TOTAL: ₹0</div>
+    <div class="top-hist-nav">
+        <div class="h-nav-btn" onclick="hType='shopping'; renderH(); openPage('historyPage')">📦 SAMAN HISTORY</div>
+        <div class="h-nav-btn" onclick="hType='expense'; renderH(); openPage('historyPage')">💰 KHARCH HISTORY</div>
+        <div class="h-nav-btn" style="background:#fff3cd;" onclick="openDailyKharch()">💸 DAILY KHARCH</div>
     </div>
 
-    <div id="historyPage" class="full-page">
-        <div class="p-head"><span onclick="closePage()">← BACK</span><span id="hTitle">History</span></div>
-        <div class="scroll" id="hArea"></div>
+    <div class="filter-container">
+        <button class="f-btn f-active" id="f-All" onclick="setFilter('All')">ALL</button>
+        <button class="f-btn" id="f-GROCERY" onclick="setFilter('GROCERY')">GROCERY</button>
+        <button class="f-btn" id="f-SABJI" onclick="setFilter('SABJI')">SABJI</button>
+        <button class="f-btn" id="f-OTHER" onclick="setFilter('OTHER')">OTHER</button>
     </div>
+
+    <div id="masterList" class="list-container"></div>
+    <div class="generate-btn" onclick="showFinalList()">📋 GENERATE LIST</div>
+</div>
+
+<div id="dailyKharchPage" class="full-page">
+    <div class="p-head"><span onclick="closePage()">← BACK</span><span id="dkDateLabel">00/00/0000</span></div>
+    <div class="card-header">
+        <div class="input-row">
+            <input type="text" id="kName" placeholder="Item..." style="flex:1;">
+            <input type="number" id="kQty" placeholder="Qty" style="width:50px;" inputmode="decimal">
+            <input type="number" id="kPrice" placeholder="₹ Price" style="width:80px; font-weight:bold; color:green;" inputmode="decimal">
+            <button class="btn-save" onclick="addExpense()">ADD</button>
+        </div>
+    </div>
+    <div class="scroll" id="dkListArea"></div>
+    <div class="sum-box" id="dkSum">TOTAL: ₹0</div>
+</div>
+
+<div id="historyPage" class="full-page">
+    <div class="p-head"><span onclick="closePage()">← BACK</span><span id="hTitle">History</span></div>
+    <div class="scroll" id="hArea"></div>
+</div>
 
 <script>
-    // Firebase Setup
     const firebaseConfig = { databaseURL: "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database().ref('grocery/3');
 
-    let items = [], history = { shopping: [], expense: [] }, hType = 'expense';
+    let items = [], history = { shopping: [], expense: [] }, currentFilter = 'All', hType = 'expense';
 
-    // Sync Data
+    // SYNC DATA
     db.on('value', (snap) => {
         const d = snap.val();
         if (d) {
@@ -106,36 +121,54 @@
 
     function save() { db.set({ items, history }); }
 
-    // Navigation
+    // NAVIGATION
     function openPage(id) {
         document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none');
         document.getElementById(id).style.display = 'flex';
         window.history.pushState({p:id}, '');
     }
     function closePage() { window.history.back(); }
-    window.onpopstate = () => {
-        document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none');
-    };
+    window.onpopstate = () => document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none');
 
-    // Master List Logic
-    function renderMaster() {
-        const cont = document.getElementById('masterList');
-        cont.innerHTML = items.map((it, i) => `
-            <div class="list-item" style="grid-template-columns: 1fr 40px;">
-                <b>${it.name}</b>
-                <button class="btn del-btn" onclick="items.splice(${i},1); save()">✕</button>
-            </div>
-        `).join('');
-    }
+    // MASTER LIST (Home Screen)
     function addMaster() {
-        let n = document.getElementById('mName').value.trim();
-        if(n) { items.unshift({name: n}); save(); document.getElementById('mName').value = ''; }
+        let name = document.getElementById('mName').value.trim();
+        let cat = document.getElementById('mCat').value;
+        if(name) {
+            items.unshift({ name, cat, selected: true, qty: '', unit: 'Kg' });
+            save(); document.getElementById('mName').value = '';
+        }
     }
 
-    // Daily Kharcha Logic
+    function renderMaster() {
+        let cont = document.getElementById('masterList');
+        let search = document.getElementById('mName').value.toLowerCase();
+        let filtered = items.filter(it => (currentFilter === 'All' || it.cat === currentFilter) && it.name.toLowerCase().includes(search));
+        
+        cont.innerHTML = filtered.map((it, i) => {
+            let idx = items.indexOf(it);
+            return `
+            <div class="item-row ${it.selected ? 'selected-row' : ''}">
+                <span class="item-label" onclick="toggleSel(${idx})">${it.name}</span>
+                <input type="number" value="${it.qty}" oninput="items[${idx}].qty=this.value; save()" style="width:50px; height:32px;">
+                <input type="checkbox" ${it.selected ? 'checked' : ''} onclick="toggleSel(${idx})" style="width:22px; height:22px;">
+                <button class="del-btn" onclick="delMaster(${idx})">✕</button>
+            </div>`;
+        }).join('');
+    }
+    function toggleSel(i) { items[i].selected = !items[i].selected; save(); }
+    function delMaster(i) { if(confirm("Delete?")) { items.splice(i,1); save(); } }
+    function setFilter(f) {
+        currentFilter = f;
+        document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('f-active'));
+        document.getElementById('f-'+f).classList.add('f-active');
+        renderMaster();
+    }
+
+    // DAILY KHARCHA (Instant Add & List)
     function openDailyKharch() {
         let d = new Date().toLocaleDateString('en-GB');
-        document.getElementById('dkDate').innerText = d;
+        document.getElementById('dkDateLabel').innerText = d;
         renderDKList(d);
         openPage('dailyKharchPage');
     }
@@ -147,19 +180,19 @@
         let d = new Date().toLocaleDateString('en-GB');
 
         if(!n) return;
-
         if(!history.expense) history.expense = [];
+        
         let dayRec = history.expense.find(h => h.date === d);
         if(!dayRec) {
             dayRec = { date: d, items: [] };
             history.expense.unshift(dayRec);
         }
 
-        // SMART ADD: Check if item already exists today
-        let existing = dayRec.items.find(it => it.name.toLowerCase() === n.toLowerCase());
-        if(existing) {
-            existing.qty = (parseFloat(existing.qty) || 0) + q;
-            existing.price = (parseFloat(existing.price) || 0) + p;
+        // SMART MERGE
+        let exist = dayRec.items.find(it => it.name.toLowerCase() === n.toLowerCase());
+        if(exist) {
+            exist.qty = (parseFloat(exist.qty) || 0) + q;
+            exist.price = (parseFloat(exist.price) || 0) + p;
         } else {
             dayRec.items.push({ name: n, qty: q, price: p, done: false });
         }
@@ -167,7 +200,6 @@
         save();
         renderDKList(d);
 
-        // Reset Inputs
         document.getElementById('kName').value = '';
         document.getElementById('kQty').value = '';
         document.getElementById('kPrice').value = '';
@@ -176,10 +208,10 @@
 
     function renderDKList(d) {
         let dayRec = history.expense.find(h => h.date === d);
-        let cont = document.getElementById('dkList'), total = 0;
+        let cont = document.getElementById('dkListArea'), total = 0;
         
         if(!dayRec || !dayRec.items.length) {
-            cont.innerHTML = "<p style='text-align:center; padding:20px; color:#999;'>Aaj koi entry nahi hai.</p>";
+            cont.innerHTML = "<p style='text-align:center; padding:30px; color:#999;'>No items added yet.</p>";
             document.getElementById('dkSum').innerText = "TOTAL: ₹0";
             return;
         }
@@ -187,43 +219,48 @@
         cont.innerHTML = dayRec.items.map((it, i) => {
             total += (parseFloat(it.price) || 0);
             return `
-                <div class="list-item">
-                    <b style="font-size:13px;">${it.name}</b>
-                    <span style="font-size:12px; color:#666;">${it.qty}</span>
-                    <b style="color:#27ae60;">₹${it.price}</b>
-                    <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="toggleLock('${d}',${i})">${it.done?'✓':'🔒'}</button>
-                    <button class="btn del-btn" onclick="delExpenseItem('${d}',${i})">✕</button>
+                <div class="dk-grid">
+                    <b>${it.name}</b>
+                    <span style="text-align:center; color:#666;">${it.qty}</span>
+                    <b style="color:green; text-align:right;">₹${it.price}</b>
+                    <button class="lock-btn" onclick="lockExp('${d}',${i})">${it.done?'✓':'🔒'}</button>
+                    <button class="del-btn" style="height:28px; width:28px;" onclick="delExp('${d}',${i})">✕</button>
                 </div>
             `;
         }).join('');
         document.getElementById('dkSum').innerText = `TOTAL: ₹${total.toFixed(2)}`;
     }
 
-    function toggleLock(d, i) {
+    function lockExp(d, i) {
         let day = history.expense.find(h => h.date === d);
         day.items[i].done = !day.items[i].done;
-        save(); renderDKList(d);
+        save();
     }
 
-    function delExpenseItem(d, i) {
-        if(confirm("Delete karein?")) {
-            let day = history.expense.find(h => h.date === d);
-            day.items.splice(i, 1);
-            save(); renderDKList(d);
+    function delExp(d, i) {
+        if(confirm("Delete item?")) {
+            history.expense.find(h => h.date === d).items.splice(i, 1);
+            save();
         }
     }
 
-    // History View
-    function renderHistory() {
+    // HISTORY VIEW
+    function renderH() {
         document.getElementById('hTitle').innerText = hType === 'shopping' ? 'Saman History' : 'Kharch History';
         let area = document.getElementById('hArea');
         let data = history[hType] || [];
         area.innerHTML = data.map(h => {
             let t = h.items.reduce((a,b) => a + (parseFloat(b.price)||0), 0);
-            return `<div class="list-item" style="grid-template-columns: 1fr 100px;">
-                <span>${h.date}</span><b>₹${t.toFixed(2)}</b>
+            return `<div class="item-row" style="justify-content:space-between;">
+                <span><b>${h.date}</b></span>
+                <b style="color:var(--primary);">₹${t.toFixed(2)}</b>
             </div>`;
         }).join('');
+    }
+
+    function showFinalList() {
+        // Shopping list generation logic...
+        alert("Shopping list selected items par based hogi!");
     }
 </script>
 </body>
