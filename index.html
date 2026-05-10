@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Manager v64</title>
+    <title>Grocery Manager v66 Full Combo</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
@@ -11,6 +11,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
         
+        /* Fixed Background for Overlay Pages */
         .full-page { 
             position: fixed; 
             top: 0; left: 0; 
@@ -136,16 +137,15 @@
         let cont = document.getElementById('masterList');
         let query = document.getElementById('itemName').value.toLowerCase();
         let sorted = [...items].sort((a, b) => b.sel - a.sel);
-        let globalCounter = 0;
-        let categoryCounters = { GROCERY: 0, SABJI: 0, BODY: 0, OTHER: 0 };
+        let gC = 0, cC = { GROCERY: 0, SABJI: 0, BODY: 0, OTHER: 0 };
 
         cont.innerHTML = sorted.map((it) => {
             if(activeF !== 'All' && it.cat !== activeF) return '';
             if(query && !it.name.toLowerCase().includes(query)) return '';
-            let displaySerial = (activeF === 'All') ? ++globalCounter : ++categoryCounters[it.cat];
+            let dS = (activeF === 'All') ? ++gC : ++cC[it.cat];
             let rIdx = items.indexOf(it);
             return `<div class="item-row ${it.sel?'sel-bg':''}">
-                <span onclick="toggleI(${rIdx})"><b>${displaySerial}.${it.name}</b></span>
+                <span onclick="toggleI(${rIdx})"><b>${dS}.${it.name}</b></span>
                 <input type="number" step="0.001" value="${it.qty}" oninput="updateQty(${rIdx}, this.value)" class="u-box">
                 <select onchange="updateUnit(${rIdx}, this.value)" class="unit-sel">
                     <option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
@@ -159,17 +159,20 @@
 
     function updateQty(idx, val) { items[idx].qty = val; save(false); }
     function updateUnit(idx, val) { items[idx].unit = val; save(false); }
-    function addItem() { let n = document.getElementById('itemName').value, c = document.getElementById('catSelect').value; if(n){ items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); save(true); document.getElementById('itemName').value=''; renderMaster(); } }
+    function addItem() { 
+        let n = document.getElementById('itemName').value, c = document.getElementById('catSelect').value; 
+        if(n){ items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); save(true); document.getElementById('itemName').value=''; } 
+    }
     function toggleI(i) { items[i].sel = !items[i].sel; save(true); }
     function delMasterItem(i) { if(confirm("Del?")){ items.splice(i,1); save(true); } }
     function setFilter(f) { activeF = f; renderMaster(); }
-    function unselectAll() { if(confirm("Unselect All Items?")) { items.forEach(it => it.sel = false); save(true); } }
+    function unselectAll() { if(confirm("Unselect All?")) { items.forEach(it => it.sel = false); save(true); } }
 
     function getSmartUnit(val, unit, lang) {
         let v = parseFloat(val); if (isNaN(v) || v === 0) return "";
         let u = { HI: { Kg: "किलो", Pc: "पीस", Ltr: "लीटर", Rs: "रु", Gram: "ग्राम", HalfK: "आधा किलो", Pav: "पाव" }, EN: { Kg: "Kg", Pc: "Pc", Ltr: "Ltr", Rs: "Rs", Gram: "gm", HalfK: "Half Kg", Pav: "Pav" } }[lang];
         if (unit === 'Kg') { if (v === 0.5) return u.HalfK; if (v === 0.25) return u.Pav + " " + u.Kg; if (v < 1) return (v * 1000) + " " + u.Gram; }
-        if (unit === 'Ltr' && v < 1) return (v * 1000) + " " + (lang==='HI'?'ML':'ml');
+        if (unit === 'Ltr' && v < 1) return (v * 1000) + " ml";
         return v + " " + u[unit];
     }
 
@@ -184,67 +187,34 @@
         openPage('listPage');
     }
 
-    function openCalc() { 
-        tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, unit: it.unit, price: '', done: false, lastQty: 0, lastPrice: 0 })); 
-        renderC(); 
-        openPage('calcPage'); 
-    }
-
-    function smartAddition(idx, field, val) { 
-        let it = tCalc[idx];
-        it[field] = val; // Local update
+    // --- SHARED SMART SYNC LOGIC ---
+    function smartSync(type, name, qty, price, unit, done, isAddition = false) {
+        let d = new Date().toLocaleDateString('en-GB');
+        if(!history[type]) history[type] = [];
+        let day = history[type].find(h => h.date === d);
+        if(!day){ day = {date: d, items: []}; history[type].unshift(day); }
         
-        // Only sync to history if it's a price update OR the confirm button is clicked (handled separately)
-        if(field === 'price' && val !== '') {
-            syncToHistory(idx);
-        }
-        document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; 
-    }
-
-    function syncToHistory(idx) {
-        let it = tCalc[idx], d = new Date().toLocaleDateString('en-GB');
-        if(!history.shopping) history.shopping = [];
-        let ex = history.shopping.find(h => h.date === d);
-        if(!ex){ ex = {date: d, items: []}; history.shopping.unshift(ex); }
-        
-        let histItem = ex.items.find(o => o.name.toLowerCase() === it.name.toLowerCase());
-        if(!histItem){ 
-            histItem = {name: it.name, qty: it.qty, price: it.price, unit: it.unit, done: it.done}; 
-            ex.items.push(histItem); 
+        let old = day.items.find(o => o.name.toLowerCase() === name.toLowerCase());
+        if(old) {
+            if(isAddition) {
+                old.qty = (parseFloat(old.qty)||0) + (parseFloat(qty)||0);
+                old.price = (parseFloat(old.price)||0) + (parseFloat(price)||0);
+            } else {
+                old.qty = qty; old.price = price;
+            }
+            old.unit = unit; old.done = done;
         } else {
-            histItem.qty = it.qty;
-            histItem.price = it.price;
-            histItem.unit = it.unit;
-            histItem.done = it.done;
+            day.items.push({name, qty, price, unit, done});
         }
         save(false);
     }
 
-    function lockToggleCalc(idx) { 
-        tCalc[idx].done = !tCalc[idx].done; 
-        syncToHistory(idx); // Manual sync on button click
-        renderC(); 
-    }
-
-    function renderC() { 
-        let area = document.getElementById('cList'), gt = 0; 
-        area.innerHTML = tCalc.map((it, i) => { 
-            gt += parseFloat(it.price) || 0; 
-            return `<div class="c-grid"><b>${it.name}</b><input type="number" step="0.1" value="${it.qty}" oninput="smartAddition(${i}, 'qty', this.value)" class="u-box"><select onchange="smartAddition(${i}, 'unit', this.value)" class="unit-sel"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select><input type="number" value="${it.price}" oninput="smartAddition(${i}, 'price', this.value)" class="p-box"><div class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="lockToggleCalc(${i})">${it.done?'OK':'CON'}</div></div>`; 
-        }).join(''); 
-        document.getElementById('cSum').innerText = `TOTAL: ₹${gt}`; 
-    }
-
-    // Daily Kharch Functions
+    // --- DAILY KHARCH (RESTORED v63 Logic with Addition) ---
     function addK() { 
-        let n = document.getElementById('kName').value, q = parseFloat(document.getElementById('kQty').value)||1, p = parseFloat(document.getElementById('kPrice').value)||0; 
+        let n = document.getElementById('kName').value, q = document.getElementById('kQty').value||1, p = document.getElementById('kPrice').value||0; 
         if(n && p) { 
-            let d = new Date().toLocaleDateString('en-GB'), ex = (history.expense || []).find(h => h.date === d); 
-            if(!ex){ ex = {date: d, items: []}; if(!history.expense) history.expense = []; history.expense.unshift(ex); } 
-            let old = ex.items.find(o => o.name.toLowerCase() === n.toLowerCase()); 
-            if(old){ old.qty = parseFloat(old.qty) + q; old.price = parseFloat(old.price) + p; } 
-            else { ex.items.push({name: n, qty: q, price: p, done: false}); } 
-            save(false); renderDK(d); 
+            smartSync('expense', n, q, p, 'Pc', false, true); 
+            renderDK(new Date().toLocaleDateString('en-GB'));
             document.getElementById('kName').value=''; document.getElementById('kQty').value=''; document.getElementById('kPrice').value=''; 
         } 
     }
@@ -252,38 +222,51 @@
         let ex = (history.expense || []).find(h => h.date === date), t = 0, area = document.getElementById('dkList'); 
         if(!ex) { area.innerHTML = ""; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; } 
         area.innerHTML = ex.items.map((it, i) => { 
-            t += parseFloat(it.price) || 0; let isLocked = it.done || false; 
-            return `<div class="dk-grid"><b>${it.name}</b><input type="number" value="${it.qty}" ${isLocked?'disabled':''} oninput="updateDKItem('${date}',${i},'qty',this.value)" class="u-box"><input type="number" value="${it.price}" ${isLocked?'disabled':''} oninput="updateDKItem('${date}',${i},'price',this.value)" class="p-box"><button class="btn ${isLocked?'ok-btn':'lock-btn'}" onclick="lockDK('${date}',${i})">${isLocked?'OK':'CON'}</button><button class="btn del-btn" onclick="delDKItem('${date}',${i})">DEL</button></div>`; 
+            t += parseFloat(it.price) || 0; 
+            return `<div class="dk-grid"><b>${it.name}</b><input type="number" value="${it.qty}" oninput="history.expense.find(h=>h.date=='${date}').items[${i}].qty=this.value;save(false);" class="u-box"><input type="number" value="${it.price}" oninput="history.expense.find(h=>h.date=='${date}').items[${i}].price=this.value;save(false);renderDK('${date}');" class="p-box"><button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="history.expense.find(h=>h.date=='${date}').items[${i}].done=!it.done;save(false);renderDK('${date}');">${it.done?'OK':'CON'}</button><button class="btn del-btn" onclick="if(confirm('Del?')){history.expense.find(h=>h.date=='${date}').items.splice(${i},1);save(false);renderDK('${date}');}">DEL</button></div>`; 
         }).join(''); 
         document.getElementById('dkSum').innerText = `TOTAL: ₹${t}`; 
     }
-    function updateDKItem(d, idx, f, v) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx][f] = v; save(false); } }
-    function lockDK(d, idx) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx].done = !ex.items[idx].done; save(false); renderDK(ex.date); } }
-    function delDKItem(d, idx) { if(confirm("Del?")){ history.expense.find(h => h.date === d).items.splice(idx,1); save(false); renderDK(d); } }
     function openDailyKharch() { let d = new Date().toLocaleDateString('en-GB'); renderDK(d); openPage('kInPage'); }
 
-    // History Functions
+    // --- CALCULATION (RESTORED v63 with Price-Sync) ---
+    function openCalc() { 
+        tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, unit: it.unit, price: '', done: false })); 
+        renderC(); 
+        openPage('calcPage'); 
+    }
+    function renderC() { 
+        let area = document.getElementById('cList'), gt = 0; 
+        area.innerHTML = tCalc.map((it, i) => { 
+            gt += parseFloat(it.price) || 0; 
+            return `<div class="c-grid"><b>${it.name}</b>
+            <input type="number" step="0.1" value="${it.qty}" oninput="tCalc[${i}].qty=this.value; if(tCalc[${i}].price!=='') smartSync('shopping',tCalc[${i}].name,this.value,tCalc[${i}].price,tCalc[${i}].unit,tCalc[${i}].done); renderC();" class="u-box">
+            <select onchange="tCalc[${i}].unit=this.value; smartSync('shopping',tCalc[${i}].name,tCalc[${i}].qty,tCalc[${i}].price,this.value,tCalc[${i}].done); renderC();" class="unit-sel"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select>
+            <input type="number" value="${it.price}" oninput="tCalc[${i}].price=this.value; smartSync('shopping',tCalc[${i}].name,tCalc[${i}].qty,this.value,tCalc[${i}].unit,tCalc[${i}].done); renderC();" class="p-box">
+            <div class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="tCalc[${i}].done=!tCalc[${i}].done; smartSync('shopping',tCalc[${i}].name,tCalc[${i}].qty,tCalc[${i}].price,tCalc[${i}].unit,tCalc[${i}].done); renderC();">${it.done?'OK':'CON'}</div></div>`; 
+        }).join(''); 
+        document.getElementById('cSum').innerText = `TOTAL: ₹${gt}`; 
+    }
+
+    // --- HISTORY (RESTORED v63 Logic) ---
     function renderH() { 
-        let area = document.getElementById('hArea'); area.innerHTML = ''; let dataArr = (history[hType] || []); 
-        let sortedData = [...dataArr].sort((a,b) => { let da = a.date.split('/'), db = b.date.split('/'); return new Date(db[2], db[1]-1, db[0]) - new Date(da[2], da[1]-1, da[0]); }); 
-        let currentMonth = "", monthTotal = 0, tempHtml = ""; 
-        sortedData.forEach((h) => { 
-            let parts = h.date.split('/'), mName = months[parseInt(parts[1])-1] + " " + parts[2], dayTotal = h.items.reduce((a, b) => a + (parseFloat(b.price)||0), 0); 
-            if (currentMonth !== "" && currentMonth !== mName) { area.innerHTML += `<div class="month-label"><span>${currentMonth} Total:</span><span>₹${monthTotal}</span></div>` + tempHtml; tempHtml = ""; monthTotal = 0; } 
-            currentMonth = mName; monthTotal += dayTotal; 
-            tempHtml += `<div class="item-row" style="grid-template-columns: 1fr 60px 45px 40px; background:white;"><span>${h.date}</span><b>₹${dayTotal}</b><button onclick="editHistory(${history[hType].indexOf(h)})" style="background:orange;color:white;border:none;padding:6px;border-radius:4px;font-size:9px;">EDIT</button><button class="btn del-btn" onclick="delH(${history[hType].indexOf(h)})">DEL</button></div>`; 
+        let area = document.getElementById('hArea'), dataArr = (history[hType] || []); 
+        let sorted = [...dataArr].sort((a,b) => { let da = a.date.split('/'), db = b.date.split('/'); return new Date(db[2], db[1]-1, db[0]) - new Date(da[2], da[1]-1, da[0]); }); 
+        let curM = "", mTot = 0, html = ""; 
+        sorted.forEach((h) => { 
+            let p = h.date.split('/'), mN = months[p[1]-1] + " " + p[2], dTot = h.items.reduce((a, b) => a + (parseFloat(b.price)||0), 0); 
+            if (curM !== "" && curM !== mN) { area.innerHTML += `<div class="month-label"><span>${curM} Total:</span><span>₹${mTot}</span></div>` + html; html = ""; mTot = 0; } 
+            curM = mN; mTot += dTot; 
+            html += `<div class="item-row" style="grid-template-columns: 1fr 60px 45px 40px;"><span>${h.date}</span><b>₹${dTot}</b><button onclick="editHistory(${history[hType].indexOf(h)})" style="background:orange;color:white;border:none;border-radius:4px;font-size:9px;">EDIT</button><button class="btn del-btn" onclick="if(confirm('Del?')){history[hType].splice(${history[hType].indexOf(h)},1);save(false);renderH();}">DEL</button></div>`; 
         }); 
-        if(currentMonth) area.innerHTML += `<div class="month-label"><span>${currentMonth} Total:</span><span>₹${monthTotal}</span></div>` + tempHtml; 
+        if(curM) area.innerHTML += `<div class="month-label"><span>${curM} Total:</span><span>₹${mTot}</span></div>` + html; 
     }
     function editHistory(idx) { 
-        let dataArr = history[hType][idx].items; let area = document.getElementById('eList'); 
-        area.innerHTML = dataArr.map((it, i) => { let isLocked = it.done || false; return `<div class="c-grid"><b>${it.name}</b><input type="number" step="0.1" value="${it.qty}" ${isLocked?'disabled':''} oninput="updateHistItem(${idx},${i},'qty',this.value)" class="u-box"><select ${isLocked?'disabled':''} onchange="updateHistItem(${idx},${i},'unit',this.value)" class="unit-sel"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select><input type="number" value="${it.price}" ${isLocked?'disabled':''} oninput="updateHistItem(${idx},${i},'price',this.value)" class="p-box"><button class="btn ${isLocked?'ok-btn':'lock-btn'}" onclick="toggleLock(${idx},${i})">${isLocked?'OK':'CON'}</button><button class="btn del-btn" onclick="delHistItem(${idx},${i})">DEL</button></div>`; }).join(''); 
-        document.getElementById('eSum').innerText = `TOTAL: ₹${dataArr.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; openPage('editPage'); 
+        let arr = history[hType][idx].items, area = document.getElementById('eList'); 
+        area.innerHTML = arr.map((it, i) => `<div class="c-grid"><b>${it.name}</b><input type="number" step="0.1" value="${it.qty}" oninput="history[hType][${idx}].items[${i}].qty=this.value;save(false);" class="u-box"><select onchange="history[hType][${idx}].items[${i}].unit=this.value;save(false);" class="unit-sel"><option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option><option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option></select><input type="number" value="${it.price}" oninput="history[hType][${idx}].items[${i}].price=this.value;save(false);updateESum(${idx});" class="p-box"><button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="history[hType][${idx}].items[${i}].done=!it.done;save(false);editHistory(${idx});">${it.done?'OK':'CON'}</button><button class="btn del-btn" onclick="if(confirm('Del?')){history[hType][${idx}].items.splice(${i},1);save(false);editHistory(${idx});}">DEL</button></div>`).join(''); 
+        updateESum(idx); openPage('editPage'); 
     }
-    function updateHistItem(hIdx, iIdx, f, v) { history[hType][hIdx].items[iIdx][f] = v; save(false); let sum = history[hType][hIdx].items.reduce((a,b)=>a+(parseFloat(b.price)||0),0); document.getElementById('eSum').innerText = `TOTAL: ₹${sum}`; }
-    function toggleLock(hIdx, iIdx) { history[hType][hIdx].items[iIdx].done = !history[hType][hIdx].items[iIdx].done; save(false); editHistory(hIdx); }
-    function delHistItem(hIdx, iIdx) { if(confirm("Del?")){ history[hType][hIdx].items.splice(iIdx,1); save(false); editHistory(hIdx); } }
-    function delH(i) { if(confirm("Del?")){ history[hType].splice(i,1); save(false); renderH(); } }
+    function updateESum(idx) { document.getElementById('eSum').innerText = 'TOTAL: ₹' + history[hType][idx].items.reduce((a,b)=>a+(parseFloat(b.price)||0),0); }
     function toggleLang() { currLang = (currLang === 'HI') ? 'EN' : 'HI'; showFinalList(); }
     function takeShot() { html2canvas(document.getElementById('shotArea')).then(c => { let a = document.createElement('a'); a.download = 'List.png'; a.href = c.toDataURL(); a.click(); }); }
 </script>
