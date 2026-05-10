@@ -41,6 +41,8 @@
         .month-header{background:#dfe6e9;padding:8px 12px;font-weight:800;font-size:12px;border-radius:6px;margin-bottom:3px;}
         .add-row{background:#e8f5e9;padding:10px 8px;margin:8px 0 0;border-radius:8px;border:1px dashed #2ecc71;}
         .add-row-title{font-size:11px;font-weight:800;color:#27ae60;margin-bottom:6px;}
+        .lang-btn{padding:6px 14px;border:2px solid #0984e3;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer;background:white;color:#0984e3;}
+        .lang-btn.active{background:#0984e3;color:white;}
     </style>
 </head>
 <body>
@@ -81,16 +83,18 @@
 <!-- DAILY KHARCH -->
 <div id="dailyKharchPage" class="full-page">
     <div class="p-head">
-        <span class="back" onclick="closePage()">← BACK</span>
+        <span class="back" onclick="closePage()">BACK</span>
         <span>💸 Daily Kharcha</span>
         <span style="font-size:12px;opacity:0.85;" id="dkDateLabel"></span>
     </div>
-    <div class="card" style="margin:8px;flex-shrink:0;">
+    <!-- ADD ROW — edit page jaisa -->
+    <div class="add-row" style="margin:8px;flex-shrink:0;">
+        <div class="add-row-title">➕ ITEM JODO — same naam ho to qty+price jud jayega</div>
         <div class="in-row">
             <input type="text"   id="kName"  style="flex:1;" placeholder="Item ka naam">
             <input type="number" id="kQty"   class="u-box" placeholder="Qty"  inputmode="decimal">
             <input type="number" id="kPrice" class="p-box" placeholder="Rate" inputmode="decimal">
-            <button class="btn" onclick="addK()" style="background:#2ecc71;width:48px;font-size:14px;font-weight:900;">ADD</button>
+            <button class="btn" onclick="addK()" style="background:#2ecc71;width:48px;font-size:14px;">ADD</button>
         </div>
     </div>
     <div class="scroll" id="dkList"></div>
@@ -100,7 +104,7 @@
 <!-- HISTORY -->
 <div id="hPage" class="full-page">
     <div class="p-head">
-        <span class="back" onclick="closePage()">← BACK</span>
+        <span class="back" onclick="closePage()">BACK</span>
         <span id="hTitle">History</span>
         <span></span>
     </div>
@@ -110,7 +114,7 @@
 <!-- EDIT -->
 <div id="editPage" class="full-page">
     <div class="p-head">
-        <span class="back" onclick="closePage()">← BACK</span>
+        <span class="back" onclick="closePage()">BACK</span>
         <span>✏️ Edit</span>
         <span></span>
     </div>
@@ -121,7 +125,7 @@
 <!-- CALC -->
 <div id="calcPage" class="full-page">
     <div class="p-head">
-        <span class="back" onclick="closePage()">← BACK</span>
+        <span class="back" onclick="closePage()">BACK</span>
         <span>➕➖✖️➗ Bill Calc</span>
         <span></span>
     </div>
@@ -129,12 +133,16 @@
     <div id="cSum" class="sum-box"></div>
 </div>
 
-<!-- LIST -->
+<!-- LIST PAGE -->
 <div id="listPage" class="full-page">
     <div class="p-head">
-        <span class="back" onclick="closePage()">← BACK</span>
+        <span class="back" onclick="closePage()">BACK</span>
         <span>🛒 Shopping List</span>
-        <span></span>
+        <!-- Hindi / English toggle -->
+        <div style="display:flex;gap:6px;">
+            <button class="lang-btn active" id="btnHi" onclick="setLang('hi')">हिंदी</button>
+            <button class="lang-btn"        id="btnEn" onclick="setLang('en')">ENG</button>
+        </div>
     </div>
     <div class="scroll" style="background:#fff;">
         <div id="shotArea" style="padding:18px;background:white;">
@@ -157,12 +165,10 @@ let items = [];
 let appHistory = { shopping:[], expense:[] };
 let activeF='All', hType='shopping', tCalc=[];
 let currentEditDate='', activePage='main';
+let listLang = 'hi'; // default Hindi
 const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
-// Aaj ki date — ek baar set karo
 let todayDK = new Date().toLocaleDateString('en-GB');
 
-// Sirf startup par ek baar Firebase se load karo
 db.once('value', snap => {
     const d = snap.val();
     if(d){
@@ -233,39 +239,34 @@ function openDailyKharch(){
     todayDK = new Date().toLocaleDateString('en-GB');
     document.getElementById('dkDateLabel').innerText = todayDK;
     openPage('dailyKharchPage');
-    // Thoda wait karo taaki page render ho jaye phir list dikhao
-    setTimeout(()=>{ renderDK(todayDK); }, 50);
+    setTimeout(()=>renderDK(todayDK), 30);
 }
 
+// ADD — same naam ho to qty+price JODO (edit page jaisa)
 function addK(){
-    // Date hamesha fresh lo
     todayDK = new Date().toLocaleDateString('en-GB');
-
     let n = document.getElementById('kName').value.trim();
     let q = parseFloat(document.getElementById('kQty').value)  || 0;
     let p = parseFloat(document.getElementById('kPrice').value) || 0;
-
     if(!n){ alert("Item ka naam bharein!"); return; }
 
-    // Us date ka record dhundho ya banao
     let rec = appHistory.expense.find(h=>h.date===todayDK);
-    if(!rec){
-        rec = {date:todayDK, items:[]};
-        appHistory.expense.unshift(rec);
+    if(!rec){ rec={date:todayDK, items:[]}; appHistory.expense.unshift(rec); }
+
+    // SAME NAAM HO TO QTY+PRICE JODO
+    let ex = rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
+    if(ex){
+        ex.qty   = (parseFloat(ex.qty)||0)   + q;
+        ex.price = (parseFloat(ex.price)||0) + p;
+    } else {
+        rec.items.push({name:n, qty:q, price:p, done:false});
     }
 
-    // Item push karo
-    rec.items.push({name:n, qty:q, price:p, done:false});
-
-    // Fields clear karo
     document.getElementById('kName').value  = '';
     document.getElementById('kQty').value   = '';
     document.getElementById('kPrice').value = '';
 
-    // PEHLE render karo — Firebase ka wait nahi
-    renderDK(todayDK);
-
-    // Phir save karo background mein
+    renderDK(todayDK); // turant UI
     save();
 }
 
@@ -294,20 +295,9 @@ function renderDK(d){
     }).join('');
     document.getElementById('dkSum').innerText=`TOTAL: ₹${total.toFixed(2)}`;
 }
-function dkField(d,i,f,v){
-    let r=appHistory.expense.find(h=>h.date===d);
-    if(r){ r.items[i][f]=parseFloat(v)||0; renderDK(d); save(); }
-}
-function dkLock(d,i){
-    let r=appHistory.expense.find(h=>h.date===d);
-    if(r){ r.items[i].done=!r.items[i].done; renderDK(d); save(); }
-}
-function dkDel(d,i){
-    if(confirm("Delete?")){
-        let r=appHistory.expense.find(h=>h.date===d);
-        if(r){ r.items.splice(i,1); renderDK(d); save(); }
-    }
-}
+function dkField(d,i,f,v){ let r=appHistory.expense.find(h=>h.date===d); if(r){r.items[i][f]=parseFloat(v)||0; renderDK(d); save();} }
+function dkLock(d,i){ let r=appHistory.expense.find(h=>h.date===d); if(r){r.items[i].done=!r.items[i].done; renderDK(d); save();} }
+function dkDel(d,i){ if(confirm("Delete?")){ let r=appHistory.expense.find(h=>h.date===d); if(r){r.items.splice(i,1); renderDK(d); save();}}}
 
 // ============ HISTORY ============
 function renderH(){
@@ -343,8 +333,6 @@ function editH(date){
     currentEditDate=date;
     let rec=appHistory[hType].find(h=>h.date===date); if(!rec) return;
     let area=document.getElementById('eList');
-
-    // Items list
     let itemsHTML=rec.items.map((it,i)=>
         `<div class="edit-grid">
             <span style="color:#636e72;">${i+1}.</span>
@@ -363,7 +351,6 @@ function editH(date){
         </div>`
     ).join('');
 
-    // ADD ROW — same naam ho to qty+price JODEGA
     let addRowHTML=`<div class="add-row">
         <div class="add-row-title">➕ ITEM JODO — same naam ho to qty+price jud jayega</div>
         <div class="in-row">
@@ -380,33 +367,23 @@ function editH(date){
     openPage('editPage');
 }
 
-// Edit ADD — same item ho to qty+price JODO, naya na bana
-function eAddItem(type, date){
-    let n = document.getElementById('eAddName').value.trim();
-    let q = parseFloat(document.getElementById('eAddQty').value)  || 0;
-    let p = parseFloat(document.getElementById('eAddPrice').value) || 0;
-
-    if(!n){ alert("Naam zaroor bharein!"); return; }
-
+function eAddItem(type,date){
+    let n=document.getElementById('eAddName').value.trim();
+    let q=parseFloat(document.getElementById('eAddQty').value)||0;
+    let p=parseFloat(document.getElementById('eAddPrice').value)||0;
+    if(!n){alert("Naam zaroor bharein!"); return;}
     let rec=appHistory[type].find(h=>h.date===date); if(!rec) return;
-
-    // Same naam dhundho
     let ex=rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
     if(ex){
-        // Pehle se hai — JODO
-        ex.qty   = (parseFloat(ex.qty)||0)   + q;
+        ex.qty   = (parseFloat(ex.qty)||0) + q;
         ex.price = (parseFloat(ex.price)||0) + p;
     } else {
-        // Naya item
-        rec.items.push({name:n, qty:q, price:p, done:false});
+        rec.items.push({name:n,qty:q,price:p,done:false});
     }
-
-    document.getElementById('eAddName').value  = '';
-    document.getElementById('eAddQty').value   = '';
-    document.getElementById('eAddPrice').value = '';
-
-    editH(date); // re-render
-    save();
+    document.getElementById('eAddName').value='';
+    document.getElementById('eAddQty').value='';
+    document.getElementById('eAddPrice').value='';
+    editH(date); save();
 }
 
 function eField(type,d,i,f,v){
@@ -416,13 +393,12 @@ function eField(type,d,i,f,v){
 }
 function eLock(type,d,i){
     let rec=appHistory[type].find(h=>h.date===d); if(!rec) return;
-    rec.items[i].done=!rec.items[i].done;
-    editH(d); save();
+    rec.items[i].done=!rec.items[i].done; editH(d); save();
 }
 function eDel(type,d,i){
     if(confirm("Delete?")){
         let rec=appHistory[type].find(h=>h.date===d);
-        if(rec){ rec.items.splice(i,1); editH(d); save(); }
+        if(rec){rec.items.splice(i,1); editH(d); save();}
     }
 }
 function updateESum(d){
@@ -437,21 +413,90 @@ function delH(d){
     }
 }
 
+// ============ LANGUAGE TOGGLE ============
+function setLang(lang){
+    listLang=lang;
+    document.getElementById('btnHi').classList.toggle('active', lang==='hi');
+    document.getElementById('btnEn').classList.toggle('active', lang==='en');
+    renderFinalList();
+}
+
+// Qty ko Hindi ya English mein convert karo
+function fmtQty(qty, unit, lang){
+    let q = parseFloat(qty);
+    if(isNaN(q) || qty==='' || qty===null) return lang==='hi' ? '' : '';
+
+    if(lang==='en'){
+        // English — as is
+        return `${qty} ${unit}`;
+    }
+
+    // Hindi conversion
+    // .5 / 0.5 / .500 / 0.500 = aadha
+    let isHalf = (Math.abs(q - 0.5) < 0.001);
+    // .2 / 0.2 / .200 / 0.200 = 200
+    let is200g = (Math.abs(q - 0.2) < 0.001);
+    let is200ml= (Math.abs(q - 0.2) < 0.001);
+
+    if(unit==='Kg'){
+        if(isHalf)  return 'आधा किलो';
+        if(is200g)  return '200 ग्राम';
+        let intQ = Number.isInteger(q) ? q : q;
+        return `${q} किलो`;
+    }
+    if(unit==='Ltr'){
+        if(isHalf)  return 'आधा लीटर';
+        if(is200ml) return '200 ML';
+        return `${q} लीटर`;
+    }
+    if(unit==='Pc'){
+        if(isHalf) return 'आधा पीस';
+        return `${q} पीस`;
+    }
+    if(unit==='Rs'){
+        return `${q} रुपये`;
+    }
+    return `${qty} ${unit}`;
+}
+
 // ============ FINAL LIST ============
+let lastSelItems = []; // store for re-render on lang change
+
 function showFinalList(){
-    let sel=items.filter(it=>it.sel);
-    if(!sel.length){ alert("Pehle item choose karo!"); return; }
+    lastSelItems = items.filter(it=>it.sel);
+    if(!lastSelItems.length){ alert("Pehle item choose karo!"); return; }
+    renderFinalList();
+    openPage('listPage');
+}
+
+function renderFinalList(){
+    let sel = lastSelItems;
+    if(!sel || !sel.length) return;
     let out=document.getElementById('fOut');
     out.innerHTML=`<h2 style="text-align:center;color:#0984e3;border-bottom:3px solid #0984e3;padding-bottom:10px;margin-bottom:15px;">🛒 SAMAN LIST</h2>`;
+
     ['GROCERY','SABJI','BODY','OTHER'].forEach(c=>{
         let f=sel.filter(it=>it.cat===c);
         if(f.length){
-            out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:5px 12px;border-radius:4px;font-size:12px;margin:14px 0 7px;display:inline-block;">${c}</div>`+
-            f.map((it,j)=>`<div style="display:flex;justify-content:space-between;padding:11px 5px;border-bottom:1px dashed #ccc;font-weight:bold;">
-                <span>${j+1}. ${it.name}</span><span style="color:#0984e3;">${it.qty} ${it.unit}</span></div>`).join('');
+            out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:5px 12px;border-radius:4px;font-size:12px;margin:14px 0 7px;display:inline-block;">${c}</div>`;
+
+            // Table header
+            out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;font-size:11px;font-weight:900;color:#636e72;padding:5px 5px;border-bottom:2px solid #dfe6e9;">
+                <span>ITEM</span>
+                <span style="text-align:center;">MATRA</span>
+                <span style="text-align:center;">RATE</span>
+            </div>`;
+
+            f.forEach((it,j)=>{
+                let qtyStr = fmtQty(it.qty, it.unit, listLang);
+                out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;padding:11px 5px;border-bottom:1px dashed #ccc;font-weight:bold;align-items:center;">
+                    <span style="font-size:13px;">${j+1}. ${it.name}</span>
+                    <span style="text-align:center;color:#0984e3;font-size:13px;">${qtyStr}</span>
+                    <span style="text-align:center;color:#e17055;font-size:13px;">₹____</span>
+                </div>`;
+            });
         }
     });
-    openPage('listPage');
 }
 
 // ============ CALC ============
@@ -459,8 +504,7 @@ function openCalc(){
     tCalc=items.filter(it=>it.sel).map(it=>({
         name:it.name, qty:parseFloat(it.qty)||0, unit:it.unit, price:0, done:false
     }));
-    renderC();
-    openPage('calcPage');
+    renderC(); openPage('calcPage');
 }
 function renderC(){
     let area=document.getElementById('cList');
@@ -478,35 +522,19 @@ function renderC(){
     ).join('');
     renderCSum();
 }
+function calcPrice(i,v){ tCalc[i].price=parseFloat(v)||0; renderCSum(); autoSaveCalc(); }
+function calcLock(i){ tCalc[i].done=!tCalc[i].done; renderC(); autoSaveCalc(); }
 
-// Price dale to auto save shopping history
-function calcPrice(i,v){
-    tCalc[i].price=parseFloat(v)||0;
-    renderCSum();
-    autoSaveCalc();
-}
-// Lock kare to bhi auto save
-function calcLock(i){
-    tCalc[i].done=!tCalc[i].done;
-    renderC();
-    autoSaveCalc();
-}
-
-// Auto save — price > 0 wale items shopping history mein
-// Same naam aaye to qty+price JODO (chips example)
 function autoSaveCalc(){
     let filled=tCalc.filter(it=>it.price>0);
     if(!filled.length) return;
-
     let d=new Date().toLocaleDateString('en-GB');
     let rec=appHistory.shopping.find(h=>h.date===d);
     if(!rec){ rec={date:d,items:[]}; appHistory.shopping.unshift(rec); }
-
     filled.forEach(newIt=>{
         let ex=rec.items.find(e=>e.name.toLowerCase()===newIt.name.toLowerCase());
         if(ex){
-            // Same item — qty aur price JODO
-            ex.qty   = (parseFloat(ex.qty)||0)   + (parseFloat(newIt.qty)||0);
+            ex.qty   = (parseFloat(ex.qty)||0) + (parseFloat(newIt.qty)||0);
             ex.price = (parseFloat(ex.price)||0) + (parseFloat(newIt.price)||0);
         } else {
             rec.items.push({name:newIt.name,qty:newIt.qty,unit:newIt.unit,price:newIt.price,done:newIt.done});
@@ -514,12 +542,10 @@ function autoSaveCalc(){
     });
     save();
 }
-
 function renderCSum(){
     let t=tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
     document.getElementById('cSum').innerText=`BILL TOTAL: ₹${t.toFixed(2)}`;
 }
-
 function takeShot(){
     html2canvas(document.getElementById('shotArea')).then(c=>{
         let a=document.createElement('a'); a.download='SamanList.png'; a.href=c.toDataURL(); a.click();
