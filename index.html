@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Master v78 Pro</title>
+    <title>Grocery Master v78 Full Pro</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -20,7 +20,7 @@
         input, select { padding: 8px 6px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 13px; height: 42px; background: #fff; min-width: 0; }
         input:disabled { background: #f1f2f6; color: #7f8c8d; border: 1px dashed #bdc3c7; font-weight: bold; }
         .u-box { width: 55px !important; text-align: center; flex-shrink: 0; }
-        .p-box { width: 80px !important; font-weight: 800; color: #27ae60; flex-shrink: 0; }
+        .p-box { width: 85px !important; font-weight: 800; color: #27ae60; flex-shrink: 0; }
         .unit-sel { width: 62px !important; font-size: 12px; background: #f1f2f6; border: none; }
         .btn { border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; font-size: 12px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .f-btn { flex: 1; background: #636e72; font-size: 10px; height: 36px; }
@@ -28,12 +28,11 @@
         .del-btn { background: #ff7675 !important; width: 38px; }
         .ok-btn { background: #2ecc71 !important; width: 38px; }
         .lock-btn { background: #fdcb6e !important; color: #2d3436; width: 38px; }
-        .add-main-btn { background: #0984e3; padding: 0 15px; }
         .item-row, .dk-grid, .edit-grid, .calc-row, .hist-row { display: grid; gap: 6px; align-items: center; padding: 12px 8px; border-bottom: 1px solid #f1f2f6; background: white; border-radius: 8px; margin-bottom: 4px; }
         .item-row { grid-template-columns: 1fr 55px 62px 28px 38px; }
-        .dk-grid, .edit-grid { grid-template-columns: 24px 1fr 55px 80px 38px 38px; }
-        .hist-row { grid-template-columns: 1fr 90px 55px 38px; }
-        .calc-row { grid-template-columns: 1fr 70px 80px 44px; }
+        .dk-grid, .edit-grid { grid-template-columns: 24px 1fr 55px 85px 38px 38px; }
+        .hist-row { grid-template-columns: 1fr 90px 60px 38px; }
+        .calc-row { grid-template-columns: 1fr 70px 85px 44px; }
         .sel-bg { background: #fff9db !important; border-left: 5px solid #fcc419; }
         .sum-box { padding: 14px 18px; background: #e3f2fd; font-weight: 900; text-align: right; border-top: 4px solid #0984e3; font-size: 18px; color: #0984e3; flex-shrink: 0; }
         .b-nav { width: 100%; background: white; padding: 10px; border-top: 1px solid #dfe6e9; display: flex; gap: 10px; flex-shrink: 0; }
@@ -46,7 +45,7 @@
 
     <div id="mainView">
         <div class="p-head">
-            <span onclick="unselectAll()">CLR ALL</span>
+            <span onclick="unselectAll()">CLR SEL</span>
             <span>Grocery Master Pro</span>
             <span onclick="hType='shopping'; renderH(); openPage('historyPage');">📜</span>
         </div>
@@ -65,7 +64,7 @@
                     <option value="BODY">BODY</option>
                     <option value="OTHER">ANYA</option>
                 </select>
-                <button class="btn add-main-btn" onclick="addItem()">ADD</button>
+                <button class="btn" onclick="addItem()" style="background:#0984e3; padding:0 15px;">ADD</button>
             </div>
         </div>
 
@@ -93,9 +92,9 @@
         </div>
         <div class="card" style="margin:10px;">
             <div class="in-row">
-                <input type="text" id="kName" placeholder="Item..." style="flex:1;">
+                <input type="text" id="kName" placeholder="Item name..." style="flex:1;">
                 <input type="number" id="kQty" placeholder="Qty" class="u-box" inputmode="decimal">
-                <input type="number" id="kPrice" placeholder="₹" class="p-box" inputmode="decimal">
+                <input type="number" id="kPrice" placeholder="Price" class="p-box" inputmode="decimal">
                 <button class="btn ok-btn" onclick="addK()" style="width:50px;">ADD</button>
             </div>
         </div>
@@ -138,12 +137,10 @@
             <span>🛒 Shopping List</span>
             <span onclick="takeShot()">📷</span>
         </div>
-        <div class="scroll" id="shotArea">
-            <div id="fOut"></div>
-        </div>
+        <div class="scroll" id="shotArea"><div id="fOut"></div></div>
         <div class="b-nav">
             <button class="btn" onclick="takeShot()" style="flex:1; background:#636e72;">📷 SAVE IMAGE</button>
-            <button class="btn" onclick="openCalc()" style="flex:1; background:#0984e3;">➕➖✖️➗ OPEN CALC</button>
+            <button class="btn" onclick="openCalc()" style="flex:1; background:#0984e3;">➕➖✖️➗ CALC</button>
         </div>
     </div>
 
@@ -159,18 +156,16 @@
         let tCalc = [];
         const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-        // NAVIGATION
+        // NAV
         function openPage(id) {
             document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none');
             document.getElementById(id).style.display = 'flex';
             window.history.pushState({ p: id }, '');
         }
         function closePage() { window.history.back(); }
-        window.onpopstate = () => {
-            document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none');
-        };
+        window.onpopstate = () => { document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); };
 
-        // SYNC
+        // FIREBASE SYNC
         db.on('value', (snap) => {
             const d = snap.val();
             if (d) {
@@ -179,14 +174,13 @@
                 if (!Array.isArray(history.shopping)) history.shopping = Object.values(history.shopping || {});
                 if (!Array.isArray(history.expense))  history.expense  = Object.values(history.expense  || {});
                 renderMaster();
-                // Agar koi page khula hai toh live update karein
                 if(document.getElementById('dailyKharchPage').style.display === 'flex') renderDK(new Date().toLocaleDateString('en-GB'));
             }
         });
 
         const save = (cb) => db.set({ items, history }).then(() => { if (cb) cb(); });
 
-        // MASTER LIST
+        // MASTER LIST LOGIC
         function renderMaster() {
             let cont = document.getElementById('masterList');
             let q = document.getElementById('itemName').value.toLowerCase();
@@ -217,16 +211,16 @@
                 document.getElementById('itemName').value = '';
             }
         }
-        function delMasterItem(i) { if (confirm("Hata dein?")) { items.splice(i, 1); save(); } }
+        function delMasterItem(i) { if (confirm("Delete?")) { items.splice(i, 1); save(); } }
         function setFilter(f) {
             activeF = f;
             document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + f).classList.add('active');
             renderMaster();
         }
-        function unselectAll() { if (confirm("Sab selections clear?")) { items.forEach(it => it.sel = false); save(); } }
+        function unselectAll() { if (confirm("Clear All?")) { items.forEach(it => it.sel = false); save(); } }
 
-        // DAILY KHARCH & EDIT LOGIC (WITH ADDITION)
+        // SMART ADDITION LOGIC (KHARCHA & EDIT)
         function openDailyKharch() {
             let d = new Date().toLocaleDateString('en-GB');
             document.getElementById('dkDateLabel').innerText = d;
@@ -238,13 +232,13 @@
             let n = document.getElementById('kName').value.trim();
             let q = parseFloat(document.getElementById('kQty').value) || 0;
             let p = parseFloat(document.getElementById('kPrice').value) || 0;
-            if (!n) return;
+            if (!n) return alert("Naam likho!");
 
             let d = new Date().toLocaleDateString('en-GB');
             let rec = history.expense.find(h => h.date === d);
             if (!rec) { rec = { date: d, items: [] }; history.expense.unshift(rec); }
 
-            // AGAR ITEM PEHLE SE HAI TOH ADD KARO
+            // SMART ADDITION: Agar item pehle se hai toh plus (+) karo
             let existing = rec.items.find(it => it.name.toLowerCase() === n.toLowerCase());
             if(existing) {
                 existing.qty = (parseFloat(existing.qty) || 0) + q;
@@ -267,7 +261,7 @@
             let area = document.getElementById('dkList');
             let total = 0;
             if (!rec || !rec.items.length) {
-                area.innerHTML = "<p style='text-align:center; padding:30px;'>Aaj koi kharcha nahi hai.</p>";
+                area.innerHTML = "<p style='text-align:center; padding:30px;'>No entry yet.</p>";
                 document.getElementById('dkSum').innerText = "TOTAL: ₹0";
                 return;
             }
@@ -285,7 +279,7 @@
             document.getElementById('dkSum').innerText = `TOTAL: ₹${total.toFixed(2)}`;
         }
 
-        // HISTORY & EDIT
+        // HISTORY ENGINE
         function renderH() {
             let area = document.getElementById('hArea');
             document.getElementById('hTitle').innerText = hType==='shopping'?'📦 Saman History':'💰 Kharch History';
@@ -305,7 +299,7 @@
                 curM = m; mTot += dTot;
                 html += `<div class="hist-row">
                     <span>${h.date}</span><b>₹${dTot.toFixed(2)}</b>
-                    <button class="btn ok-btn" onclick="editH('${h.date}')" style="width:55px;">EDIT</button>
+                    <button class="btn ok-btn" onclick="editH('${h.date}')" style="width:60px;">EDIT</button>
                     <button class="btn del-btn" onclick="delH('${h.date}')">✕</button>
                 </div>`;
             });
@@ -334,7 +328,6 @@
             if (ex) { 
                 ex.items[i][f] = v; 
                 save(() => {
-                    if (type === 'expense') renderDK(d);
                     let t = ex.items.reduce((a,b) => a+(parseFloat(b.price)||0), 0);
                     document.getElementById('eSum').innerText = `TOTAL: ₹${t.toFixed(2)}`;
                 });
@@ -343,27 +336,12 @@
         function lockH(type, d, i) { 
             let ex = history[type].find(h => h.date === d);
             ex.items[i].done = !ex.items[i].done; 
-            save(() => { if(type==='expense') renderDK(d); editH(d); });
+            save(() => editH(d));
         }
-        function delHI(type, d, i) { if(confirm("Delete?")) { history[type].find(h=>h.date===d).items.splice(i,1); save(() => { if(type==='expense') renderDK(d); editH(d); }); }}
+        function delHI(type, d, i) { if(confirm("Delete Item?")) { history[type].find(h=>h.date===d).items.splice(i,1); save(() => editH(d)); }}
         function delH(d) { if(confirm("Delete Day?")) { history[hType]=history[hType].filter(h=>h.date!==d); save(() => renderH()); }}
 
-        // FINAL LIST & CALC
-        function showFinalList() {
-            let sel = items.filter(it => it.sel);
-            if (!sel.length) return alert("Pehle item choose karo!");
-            let out = document.getElementById('fOut');
-            out.innerHTML = `<h2 style="text-align:center; color:#0984e3; border-bottom:3px solid #0984e3; padding-bottom:10px;">🛒 SAMAN LIST</h2>`;
-            ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {
-                let filtered = sel.filter(it => it.cat === c);
-                if (filtered.length) {
-                    out.innerHTML += `<div style="background:#2d3436; color:#fff; padding:5px 10px; border-radius:4px; margin-top:15px; display:inline-block;">${c}</div>` + 
-                    filtered.map((it, j) => `<div style="display:flex; justify-content:space-between; padding:10px 5px; border-bottom:1px dashed #ccc;"><span>${j+1}. ${it.name}</span><b>${it.qty} ${it.unit}</b></div>`).join('');
-                }
-            });
-            openPage('listPage');
-        }
-
+        // BILL CALCULATOR
         function openCalc() {
             tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, unit: it.unit, price: '', done: false }));
             renderC(); openPage('calcPage');
@@ -372,7 +350,7 @@
             let area = document.getElementById('cList');
             area.innerHTML = tCalc.map((it, i) => `<div class="calc-row">
                 <b>${it.name}</b><span style="font-size:11px;">${it.qty} ${it.unit}</span>
-                <input type="number" placeholder="Rate" value="${it.price}" oninput="tCalc[${i}].price=this.value; renderCSum()" class="p-box" inputmode="decimal">
+                <input type="number" placeholder="₹ Rate" value="${it.price}" oninput="tCalc[${i}].price=this.value; renderCSum()" class="p-box" inputmode="decimal">
                 <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="tCalc[${i}].done=!tCalc[${i}].done; renderC()">${it.done?'✓':'🔒'}</button>
             </div>`).join('');
             renderCSum();
@@ -380,6 +358,22 @@
         function renderCSum() {
             let total = tCalc.reduce((a, b) => a + (parseFloat(b.price) || 0), 0);
             document.getElementById('cSum').innerText = `BILL TOTAL: ₹${total.toFixed(2)}`;
+        }
+
+        // FINAL LIST
+        function showFinalList() {
+            let sel = items.filter(it => it.sel);
+            if (!sel.length) return alert("Pehle item select karo!");
+            let out = document.getElementById('fOut');
+            out.innerHTML = `<h2 style="text-align:center; color:#0984e3; border-bottom:3px solid #0984e3; padding-bottom:10px;">🛒 SHOPPING LIST</h2>`;
+            ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {
+                let filtered = sel.filter(it => it.cat === c);
+                if (filtered.length) {
+                    out.innerHTML += `<div style="background:#2d3436; color:#fff; padding:5px 10px; border-radius:4px; margin-top:15px; display:inline-block;">${c}</div>` + 
+                    filtered.map((it, j) => `<div style="display:flex; justify-content:space-between; padding:10px 5px; border-bottom:1px dashed #ccc;"><span>${j+1}. ${it.name}</span><b>${it.qty} ${it.unit}</b></div>`).join('');
+                }
+            });
+            openPage('listPage');
         }
         function takeShot() { html2canvas(document.getElementById('shotArea')).then(c => { let a=document.createElement('a'); a.download='List.png'; a.href=c.toDataURL(); a.click(); }); }
     </script>
