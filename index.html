@@ -141,6 +141,7 @@
     </div>
 
     <script>
+        // Firebase Setup
         const firebaseConfig = { databaseURL: "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database().ref('grocery/3');
@@ -150,6 +151,7 @@
         let activeF = 'All', hType = 'shopping', tCalc = [];
         const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
+        // Navigation
         function openPage(id) {
             document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none');
             document.getElementById(id).style.display = 'flex';
@@ -160,6 +162,7 @@
             document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none');
         };
 
+        // Database Sync
         db.on('value', (snap) => {
             const d = snap.val();
             if (d) {
@@ -168,15 +171,20 @@
                 if (!Array.isArray(history.shopping)) history.shopping = Object.values(history.shopping || {});
                 if (!Array.isArray(history.expense))  history.expense  = Object.values(history.expense  || {});
                 renderMaster();
-                // Refresh active screens
-                const dToday = new Date().toLocaleDateString('en-GB');
-                if (document.getElementById('dailyKharchPage').style.display === 'flex') renderDK(dToday);
+                
+                // Refresh if Daily Kharch or Edit page is open
+                let today = new Date().toLocaleDateString('en-GB');
+                if (document.getElementById('dailyKharchPage').style.display === 'flex') renderDK(today);
+                if (document.getElementById('editPage').style.display === 'flex') {
+                    // find current editing date from sum box or label (simplified refresh)
+                    renderH(); 
+                }
             }
         });
 
         const save = (cb) => db.set({ items, history }).then(() => { if (cb) cb(); });
 
-        // MASTER LIST LOGIC
+        // MASTER LIST
         function renderMaster() {
             let cont = document.getElementById('masterList');
             let q = document.getElementById('itemName').value.toLowerCase();
@@ -215,7 +223,7 @@
         }
         function unselectAll() { if (confirm("Sab selections clear?")) { items.forEach(it => it.sel = false); save(); } }
 
-        // DAILY KHARCH LOGIC
+        // DAILY KHARCH - ADD & AUTO-MERGE Logic
         function openDailyKharch() {
             let d = new Date().toLocaleDateString('en-GB');
             document.getElementById('dkDateLabel').innerText = d;
@@ -227,20 +235,21 @@
             let n = document.getElementById('kName').value.trim();
             let q = parseFloat(document.getElementById('kQty').value) || 0;
             let p = parseFloat(document.getElementById('kPrice').value) || 0;
-            if (!n) { alert("Naam bharein!"); return; }
+            if (!n) { alert("Item ka naam bharein!"); return; }
 
             let d = new Date().toLocaleDateString('en-GB');
             let rec = history.expense.find(h => h.date === d);
+            
             if (!rec) { 
                 rec = { date: d, items: [] }; 
                 history.expense.unshift(rec); 
             }
 
-            // AUTO-MERGE Logic: Check if item exists on the same day
-            let existingItem = rec.items.find(it => it.name.toLowerCase() === n.toLowerCase() && !it.done);
-            if (existingItem) {
-                existingItem.qty = (parseFloat(existingItem.qty) || 0) + q;
-                existingItem.price = (parseFloat(existingItem.price) || 0) + p;
+            // AUTO-MERGE: If same item exists and not locked, add to it
+            let existing = rec.items.find(it => it.name.toLowerCase() === n.toLowerCase() && !it.done);
+            if (existing) {
+                existing.qty = (parseFloat(existing.qty) || 0) + q;
+                existing.price = (parseFloat(existing.price) || 0) + p;
             } else {
                 rec.items.push({ name: n, qty: q, price: p, done: false });
             }
@@ -353,7 +362,8 @@
 
         function delHI(type, d, i) {
             if (confirm("Item delete?")) {
-                history[type].find(h => h.date === d).items.splice(i, 1);
+                let rec = history[type].find(h => h.date === d);
+                rec.items.splice(i, 1);
                 save(() => {
                     if (type === 'expense' && document.getElementById('dailyKharchPage').style.display === 'flex') renderDK(d);
                     if (document.getElementById('editPage').style.display === 'flex') editH(d);
@@ -365,7 +375,7 @@
         // FINAL LIST & CALC
         function showFinalList() {
             let sel = items.filter(it => it.sel);
-            if (!sel.length) { alert("Item choose karein!"); return; }
+            if (!sel.length) { alert("Pehle items select karein!"); return; }
             let out = document.getElementById('fOut');
             out.innerHTML = `<h2 style="text-align:center; color:#0984e3; border-bottom:3px solid #0984e3; padding-bottom:10px; margin-bottom:15px;">🛒 SAMAN LIST</h2>`;
             ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {
