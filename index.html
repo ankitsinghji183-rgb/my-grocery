@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Manager v63 Final FIXED</title>
+    <title>Grocery Manager v64 Final</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
@@ -11,7 +11,6 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
         
-        /* Fixed Background for Overlay Pages */
         .full-page { 
             position: fixed; 
             top: 0; left: 0; 
@@ -186,11 +185,11 @@
         openPage('listPage');
     }
 
-    // --- DAILY KHARCH FIXED ---
+    // --- DAILY KHARCH FIXED FROM V56 ---
     function openDailyKharch() { 
         let d = new Date().toLocaleDateString('en-GB'); 
+        renderDK(d); 
         openPage('kInPage'); 
-        setTimeout(() => renderDK(d), 50); 
     }
 
     function addK() { 
@@ -198,31 +197,33 @@
         let q = parseFloat(document.getElementById('kQty').value) || 1;
         let p = parseFloat(document.getElementById('kPrice').value) || 0; 
         
-        if(!n || p <= 0) { alert("Item name और Price भरें"); return; } 
-
-        let d = new Date().toLocaleDateString('en-GB');
-        let ex = (history.expense || []).find(h => h.date === d); 
-        
-        if(!ex){ ex = {date: d, items: []}; history.expense.unshift(ex); } 
-        
-        let old = ex.items.find(o => o.name.toLowerCase() === n.toLowerCase()); 
-        if(old){ 
-            old.qty = (parseFloat(old.qty)||0) + q; 
-            old.price = (parseFloat(old.price)||0) + p; 
-        } else { 
-            ex.items.push({name: n, qty: q, price: p, done: false}); 
-        } 
-        
-        save(() => {
-            renderDK(d);
-            document.getElementById('kName').value = ''; 
-            document.getElementById('kQty').value = ''; 
-            document.getElementById('kPrice').value = ''; 
-        });
+        if(n && p > 0) { 
+            let d = new Date().toLocaleDateString('en-GB');
+            let ex = history.expense.find(h => h.date === d); 
+            
+            if(!ex){ ex = {date: d, items: []}; history.expense.unshift(ex); } 
+            
+            // Check if item already exists today to update it
+            let old = ex.items.find(o => o.name.toLowerCase() === n.toLowerCase()); 
+            if(old){ 
+                old.qty = (parseFloat(old.qty)||0) + q; 
+                old.price = (parseFloat(old.price)||0) + p; 
+            } else { 
+                ex.items.push({name: n, qty: q, price: p, done: false}); 
+            } 
+            
+            // Fixed Save with immediate callback
+            save(() => {
+                renderDK(d);
+                document.getElementById('kName').value = ''; 
+                document.getElementById('kQty').value = ''; 
+                document.getElementById('kPrice').value = ''; 
+            });
+        }
     }
 
     function renderDK(date) { 
-        let ex = (history.expense || []).find(h => h.date === date), t = 0, area = document.getElementById('dkList'); 
+        let ex = history.expense.find(h => h.date === date), t = 0, area = document.getElementById('dkList'); 
         if(!ex || !ex.items || !ex.items.length) { 
             area.innerHTML = "<p style='text-align:center;padding:20px;color:#666;'>आज कोई खर्च नहीं है।</p>"; 
             document.getElementById('dkSum').innerText = "TOTAL: ₹0"; 
