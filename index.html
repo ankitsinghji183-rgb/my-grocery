@@ -18,45 +18,31 @@
         .card{background:white;padding:10px;margin-bottom:8px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.06);border:1px solid #e1e8ed;flex-shrink:0;}
         .in-row{display:flex;gap:5px;width:100%;align-items:center;}
         input,select{padding:7px 5px;border:1px solid #dfe6e9;border-radius:8px;font-size:13px;height:40px;background:#fff;min-width:0;}
-        input:disabled{background:#f1f2f6;color:#7f8c8d;border:1px dashed #bdc3c7;font-weight:bold;}
         .u-box{width:50px!important;text-align:center;flex-shrink:0;}
         .p-box{width:76px!important;font-weight:800;color:#27ae60;flex-shrink:0;}
-        .unit-sel{width:58px!important;font-size:12px;background:#f1f2f6;border:none;flex-shrink:0;}
-        .btn{border:none;border-radius:8px;color:white;font-weight:700;cursor:pointer;font-size:12px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;white-space:nowrap;}
+        .btn{border:none;border-radius:8px;color:white;font-weight:700;cursor:pointer;font-size:12px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
         .f-btn{flex:1;padding:10px 2px;background:#636e72;font-size:9px;font-weight:800;height:34px;}
         .f-btn.active{background:#0984e3!important;}
-        .del-btn{background:#ff7675!important;min-width:36px;width:36px;}
-        .ok-btn{background:#2ecc71!important;min-width:36px;width:36px;}
-        .lock-btn{background:#fdcb6e!important;color:#2d3436;min-width:36px;width:36px;}
-        .item-row{display:grid;grid-template-columns:1fr 50px 58px 26px 36px;gap:5px;align-items:center;padding:10px 7px;border-bottom:1px solid #f1f2f6;background:white;margin-bottom:3px;border-radius:8px;}
+        .del-btn{background:#ff7675!important;min-width:36px;}
         .dk-grid{display:grid;grid-template-columns:20px 1fr 50px 76px 36px 36px;gap:4px;align-items:center;padding:9px 6px;background:white;margin-bottom:3px;border-radius:6px;border-bottom:1px solid #eee;}
-        .edit-grid{display:grid;grid-template-columns:20px 1fr 50px 76px 36px 36px;gap:4px;align-items:center;padding:9px 6px;background:white;margin-bottom:3px;border-radius:6px;border-bottom:1px solid #eee;}
-        .calc-row{display:grid;grid-template-columns:1fr 62px 76px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:3px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
-        .hist-row{display:grid;grid-template-columns:1fr 82px 40px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:3px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
-        .sel-bg{background:#fff9db!important;border-left:4px solid #fcc419;}
         .sum-box{padding:12px 15px;background:#e3f2fd;font-weight:900;text-align:right;border-top:3px solid #0984e3;font-size:16px;color:#0984e3;flex-shrink:0;}
         .b-nav{width:100%;background:white;padding:8px 10px;border-top:1px solid #dfe6e9;display:flex;gap:8px;flex-shrink:0;}
-        .top-hist{display:flex;gap:8px;padding:8px 10px;flex-shrink:0;}
-        .h-box{flex:1;background:#f8f9fa;border:1px solid #dfe6e9;padding:12px 0;text-align:center;border-radius:12px;font-weight:800;font-size:11px;color:#0984e3;cursor:pointer;}
-        .month-header{background:#dfe6e9;padding:8px 12px;font-weight:800;font-size:12px;border-radius:6px;margin-bottom:3px;}
         .add-row{background:#e8f5e9;padding:10px 8px;margin:8px 0 0;border-radius:8px;border:1px dashed #2ecc71;}
         .add-row-title{font-size:11px;font-weight:800;color:#27ae60;margin-bottom:6px;}
-        .lang-btn{padding:6px 14px;border:2px solid #0984e3;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer;background:white;color:#0984e3;}
-        .lang-btn.active{background:#0984e3;color:white;}
     </style>
 </head>
 <body>
 
 <div id="mainView">
-    <div class="top-hist">
-        <div class="h-box" onclick="hType='shopping';openPage('hPage');renderH();">📦 Saman History</div>
-        <div class="h-box" onclick="hType='expense';openPage('hPage');renderH();">💰 Kharch History</div>
+    <div style="display:flex;gap:8px;padding:8px 10px;">
+        <div class="h-box" style="flex:1;background:#f8f9fa;border:1px solid #dfe6e9;padding:12px 0;text-align:center;border-radius:12px;font-weight:800;font-size:11px;color:#0984e3;" onclick="hType='shopping';openPage('hPage');renderH();">📦 Saman Hist</div>
+        <div class="h-box" style="flex:1;background:#f8f9fa;border:1px solid #dfe6e9;padding:12px 0;text-align:center;border-radius:12px;font-weight:800;font-size:11px;color:#0984e3;" onclick="hType='expense';openPage('hPage');renderH();">💰 Kharch Hist</div>
     </div>
-    <div class="card" style="margin:0 8px 6px;">
+    <div class="card">
         <div class="in-row" style="margin-bottom:7px;">
-            <input type="text" id="itemName" placeholder="Saman search ya add..." style="flex:1;" oninput="renderMaster()">
-            <select id="catSelect" style="width:76px;flex-shrink:0;">
-                <option value="GROCERY">GROCERY</option>
+            <input type="text" id="itemName" placeholder="Saman search..." style="flex:1;" oninput="renderMaster()">
+            <select id="catSelect" style="width:76px;">
+                <option value="GROC">GROC</option>
                 <option value="SABJI">SABJI</option>
                 <option value="BODY">BODY</option>
                 <option value="OTHER">ANYA</option>
@@ -64,12 +50,11 @@
             <button onclick="addItem()" class="btn" style="background:#2ecc71;width:46px;">ADD</button>
         </div>
         <div style="display:flex;gap:3px;">
-            <button onclick="setFilter('All')"     id="btn-All"     class="btn f-btn active">ALL</button>
-            <button onclick="setFilter('GROCERY')" id="btn-GROCERY" class="btn f-btn">GRO</button>
-            <button onclick="setFilter('SABJI')"   id="btn-SABJI"   class="btn f-btn">SABJI</button>
-            <button onclick="setFilter('BODY')"    id="btn-BODY"    class="btn f-btn">BODY</button>
-            <button onclick="setFilter('OTHER')"   id="btn-OTHER"   class="btn f-btn">ANYA</button>
-            <button onclick="unselectAll()" class="btn f-btn" style="background:#d63031;flex:0.7;">CLR</button>
+            <button onclick="setFilter('All')" id="btn-All" class="btn f-btn active">ALL</button>
+            <button onclick="setFilter('GROC')" id="btn-GROC" class="btn f-btn">GROC</button>
+            <button onclick="setFilter('SABJI')" id="btn-SABJI" class="btn f-btn">SABJI</button>
+            <button onclick="setFilter('BODY')" id="btn-BODY" class="btn f-btn">BODY</button>
+            <button onclick="setFilter('OTHER')" id="btn-OTHER" class="btn f-btn">ANYA</button>
         </div>
     </div>
     <div id="masterList" class="scroll"></div>
@@ -83,15 +68,15 @@
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
         <span>💸 Daily Kharcha</span>
-        <span style="font-size:12px;opacity:0.85;" id="dkDateLabel"></span>
+        <span id="dkDateLabel" style="font-size:12px;"></span>
     </div>
-    <div class="add-row" style="margin:8px;flex-shrink:0;">
-        <div class="add-row-title">➕ ITEM JODO — same naam ho to qty+price jud jayega</div>
+    <div class="add-row">
+        <div class="add-row-title">Item Jodo</div>
         <div class="in-row">
-            <input type="text"   id="kName"  style="flex:1;" placeholder="Item ka naam">
-            <input type="number" id="kQty"   class="u-box" placeholder="Qty"  inputmode="decimal">
-            <input type="number" id="kPrice" class="p-box" placeholder="Rate" inputmode="decimal">
-            <button class="btn" onclick="addK()" style="background:#2ecc71;width:48px;font-size:14px;">ADD</button>
+            <input type="text" id="kName" style="flex:1;" placeholder="Item Naam">
+            <input type="number" id="kQty" class="u-box" placeholder="Qty">
+            <input type="number" id="kPrice" class="p-box" placeholder="₹ Rate">
+            <button class="btn" onclick="addK()" style="background:#2ecc71;width:48px;">ADD</button>
         </div>
     </div>
     <div class="scroll" id="dkList"></div>
@@ -99,51 +84,20 @@
 </div>
 
 <div id="hPage" class="full-page">
-    <div class="p-head">
-        <span class="back" onclick="closePage()">BACK</span>
-        <span id="hTitle">History</span>
-        <span></span>
-    </div>
+    <div class="p-head"><span class="back" onclick="closePage()">BACK</span><span id="hTitle">History</span><span></span></div>
     <div class="scroll" id="hArea"></div>
-</div>
-
-<div id="editPage" class="full-page">
-    <div class="p-head">
-        <span class="back" onclick="closePage()">BACK</span>
-        <span>✏️ Edit</span>
-        <span></span>
-    </div>
-    <div class="scroll" id="eList"></div>
-    <div id="eSum" class="sum-box"></div>
-</div>
-
-<div id="calcPage" class="full-page">
-    <div class="p-head">
-        <span class="back" onclick="closePage()">BACK</span>
-        <span>➕➖✖️➗ Bill Calc</span>
-        <span></span>
-    </div>
-    <div class="scroll" id="cList"></div>
-    <div id="cSum" class="sum-box"></div>
 </div>
 
 <div id="listPage" class="full-page">
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
         <span>🛒 Shopping List</span>
-        <div style="display:flex;gap:6px;">
-            <button class="lang-btn active" id="btnHi" onclick="setLang('hi')">हिंदी</button>
-            <button class="lang-btn"        id="btnEn" onclick="setLang('en')">ENG</button>
-        </div>
+        <button class="btn" style="background:#fff;color:#0984e3;padding:0 10px;" onclick="setLang(listLang=='hi'?'en':'hi')">HI/EN</button>
     </div>
-    <div class="scroll" style="background:#fff;">
-        <div id="shotArea" style="padding:18px;background:white;">
-            <div id="fOut"></div>
-        </div>
-    </div>
+    <div class="scroll" id="shotArea" style="background:white;padding:15px;"><div id="fOut"></div></div>
     <div class="b-nav">
-        <button class="btn" style="background:#f39c12;flex:1;height:48px;" onclick="takeShot()">📷 SAVE IMAGE</button>
-        <button class="btn" style="background:#0984e3;flex:1;height:48px;" onclick="openCalc()">➕➖✖️➗ CALC</button>
+        <button class="btn" style="background:#f39c12;flex:1;" onclick="takeShot()">📷 SAVE IMAGE</button>
+        <button class="btn" style="background:#27ae60;flex:1;" onclick="openCalc()">💰 Bill Calc</button>
     </div>
 </div>
 
@@ -152,21 +106,16 @@ const firebaseConfig = { databaseURL:"https://grocerry-cc1a9-default-rtdb.asia-s
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref('grocery/3');
 
-let items = [];
-let appHistory = { shopping:[], expense:[] };
-let activeF='All', hType='shopping', tCalc=[];
-let currentEditDate='', activePage='main';
-let listLang = 'hi';
-const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+let items = [], appHistory = { shopping:[], expense:[] }, activeF='All', listLang='hi';
 let todayDK = new Date().toLocaleDateString('en-GB');
 
-db.once('value', snap => {
+db.on('value', snap => {
     const d = snap.val();
     if(d){
         items = d.items || [];
         appHistory = d.history || {shopping:[],expense:[]};
         if(!Array.isArray(appHistory.shopping)) appHistory.shopping = Object.values(appHistory.shopping||{});
-        if(!Array.isArray(appHistory.expense))  appHistory.expense  = Object.values(appHistory.expense||{});
+        if(!Array.isArray(appHistory.expense)) appHistory.expense = Object.values(appHistory.expense||{});
     }
     renderMaster();
 });
@@ -174,323 +123,110 @@ db.once('value', snap => {
 function save(){ db.set({items, history:appHistory}); }
 
 function openPage(id){
-    activePage=id;
     document.querySelectorAll('.full-page').forEach(p=>p.style.display='none');
     document.getElementById('mainView').style.display='none';
-    let el=document.getElementById(id);
-    if(el){ el.style.display='flex'; window.history.pushState({p:id},''); }
+    document.getElementById(id).style.display='flex';
+    window.history.pushState({p:id},'');
 }
-function closePage(){ activePage='main'; window.history.back(); }
+
+function closePage(){ window.history.back(); }
 window.onpopstate=()=>{
-    activePage='main';
     document.querySelectorAll('.full-page').forEach(p=>p.style.display='none');
     document.getElementById('mainView').style.display='flex';
-    renderMaster();
 };
 
-function renderMaster(){
-    let cont=document.getElementById('masterList'); if(!cont) return;
-    let q=document.getElementById('itemName').value.toLowerCase();
-    let filtered=items.filter(it=>(activeF==='All'||it.cat===activeF)&&it.name.toLowerCase().includes(q));
-    let n=0;
-    cont.innerHTML=filtered.map(it=>{
-        let i=items.indexOf(it);
-        return `<div class="item-row ${it.sel?'sel-bg':''}">
-            <span onclick="toggleI(${i})" style="cursor:pointer;font-size:13px;"><b>${++n}. ${it.name}</b></span>
-            <input type="number" value="${it.qty}" onchange="items[${i}].qty=this.value;save();" class="u-box" inputmode="decimal">
-            <select onchange="items[${i}].unit=this.value;save();" class="unit-sel">
-                <option value="Kg"  ${it.unit=='Kg' ?'selected':''}>Kg</option>
-                <option value="Pc"  ${it.unit=='Pc' ?'selected':''}>Pc</option>
-                <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option>
-                <option value="Rs"  ${it.unit=='Rs' ?'selected':''}>Rs</option>
-            </select>
-            <input type="checkbox" ${it.sel?'checked':''} onclick="toggleI(${i})" style="width:22px;height:22px;">
-            <button class="btn del-btn" onclick="delItem(${i})">✕</button>
-        </div>`;
-    }).join('');
-}
-function toggleI(i){ items[i].sel=!items[i].sel; save(); renderMaster(); }
-function addItem(){
-    let n=document.getElementById('itemName').value.trim();
-    if(n){ items.unshift({name:n,cat:document.getElementById('catSelect').value,sel:true,qty:'',unit:'Kg'}); save(); document.getElementById('itemName').value=''; renderMaster(); }
-}
-function delItem(i){ if(confirm("Hata dein?")){ items.splice(i,1); save(); renderMaster(); } }
-function setFilter(f){
-    activeF=f;
-    document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
-    let b=document.getElementById('btn-'+f); if(b) b.classList.add('active');
-    renderMaster();
-}
-function unselectAll(){ if(confirm("Sab clear?")){ items.forEach(it=>it.sel=false); save(); renderMaster(); } }
-
+// --- DAILY KHARCH FIX ---
 function openDailyKharch(){
     todayDK = new Date().toLocaleDateString('en-GB');
     document.getElementById('dkDateLabel').innerText = todayDK;
     openPage('dailyKharchPage');
-    setTimeout(()=>renderDK(todayDK), 30);
+    renderDK(todayDK);
 }
 
 function addK(){
-    todayDK = new Date().toLocaleDateString('en-GB');
     let n = document.getElementById('kName').value.trim();
-    let q = parseFloat(document.getElementById('kQty').value)  || 0;
+    let q = parseFloat(document.getElementById('kQty').value) || 0;
     let p = parseFloat(document.getElementById('kPrice').value) || 0;
-    if(!n){ alert("Item ka naam bharein!"); return; }
+    if(!n) return;
 
     let rec = appHistory.expense.find(h=>h.date===todayDK);
     if(!rec){ rec={date:todayDK, items:[]}; appHistory.expense.unshift(rec); }
 
     let ex = rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
     if(ex){
-        ex.qty   = (parseFloat(ex.qty)||0)   + q;
-        ex.price = (parseFloat(ex.price)||0) + p;
+        ex.qty += q; ex.price += p;
     } else {
         rec.items.push({name:n, qty:q, price:p, done:false});
     }
 
-    document.getElementById('kName').value  = '';
-    document.getElementById('kQty').value   = '';
-    document.getElementById('kPrice').value = '';
-
-    setTimeout(()=>renderDK(todayDK), 10);
+    document.getElementById('kName').value='';
+    document.getElementById('kQty').value='';
+    document.getElementById('kPrice').value='';
     save();
+    renderDK(todayDK);
 }
 
 function renderDK(d){
     let area=document.getElementById('dkList');
-    if(!area) return;
     let rec=appHistory.expense.find(h=>h.date===d);
     let total=0;
-    if(!rec||!rec.items.length){
-        area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Aaj koi kharcha nahi hai.</p>";
+    if(!rec || rec.items.length===0){
+        area.innerHTML="<p style='text-align:center;padding:20px;'>Aaj koi kharcha nahi hai.</p>";
         document.getElementById('dkSum').innerText="TOTAL: ₹0";
         return;
     }
     area.innerHTML=rec.items.map((it,i)=>{
-        total+=parseFloat(it.price)||0;
+        total += (parseFloat(it.price)||0);
         return `<div class="dk-grid">
-            <span style="color:#636e72;font-size:12px;">${i+1}.</span>
-            <b style="font-size:13px;word-break:break-word;">${it.name}</b>
-            <input type="number" ${it.done?'disabled':''} value="${it.qty||''}"
-                onchange="dkField('${d}',${i},'qty',this.value)" class="u-box" inputmode="decimal">
-            <input type="number" ${it.done?'disabled':''} value="${it.price||''}"
-                onchange="dkField('${d}',${i},'price',this.value)" class="p-box" inputmode="decimal">
-            <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="dkLock('${d}',${i})">${it.done?'✓':'🔒'}</button>
+            <span>${i+1}</span>
+            <b>${it.name}</b>
+            <input type="number" value="${it.qty}" onchange="dkUpd('${d}',${i},'qty',this.value)" class="u-box">
+            <input type="number" value="${it.price}" onchange="dkUpd('${d}',${i},'price',this.value)" class="p-box">
+            <button class="btn" style="background:#fdcb6e" onclick="dkLock('${d}',${i})">${it.done?'✓':'🔒'}</button>
             <button class="btn del-btn" onclick="dkDel('${d}',${i})">✕</button>
         </div>`;
     }).join('');
     document.getElementById('dkSum').innerText=`TOTAL: ₹${total.toFixed(2)}`;
 }
-function dkField(d,i,f,v){ let r=appHistory.expense.find(h=>h.date===d); if(r){r.items[i][f]=parseFloat(v)||0; renderDK(d); save();} }
-function dkLock(d,i){ let r=appHistory.expense.find(h=>h.date===d); if(r){r.items[i].done=!r.items[i].done; renderDK(d); save();} }
-function dkDel(d,i){ if(confirm("Delete?")){ let r=appHistory.expense.find(h=>h.date===d); if(r){r.items.splice(i,1); renderDK(d); save();}}}
 
-function renderH(){
-    let tm={shopping:'📦 Saman History',expense:'💰 Kharch History'};
-    document.getElementById('hTitle').innerText=tm[hType];
-    let area=document.getElementById('hArea'); area.innerHTML='';
-    let sorted=[...(appHistory[hType]||[])].sort((a,b)=>{
-        let da=a.date.split('/'),db=b.date.split('/');
-        return new Date(db[2],db[1]-1,db[0])-new Date(da[2],da[1]-1,da[0]);
-    });
-    let curM='',html='',mTot=0;
-    sorted.forEach(h=>{
-        let p=h.date.split('/'), m=months[parseInt(p[1])-1]+' '+p[2];
-        let dTot=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-        if(curM!==m&&curM!==''){
-            area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
-            html=''; mTot=0;
-        }
-        curM=m; mTot+=dTot;
-        html+=`<div class="hist-row">
-            <span style="font-size:13px;">${h.date}</span>
-            <b style="color:#0984e3;">₹${dTot.toFixed(2)}</b>
-            <button class="btn ok-btn" style="font-size:10px;" onclick="editH('${h.date}')">EDIT</button>
-            <button class="btn del-btn" onclick="delH('${h.date}')">✕</button>
+function dkUpd(d,i,f,v){ let r=appHistory.expense.find(h=>h.date===d); if(r){r.items[i][f]=parseFloat(v)||0; save(); renderDK(d);}}
+function dkDel(d,i){ if(confirm("Hataein?")){ let r=appHistory.expense.find(h=>h.date===d); if(r){r.items.splice(i,1); save(); renderDK(d);}}}
+
+// --- MASTER & LIST ---
+function renderMaster(){
+    let cont=document.getElementById('masterList');
+    if(!cont) return;
+    let q=document.getElementById('itemName').value.toLowerCase();
+    let fil=items.filter(it=>(activeF==='All'||it.cat===activeF)&&it.name.toLowerCase().includes(q));
+    cont.innerHTML=fil.map((it,idx)=>{
+        let i = items.indexOf(it);
+        return `<div class="item-row" style="display:flex;padding:10px;background:white;margin-bottom:2px;align-items:center;gap:10px;${it.sel?'background:#fff9db':''}">
+            <b style="flex:1" onclick="toggleI(${i})">${it.name}</b>
+            <input type="checkbox" ${it.sel?'checked':''} onclick="toggleI(${i})">
+            <button class="btn del-btn" onclick="delItem(${i})" style="height:30px;">✕</button>
         </div>`;
-    });
-    if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
-    if(!sorted.length) area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Koi history nahi hai.</p>";
+    }).join('');
 }
-
-function editH(date){
-    currentEditDate=date;
-    let rec=appHistory[hType].find(h=>h.date===date); if(!rec) return;
-    let area=document.getElementById('eList');
-    let itemsHTML=rec.items.map((it,i)=>
-        `<div class="edit-grid">
-            <span style="color:#636e72;">${i+1}.</span>
-            <input type="text" ${it.done?'disabled':''} value="${it.name}"
-                onchange="eField('${hType}','${date}',${i},'name',this.value)"
-                style="font-size:13px;min-width:0;">
-            <input type="number" ${it.done?'disabled':''} value="${it.qty||''}"
-                onchange="eField('${hType}','${date}',${i},'qty',this.value)"
-                class="u-box" inputmode="decimal">
-            <input type="number" ${it.done?'disabled':''} value="${it.price||''}"
-                onchange="eField('${hType}','${date}',${i},'price',this.value)"
-                class="p-box" inputmode="decimal">
-            <button class="btn ${it.done?'ok-btn':'lock-btn'}"
-                onclick="eLock('${hType}','${date}',${i})">${it.done?'✓':'🔒'}</button>
-            <button class="btn del-btn" onclick="eDel('${hType}','${date}',${i})">✕</button>
-        </div>`
-    ).join('');
-
-    let addRowHTML=`<div class="add-row">
-        <div class="add-row-title">➕ ITEM JODO — same naam ho to qty+price jud jayega</div>
-        <div class="in-row">
-            <input type="text"   id="eAddName"  style="flex:1;" placeholder="Naam">
-            <input type="number" id="eAddQty"   class="u-box" placeholder="Qty"  inputmode="decimal">
-            <input type="number" id="eAddPrice" class="p-box" placeholder="₹"    inputmode="decimal">
-            <button class="btn" style="background:#0984e3;width:48px;"
-                onclick="eAddItem('${hType}','${date}')">ADD</button>
-        </div>
-    </div>`;
-
-    area.innerHTML = itemsHTML + addRowHTML;
-    updateESum(date);
-    openPage('editPage');
+function toggleI(i){ items[i].sel=!items[i].sel; save(); renderMaster(); }
+function addItem(){
+    let n=document.getElementById('itemName').value.trim();
+    if(n){ items.unshift({name:n,cat:document.getElementById('catSelect').value,sel:true,qty:1,unit:'Kg'}); save(); document.getElementById('itemName').value=''; renderMaster(); }
 }
-
-function eAddItem(type,date){
-    let n=document.getElementById('eAddName').value.trim();
-    let q=parseFloat(document.getElementById('eAddQty').value)||0;
-    let p=parseFloat(document.getElementById('eAddPrice').value)||0;
-    if(!n){alert("Naam zaroor bharein!"); return;}
-    let rec=appHistory[type].find(h=>h.date===date); if(!rec) return;
-    let ex=rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
-    if(ex){
-        ex.qty   = (parseFloat(ex.qty)||0) + q;
-        ex.price = (parseFloat(ex.price)||0) + p;
-    } else {
-        rec.items.push({name:n,qty:q,price:p,done:false});
-    }
-    document.getElementById('eAddName').value='';
-    document.getElementById('eAddQty').value='';
-    document.getElementById('eAddPrice').value='';
-    editH(date); save();
-}
-
-function eField(type,d,i,f,v){
-    let rec=appHistory[type].find(h=>h.date===d); if(!rec) return;
-    rec.items[i][f]=(f==='name')?v:(parseFloat(v)||0);
-    updateESum(d); save();
-}
-function eLock(type,d,i){
-    let rec=appHistory[type].find(h=>h.date===d); if(!rec) return;
-    rec.items[i].done=!rec.items[i].done; editH(d); save();
-}
-function eDel(type,d,i){
-    if(confirm("Delete?")){
-        let rec=appHistory[type].find(h=>h.date===d);
-        if(rec){rec.items.splice(i,1); editH(d); save();}
-    }
-}
-function updateESum(d){
-    let rec=appHistory[hType].find(h=>h.date===d); if(!rec) return;
-    let t=rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-    document.getElementById('eSum').innerText=`TOTAL: ₹${t.toFixed(2)}`;
-}
-function delH(d){
-    if(confirm("Poora din hataein?")){
-        appHistory[hType]=appHistory[hType].filter(h=>h.date!==d);
-        save(); renderH();
-    }
-}
-
-function setLang(lang){
-    listLang=lang;
-    document.getElementById('btnHi').classList.toggle('active', lang==='hi');
-    document.getElementById('btnEn').classList.toggle('active', lang==='en');
-    renderFinalList();
-}
-
-function fmtQty(qty, unit, lang){
-    let q = parseFloat(qty);
-    if(isNaN(q) || qty==='' || qty===null) return '';
-    if(lang==='en') return `${qty} ${unit}`;
-    let isHalf = (Math.abs(q - 0.5) < 0.001);
-    let is200 = (Math.abs(q - 0.2) < 0.001);
-    if(unit==='Kg'){
-        if(isHalf)  return 'आधा किलो';
-        if(is200)  return '200 ग्राम';
-        return `${q} किलो`;
-    }
-    if(unit==='Ltr'){
-        if(isHalf)  return 'आधा लीटर';
-        if(is200) return '200 ML';
-        return `${q} लीटर`;
-    }
-    if(unit==='Pc'){
-        if(isHalf) return 'आधा पीस';
-        return `${q} पीस`;
-    }
-    if(unit==='Rs') return `${q} रुपये`;
-    return `${qty} ${unit}`;
-}
-
-let lastSelItems = [];
-
-function showFinalList(){
-    lastSelItems = items.filter(it=>it.sel);
-    if(!lastSelItems.length){ alert("Pehle item choose karo!"); return; }
-    renderFinalList();
-    openPage('listPage');
-}
-
+function setFilter(f){ activeF=f; document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active')); document.getElementById('btn-'+f).classList.add('active'); renderMaster(); }
+function showFinalList(){ openPage('listPage'); renderFinalList(); }
 function renderFinalList(){
-    let sel = lastSelItems;
-    if(!sel || !sel.length) return;
     let out=document.getElementById('fOut');
-    out.innerHTML=`<h2 style="text-align:center;color:#0984e3;border-bottom:3px solid #0984e3;padding-bottom:10px;margin-bottom:15px;">🛒 SAMAN LIST</h2>`;
-    ['GROCERY','SABJI','BODY','OTHER'].forEach(c=>{
+    let sel=items.filter(it=>it.sel);
+    out.innerHTML=`<h2 style="text-align:center;">🛒 SAMAN LIST</h2>`;
+    ['GROC','SABJI','BODY','OTHER'].forEach(c=>{
         let f=sel.filter(it=>it.cat===c);
         if(f.length){
-            out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:5px 12px;border-radius:4px;font-size:12px;margin:14px 0 7px;display:inline-block;">${c}</div>`;
-            out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;font-size:11px;font-weight:900;color:#636e72;padding:5px 5px;border-bottom:2px solid #dfe6e9;"><span>ITEM</span><span style="text-align:center;">MATRA</span><span style="text-align:center;">RATE</span></div>`;
-            f.forEach((it,j)=>{
-                let qtyStr = fmtQty(it.qty, it.unit, listLang);
-                out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;padding:11px 5px;border-bottom:1px dashed #ccc;font-weight:bold;align-items:center;"><span style="font-size:13px;">${j+1}. ${it.name}</span><span style="text-align:center;color:#0984e3;font-size:13px;">${qtyStr}</span><span style="text-align:center;color:#e17055;font-size:13px;">₹____</span></div>`;
-            });
+            out.innerHTML+=`<div style="background:#eee;padding:5px;margin:10px 0;"><b>${c}</b></div>`;
+            f.forEach((it,j)=> out.innerHTML+=`<div style="padding:5px;border-bottom:1px dashed #ccc;">${j+1}. ${it.name} _________</div>`);
         }
     });
 }
-
-function openCalc(){
-    tCalc=items.filter(it=>it.sel).map(it=>({ name:it.name, qty:parseFloat(it.qty)||0, unit:it.unit, price:0, done:false }));
-    renderC(); openPage('calcPage');
-}
-function renderC(){
-    let area=document.getElementById('cList');
-    area.innerHTML=tCalc.map((it,i)=>
-        `<div class="calc-row"><b style="font-size:13px;">${it.name}</b><span style="color:#636e72;font-size:12px;">${it.qty} ${it.unit}</span><input type="number" ${it.done?'disabled':''} placeholder="₹ Rate" value="${it.price>0?it.price:''}" onchange="calcPrice(${i},this.value)" class="p-box" inputmode="decimal"><button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="calcLock(${i})">${it.done?'✓':'🔒'}</button></div>`
-    ).join('');
-    renderCSum();
-}
-function calcPrice(i,v){ tCalc[i].price=parseFloat(v)||0; renderCSum(); autoSaveCalc(); }
-function calcLock(i){ tCalc[i].done=!tCalc[i].done; renderC(); autoSaveCalc(); }
-
-function autoSaveCalc(){
-    let filled=tCalc.filter(it=>it.price>0);
-    if(!filled.length) return;
-    let d=new Date().toLocaleDateString('en-GB');
-    let rec=appHistory.shopping.find(h=>h.date===d);
-    if(!rec){ rec={date:d,items:[]}; appHistory.shopping.unshift(rec); }
-    filled.forEach(newIt=>{
-        let ex=rec.items.find(e=>e.name.toLowerCase()===newIt.name.toLowerCase());
-        if(ex){ ex.qty = (parseFloat(ex.qty)||0) + (parseFloat(newIt.qty)||0); ex.price = (parseFloat(ex.price)||0) + (parseFloat(newIt.price)||0);
-        } else { rec.items.push({name:newIt.name,qty:newIt.qty,unit:newIt.unit,price:newIt.price,done:newIt.done}); }
-    });
-    save();
-}
-function renderCSum(){
-    let t=tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-    document.getElementById('cSum').innerText=`BILL TOTAL: ₹${t.toFixed(2)}`;
-}
-function takeShot(){
-    html2canvas(document.getElementById('shotArea')).then(c=>{
-        let a=document.createElement('a'); a.download='SamanList.png'; a.href=c.toDataURL(); a.click();
-    });
-}
+function takeShot(){ html2canvas(document.getElementById('shotArea')).then(c=>{ let a=document.createElement('a'); a.download='List.png'; a.href=c.toDataURL(); a.click(); });}
 </script>
 </body>
 </html>
