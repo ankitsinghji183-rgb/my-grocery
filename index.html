@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Master v77 Professional</title>
+    <title>Grocery Master v78 Full Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     <style>
-        /* --- Professional Colors & Style --- */
+        /* --- FULL CSS --- */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #2d3436; overflow-x: hidden; }
         
@@ -19,7 +19,7 @@
         .card { background: white; padding: 12px; margin-bottom: 10px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e1e8ed; }
         .in-row { display: flex; gap: 6px; margin-bottom: 10px; width: 100%; align-items: center; }
         
-        input, select { padding: 10px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 14px; height: 42px; background: #fff; transition: 0.3s; }
+        input, select { padding: 10px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 14px; height: 42px; background: #fff; }
         input:disabled { background: #f1f2f6; color: #7f8c8d; border: 1px dashed #bdc3c7; font-weight: bold; }
         
         .u-box { width: 55px !important; text-align: center; }
@@ -28,7 +28,7 @@
         
         .btn { border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; font-size: 12px; height: 42px; display: flex; align-items: center; justify-content: center; }
         .f-btn { flex: 1; padding: 10px 0; background: #636e72; font-size: 9px; font-weight: 800; }
-        .f-btn.active { background: #0984e3 !important; box-shadow: 0 2px 8px rgba(9,132,227,0.4); }
+        .f-btn.active { background: #0984e3 !important; }
         
         .del-btn { background: #ff7675 !important; min-width: 42px; }
         .ok-btn { background: #2ecc71 !important; min-width: 42px; }
@@ -38,10 +38,9 @@
         .dk-grid { display: grid; grid-template-columns: 30px 1fr 55px 85px 42px 42px; gap: 6px; align-items: center; padding: 12px 8px; border-bottom: 1px solid #eee; background: white; font-size: 14px; }
         
         .sel-bg { background: #fff9db !important; border-left: 5px solid #fcc419; }
-        .month-label { background: #dfe6e9; color: #2d3436; padding: 12px 15px; font-weight: 800; border-left: 6px solid #0984e3; margin-top: 20px; display: flex; justify-content: space-between; border-radius: 6px; }
         .sum-box { padding: 18px; background: #e3f2fd; font-weight: 900; text-align: right; border-top: 4px solid #0984e3; font-size: 18px; color: #0984e3; position: sticky; bottom: 70px; z-index: 99; }
         
-        .b-nav { position: fixed; bottom: 0; width: 100%; background: white; padding: 12px; border-top: 1px solid #dfe6e9; display: flex; gap: 10px; z-index: 1000; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); }
+        .b-nav { position: fixed; bottom: 0; width: 100%; background: white; padding: 12px; border-top: 1px solid #dfe6e9; display: flex; gap: 10px; z-index: 1000; }
         .top-hist { display: flex; gap: 8px; padding: 12px; }
         .h-box { flex: 1; background: #f8f9fa; border: 1px solid #dfe6e9; padding: 15px 0; text-align: center; border-radius: 12px; font-weight: 800; font-size: 11px; color: #0984e3; cursor: pointer; }
     </style>
@@ -50,18 +49,18 @@
 
 <div id="mainView">
     <div class="top-hist">
-        <div class="h-box" onclick="hType='shopping'; openPage('hPage'); renderH();">PURCHASE HISTORY</div>
-        <div class="h-box" onclick="hType='expense'; openPage('hPage'); renderH();">KHARCHA HISTORY</div>
+        <div class="h-box" onclick="hType='shopping'; openPage('hPage'); renderH();">Saman History</div>
+        <div class="h-box" onclick="hType='expense'; openPage('hPage'); renderH();">Kharch History</div>
     </div>
 
     <div class="card">
         <div class="in-row">
-            <input type="text" id="itemName" placeholder="Search or Add..." style="flex:1;" oninput="renderMaster()">
+            <input type="text" id="itemName" placeholder="Saman search ya add..." style="flex:1;" oninput="renderMaster()">
             <select id="catSelect" style="width:85px;">
                 <option value="GROCERY">GROCERY</option>
                 <option value="SABJI">SABJI</option>
                 <option value="BODY">BODY</option>
-                <option value="OTHER">OTHER</option>
+                <option value="OTHER">ANYA</option>
             </select>
             <button onclick="addItem()" class="btn" style="background:#2ecc71; width:50px;">ADD</button>
         </div>
@@ -78,18 +77,18 @@
     <div id="masterList" class="scroll" style="height: calc(100vh - 260px);"></div>
 
     <div class="b-nav">
-        <button class="btn" style="background:#0984e3; flex:1; height:55px;" onclick="showFinalList()">MAKE LIST</button>
+        <button class="btn" style="background:#0984e3; flex:1; height:55px;" onclick="showFinalList()">LIST BANAO</button>
         <button class="btn" style="background:#f39c12; flex:1; height:55px;" onclick="openDailyKharch()">DAILY KHARCH</button>
     </div>
 </div>
 
 <div id="dailyKharchPage" class="full-page">
-    <div class="p-head"><span onclick="closePage()">BACK</span><span>आज का खर्चा</span></div>
+    <div class="p-head"><span onclick="closePage()">BACK</span><span>Daily Kharcha</span></div>
     <div class="card">
         <div class="in-row">
             <input type="text" id="kName" style="flex:1" placeholder="Item Name">
             <input type="number" id="kQty" class="u-box" placeholder="Qty">
-            <input type="number" id="kPrice" class="p-box" placeholder="₹ Rate">
+            <input type="number" id="kPrice" class="p-box" placeholder="Rate">
             <button class="btn" onclick="addK()" style="background:#2ecc71; width:55px;">ADD</button>
         </div>
     </div>
@@ -103,7 +102,7 @@
 </div>
 
 <div id="editPage" class="full-page">
-    <div class="p-head"><span onclick="closePage()">BACK</span><span>Modify Record</span></div>
+    <div class="p-head"><span onclick="closePage()">BACK</span><span>Edit & Lock</span></div>
     <div class="scroll" id="eList"></div>
     <div id="eSum" class="sum-box"></div>
 </div>
@@ -115,15 +114,15 @@
 </div>
 
 <div id="listPage" class="full-page">
-    <div class="p-head"><span onclick="closePage()">BACK</span><span>Saman List</span></div>
+    <div class="p-head"><span onclick="closePage()">BACK</span><span>Shopping List</span></div>
     <div class="scroll" style="background:#fff;">
         <div id="shotArea" style="padding:20px; background:white;">
             <div id="fOut"></div>
         </div>
     </div>
     <div class="b-nav" style="position:static;">
-        <button class="btn" style="background:#f39c12; flex:1; height:55px;" onclick="takeShot()">SAVE AS IMAGE</button>
-        <button class="btn" style="background:#2ecc71; flex:1; height:55px;" onclick="openCalc()">GO TO CALC</button>
+        <button class="btn" style="background:#f39c12; flex:1; height:55px;" onclick="takeShot()">SAVE IMAGE</button>
+        <button class="btn" style="background:#2ecc71; flex:1; height:55px;" onclick="openCalc()">OPEN CALC</button>
     </div>
 </div>
 
@@ -146,7 +145,7 @@
     }
     function closePage() { window.history.back(); }
 
-    // --- SYNC ---
+    // --- FIREBASE SYNC ---
     db.on('value', (snap) => {
         const d = snap.val();
         if (d) {
@@ -159,7 +158,7 @@
     });
     const save = (cb) => { db.set({ items, history }).then(() => { if(cb) cb(); }); };
 
-    // --- MASTER LIST ---
+    // --- MASTER LIST FUNCTIONS ---
     function renderMaster() {
         let cont = document.getElementById('masterList'), q = document.getElementById('itemName').value.toLowerCase();
         let filtered = items.filter(it => (activeF === 'All' || it.cat === activeF) && it.name.toLowerCase().includes(q));
@@ -194,9 +193,9 @@
         let btn = document.getElementById('btn-'+f); if(btn) btn.classList.add('active');
         renderMaster(); 
     }
-    function unselectAll() { if(confirm("Sab hatayein?")){ items.forEach(it => it.sel = false); save(); } }
+    function unselectAll() { if(confirm("Clear selections?")){ items.forEach(it => it.sel = false); save(); } }
 
-    // --- DAILY KHARCHA ---
+    // --- DAILY KHARCH LOGIC ---
     function openDailyKharch() { 
         let d = new Date().toLocaleDateString('en-GB'); 
         renderDK(d); 
@@ -204,7 +203,7 @@
     }
     function addK() { 
         let n = document.getElementById('kName').value.trim(), q = parseFloat(document.getElementById('kQty').value) || 1, p = parseFloat(document.getElementById('kPrice').value) || 0; 
-        if(!n || p <= 0) return alert("Saman & Rate bharein!");
+        if(!n || p <= 0) return alert("Saman aur Rate bharein!");
         let d = new Date().toLocaleDateString('en-GB'), rec = history.expense.find(h => h.date === d);
         if(!rec){ rec = {date: d, items: []}; history.expense.unshift(rec); }
         rec.items.push({name: n, qty: q, price: p, done: false});
@@ -212,7 +211,7 @@
     }
     function renderDK(d) {
         let rec = history.expense.find(h => h.date === d), area = document.getElementById('dkList'), total = 0;
-        if(!rec || !rec.items.length) { area.innerHTML = "<p style='text-align:center;padding:30px;'>No Record Found.</p>"; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; }
+        if(!rec || !rec.items.length) { area.innerHTML = "<p style='text-align:center;padding:20px;'>Aaj koi kharcha nahi hai.</p>"; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; }
         area.innerHTML = rec.items.map((it, i) => { 
             total += parseFloat(it.price) || 0;
             return `<div class="dk-grid">
@@ -226,25 +225,25 @@
         document.getElementById('dkSum').innerText = `TOTAL: ₹${total}`;
     }
 
-    // --- HISTORY & EDITING ---
+    // --- HISTORY ENGINE ---
     function renderH() {
         let area = document.getElementById('hArea'); area.innerHTML = '';
         let sorted = [...(history[hType]||[])].sort((a,b) => { let da=a.date.split('/'), db=b.date.split('/'); return new Date(db[2], db[1]-1, db[0]) - new Date(da[2], da[1]-1, da[0]); });
         let curM = "", html = "", mTot = 0;
         sorted.forEach(h => {
             let p = h.date.split('/'), m = months[parseInt(p[1])-1] + " " + p[2], dTot = h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-            if(curM !== m && curM !== ""){ area.innerHTML += `<div class="month-label"><span>${curM}</span><span>₹${mTot}</span></div>` + html; html=""; mTot=0; }
+            if(curM !== m && curM !== ""){ area.innerHTML += `<div style="background:#dfe6e9; padding:10px; font-weight:800;">${curM} - Total: ₹${mTot}</div>` + html; html=""; mTot=0; }
             curM = m; mTot += dTot;
             html += `<div class="item-row" style="grid-template-columns: 1fr 100px 50px 50px;"><span>${h.date}</span><b>₹${dTot}</b><button class="btn ok-btn" onclick="editH('${h.date}')">EDIT</button><button class="btn del-btn" onclick="delH('${h.date}')">X</button></div>`;
         });
-        if(curM) area.innerHTML += `<div class="month-label"><span>${curM}</span><span>₹${mTot}</span></div>` + html;
+        if(curM) area.innerHTML += `<div style="background:#dfe6e9; padding:10px; font-weight:800;">${curM} - Total: ₹${mTot}</div>` + html;
     }
 
     function editH(date) {
         let rec = history[hType].find(h => h.date === date); if(!rec) return;
         let area = document.getElementById('eList');
         area.innerHTML = rec.items.map((it, i) => `<div class="dk-grid"><span>${i+1}.</span>
-        <input type="text" ${it.done?'disabled':''} value="${it.name}" oninput="updHF('${hType}','${date}',${i},'name',this.value)" style="flex:1; border:none; border-bottom:1px solid #ccc;">
+        <input type="text" ${it.done?'disabled':''} value="${it.name}" oninput="updHF('${hType}','${date}',${i},'name',this.value)" style="flex:1;">
         <input type="number" ${it.done?'disabled':''} value="${it.qty}" oninput="updHF('${hType}','${date}',${i},'qty',this.value)" class="u-box">
         <input type="number" ${it.done?'disabled':''} value="${it.price}" oninput="updHF('${hType}','${date}',${i},'price',this.value)" class="p-box">
         <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="lockH('${hType}','${date}',${i})">${it.done?'OK':'C'}</button>
@@ -255,10 +254,10 @@
 
     function updHF(type, d, i, f, v) { let ex = history[type].find(h=>h.date===d); if(ex){ ex.items[i][f]=v; save(() => { if(type==='expense') renderDK(d); if(document.getElementById('editPage').style.display==='flex') editH(d); }); } }
     function lockH(type, d, i) { let ex = history[type].find(h=>h.date===d); if(ex){ ex.items[i].done=!ex.items[i].done; save(() => { if(type==='expense') renderDK(d); if(document.getElementById('editPage').style.display==='flex') editH(d); }); } }
-    function delHI(type, d, i) { if(confirm("Delete Item?")){ history[type].find(h=>h.date===d).items.splice(i,1); save(() => { if(type==='expense') renderDK(d); if(document.getElementById('editPage').style.display==='flex') editH(d); }); } }
+    function delHI(type, d, i) { if(confirm("Item Delete?")){ history[type].find(h=>h.date===d).items.splice(i,1); save(() => { if(type==='expense') renderDK(d); if(document.getElementById('editPage').style.display==='flex') editH(d); }); } }
     function delH(d) { if(confirm("Poora din hatayein?")){ history[hType] = history[hType].filter(h => h.date !== d); save(() => renderH()); } }
 
-    // --- CALC & FINAL ---
+    // --- CALC & FINAL LIST ---
     function openCalc() { tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, price: '', unit: it.unit, done: false })); renderC(); openPage('calcPage'); }
     function renderC() {
         let area = document.getElementById('cList');
@@ -267,10 +266,10 @@
         <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="tCalc[${i}].done=!it.done;renderC()">${it.done?'OK':'C'}</button></div>`).join('');
         renderCSum();
     }
-    function renderCSum() { document.getElementById('cSum').innerText = `TOTAL BILL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; }
+    function renderCSum() { document.getElementById('cSum').innerText = `BILL TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; }
 
     function showFinalList() {
-        let sel = items.filter(it => it.sel); if(!sel.length) return alert("Select items first!");
+        let sel = items.filter(it => it.sel); if(!sel.length) return alert("Pehle item choose karo!");
         let out = document.getElementById('fOut');
         out.innerHTML = `<h2 style="text-align:center;color:#0984e3;border-bottom:3px solid #0984e3;padding-bottom:10px;margin-bottom:15px;">SAMAN LIST</h2>`;
         ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {
@@ -285,7 +284,7 @@
         });
         openPage('listPage');
     }
-    function takeShot() { html2canvas(document.getElementById('shotArea')).then(c => { let a = document.createElement('a'); a.download='MyGroceryList.png'; a.href=c.toDataURL(); a.click(); }); }
+    function takeShot() { html2canvas(document.getElementById('shotArea')).then(c => { let a = document.createElement('a'); a.download='SamanList.png'; a.href=c.toDataURL(); a.click(); }); }
 </script>
 </body>
 </html>
