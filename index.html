@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Master v73 Professional</title>
+    <title>Grocery Master v74 Ultimate</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     <style>
-        /* --- वही शानदार UI जो आपको पसंद आया --- */
+        /* --- Professional UI & Colors --- */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f4f8; color: #2d3436; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #2d3436; overflow-x: hidden; }
         
         .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0f4f8; display: none; flex-direction: column; z-index: 9999; }
         .p-head { background: #0984e3; color: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 18px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
@@ -21,17 +21,20 @@
         
         input, select { padding: 10px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 14px; height: 42px; background: #fff; }
         .u-box { width: 55px !important; text-align: center; }
-        .p-box { width: 80px !important; font-weight: 800; color: #2ecc71; }
+        .p-box { width: 85px !important; font-weight: 800; color: #2ecc71; }
         .unit-sel { width: 65px !important; font-size: 12px; background: #f1f2f6; border: none; }
         
         .btn { border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; font-size: 12px; height: 42px; display: flex; align-items: center; justify-content: center; }
-        .f-btn { flex: 1; padding: 10px 0; background: #636e72; font-size: 10px; }
+        .f-btn { flex: 1; padding: 10px 0; background: #636e72; font-size: 10px; transition: 0.2s; }
+        .f-btn.active { background: #0984e3; }
+        
         .del-btn { background: #ff7675 !important; min-width: 42px; }
         .ok-btn { background: #2ecc71 !important; min-width: 42px; }
         .lock-btn { background: #fdcb6e !important; color: #2d3436; min-width: 42px; }
         
+        /* --- Grids --- */
         .item-row { display: grid; grid-template-columns: 1fr 55px 65px 35px 42px; gap: 8px; align-items: center; padding: 14px 10px; border-bottom: 1px solid #f1f2f6; background: white; margin-bottom: 4px; border-radius: 8px; }
-        .dk-grid { display: grid; grid-template-columns: 30px 1fr 55px 80px 42px 42px; gap: 6px; align-items: center; padding: 12px 8px; border-bottom: 1px solid #eee; background: white; font-size: 14px; }
+        .dk-grid { display: grid; grid-template-columns: 30px 1fr 55px 85px 42px 42px; gap: 6px; align-items: center; padding: 12px 8px; border-bottom: 1px solid #eee; background: white; font-size: 14px; }
         
         .sel-bg { background: #fff9db !important; border-left: 5px solid #fcc419; }
         .month-label { background: #dfe6e9; color: #2d3436; padding: 12px 15px; font-weight: 800; border-left: 6px solid #0984e3; margin-top: 20px; display: flex; justify-content: space-between; border-radius: 6px; }
@@ -46,20 +49,25 @@
 
 <div id="mainView">
     <div class="top-hist">
-        <div class="h-box" onclick="hType='shopping'; openPage('hPage'); renderH();">PURCHASE HISTORY</div>
-        <div class="h-box" onclick="hType='expense'; openPage('hPage'); renderH();">KHARCHA HISTORY</div>
+        <div class="h-box" onclick="hType='shopping'; openPage('hPage'); renderH();">Saman History</div>
+        <div class="h-box" onclick="hType='expense'; openPage('hPage'); renderH();">Kharch History</div>
     </div>
 
     <div class="card">
         <div class="in-row">
-            <input type="text" id="itemName" placeholder="सामान का नाम..." style="flex:1;" oninput="renderMaster()">
-            <select id="catSelect" style="width:75px;"><option value="GROCERY">GROC</option><option value="SABJI">SABJI</option><option value="BODY">BODY</option><option value="OTHER">ANYA</option></select>
+            <input type="text" id="itemName" placeholder="Search or Add..." style="flex:1;" oninput="renderMaster()">
+            <select id="catSelect" style="width:75px;">
+                <option value="GROCERY">GROC</option>
+                <option value="SABJI">SABJI</option>
+                <option value="BODY">BODY</option>
+                <option value="OTHER">ANYA</option>
+            </select>
             <button onclick="addItem()" class="btn" style="background:#2ecc71; width:50px;">ADD</button>
         </div>
         <div style="display:flex; gap:5px;">
-            <button onclick="setFilter('All')" class="btn f-btn">ALL</button>
-            <button onclick="setFilter('GROCERY')" class="btn f-btn" style="background:#17a2b8;">GROCERY</button>
-            <button onclick="setFilter('SABJI')" class="btn f-btn" style="background:#6c5ce7;">SABJI</button>
+            <button onclick="setFilter('All')" id="btn-All" class="btn f-btn active">ALL</button>
+            <button onclick="setFilter('GROCERY')" id="btn-GROCERY" class="btn f-btn">GROC</button>
+            <button onclick="setFilter('SABJI')" id="btn-SABJI" class="btn f-btn">SABJI</button>
             <button onclick="unselectAll()" class="btn f-btn" style="background:#d63031;">CLEAR</button>
         </div>
     </div>
@@ -67,18 +75,18 @@
     <div id="masterList" class="scroll" style="height: calc(100vh - 250px);"></div>
 
     <div class="b-nav">
-        <button class="btn" style="background:#0984e3; flex:1; height:55px;" onclick="showFinalList()">CREATE LIST</button>
+        <button class="btn" style="background:#0984e3; flex:1; height:55px;" onclick="showFinalList()">MAKE LIST</button>
         <button class="btn" style="background:#f39c12; flex:1; height:55px;" onclick="openDailyKharch()">DAILY KHARCH</button>
     </div>
 </div>
 
-<div id="kInPage" class="full-page">
-    <div class="p-head"><span onclick="closePage()">BACK</span><span>आज का खर्चा</span></div>
+<div id="dailyKharchPage" class="full-page">
+    <div class="p-head"><span onclick="closePage()">BACK</span><span>Daily Kharcha</span></div>
     <div class="card">
         <div class="in-row">
             <input type="text" id="kName" style="flex:1" placeholder="Item Name">
             <input type="number" id="kQty" class="u-box" placeholder="Qty">
-            <input type="number" id="kPrice" class="p-box" placeholder="₹ Rate">
+            <input type="number" id="kPrice" class="p-box" placeholder="Rate">
             <button class="btn" onclick="addK()" style="background:#2ecc71; width:55px;">ADD</button>
         </div>
     </div>
@@ -92,31 +100,32 @@
 </div>
 
 <div id="editPage" class="full-page">
-    <div class="p-head"><span onclick="closePage()">BACK</span><span>एडिट करें</span></div>
+    <div class="p-head"><span onclick="closePage()">BACK</span><span>Modify Record</span></div>
     <div class="scroll" id="eList"></div>
     <div id="eSum" class="sum-box"></div>
 </div>
 
 <div id="calcPage" class="full-page">
-    <div class="p-head"><span onclick="closePage()">BACK</span><span>Bill Counter</span></div>
+    <div class="p-head"><span onclick="closePage()">BACK</span><span>Bill Calculator</span></div>
     <div class="scroll" id="cList"></div>
     <div id="cSum" class="sum-box"></div>
 </div>
 
 <div id="listPage" class="full-page">
-    <div class="p-head"><span onclick="closePage()">BACK</span><span>फाइनल लिस्ट</span></div>
+    <div class="p-head"><span onclick="closePage()">BACK</span><span>Final List</span></div>
     <div class="scroll" style="background:#fff;">
         <div id="shotArea" style="padding:20px; background:white;">
             <div id="fOut"></div>
         </div>
     </div>
     <div class="b-nav" style="position:static;">
-        <button class="btn" style="background:#f39c12; flex:1; height:55px;" onclick="takeShot()">PHOTO</button>
-        <button class="btn" style="background:#2ecc71; flex:1; height:55px;" onclick="openCalc()">CALC BILL</button>
+        <button class="btn" style="background:#f39c12; flex:1; height:55px;" onclick="takeShot()">SAVE IMAGE</button>
+        <button class="btn" style="background:#2ecc71; flex:1; height:55px;" onclick="openCalc()">GO TO CALC</button>
     </div>
 </div>
 
 <script>
+    // --- DATABASE ---
     const firebaseConfig = { databaseURL: "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database().ref('grocery/3');
@@ -125,6 +134,7 @@
     let activeF = 'All', hType = 'shopping', tCalc = [];
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+    // --- NAVIGATION ---
     window.onpopstate = () => { document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); };
     function openPage(id) { 
         document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); 
@@ -146,9 +156,12 @@
 
     const save = (cb) => { db.set({ items, history }).then(() => { if(cb) cb(); }); };
 
+    // --- MASTER LIST LOGIC ---
     function renderMaster() {
         let cont = document.getElementById('masterList'), q = document.getElementById('itemName').value.toLowerCase();
+        // Filter Logic: Show only items that match Search AND Category
         let filtered = items.filter(it => (activeF === 'All' || it.cat === activeF) && it.name.toLowerCase().includes(q));
+        
         let gCount = 0;
         cont.innerHTML = filtered.map((it) => {
             let rIdx = items.indexOf(it);
@@ -156,8 +169,10 @@
                 <span onclick="toggleI(${rIdx})"><b>${++gCount}. ${it.name}</b></span>
                 <input type="number" step="0.001" value="${it.qty}" oninput="items[${rIdx}].qty=this.value;save()" class="u-box">
                 <select onchange="items[${rIdx}].unit=this.value;save()" class="unit-sel">
-                    <option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option><option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
-                    <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option><option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option>
+                    <option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option>
+                    <option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
+                    <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option>
+                    <option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option>
                 </select>
                 <input type="checkbox" ${it.sel?'checked':''} onclick="toggleI(${rIdx})">
                 <button class="btn del-btn" onclick="delMasterItem(${rIdx})">X</button>
@@ -167,92 +182,110 @@
 
     function toggleI(i) { items[i].sel = !items[i].sel; save(); }
     function addItem() { 
-        let n = document.getElementById('itemName').value; 
-        if(n){ items.unshift({name: n, cat: document.getElementById('catSelect').value, sel: true, qty: '', unit: 'Kg', lastPrice: 0}); save(); document.getElementById('itemName').value=''; } 
+        let n = document.getElementById('itemName').value.trim(); 
+        if(n){ 
+            items.unshift({name: n, cat: document.getElementById('catSelect').value, sel: true, qty: '', unit: 'Kg'}); 
+            save(); 
+            document.getElementById('itemName').value=''; 
+        } 
     }
-    function delMasterItem(i) { if(confirm("हटाएं?")){ items.splice(i,1); save(); } }
-    function setFilter(f) { activeF = f; renderMaster(); }
-    function unselectAll() { if(confirm("Clear?")){ items.forEach(it => it.sel = false); save(); } }
+    function delMasterItem(i) { if(confirm("Permanently Delete?")){ items.splice(i,1); save(); } }
+    
+    function setFilter(f) { 
+        activeF = f; 
+        document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-'+f).classList.add('active');
+        renderMaster(); 
+    }
+    
+    function unselectAll() { if(confirm("Clear Selections?")){ items.forEach(it => it.sel = false); save(); } }
 
-    /* --- Daily Kharch --- */
+    // --- DAILY KHARCH ENGINE ---
     function openDailyKharch() { 
         let d = new Date().toLocaleDateString('en-GB'); 
         renderDK(d); 
-        openPage('kInPage'); 
+        openPage('dailyKharchPage'); 
     }
+
     function addK() { 
         let n = document.getElementById('kName').value.trim(), q = parseFloat(document.getElementById('kQty').value) || 1, p = parseFloat(document.getElementById('kPrice').value) || 0; 
-        if(!n || p <= 0) return alert("नाम और रेट भरें");
+        if(!n || p <= 0) return alert("Fill Name and Price");
         let d = new Date().toLocaleDateString('en-GB'), rec = history.expense.find(h => h.date === d);
         if(!rec){ rec = {date: d, items: []}; history.expense.unshift(rec); }
         rec.items.push({name: n, qty: q, price: p, done: false});
         save(() => { renderDK(d); document.getElementById('kName').value=''; document.getElementById('kQty').value=''; document.getElementById('kPrice').value=''; });
     }
+
     function renderDK(d) {
         let rec = history.expense.find(h => h.date === d), area = document.getElementById('dkList'), total = 0;
-        if(!rec || !rec.items.length) { area.innerHTML = "<p style='text-align:center;padding:20px;'>No Data</p>"; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; }
-        area.innerHTML = rec.items.map((it, i) => { total += parseFloat(it.price) || 0;
-            return `<div class="dk-grid"><span>${i+1}.</span><b>${it.name}</b>
-            <input type="number" value="${it.qty}" oninput="updHF('expense','${d}',${i},'qty',this.value)" class="u-box">
-            <input type="number" value="${it.price}" oninput="updHF('expense','${d}',${i},'price',this.value)" class="p-box">
-            <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="lockH('expense','${d}',${i})">${it.done?'OK':'C'}</button>
-            <button class="btn del-btn" onclick="delHI('expense','${d}',${i})">X</button></div>`;
+        if(!rec || !rec.items.length) { area.innerHTML = "<p style='text-align:center;padding:30px;'>No Expense Recorded Today.</p>"; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; }
+        area.innerHTML = rec.items.map((it, i) => { 
+            total += parseFloat(it.price) || 0;
+            return `<div class="dk-grid">
+                <span>${i+1}.</span><b>${it.name}</b>
+                <input type="number" value="${it.qty}" oninput="updHF('expense','${d}',${i},'qty',this.value)" class="u-box">
+                <input type="number" value="${it.price}" oninput="updHF('expense','${d}',${i},'price',this.value)" class="p-box">
+                <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="lockH('expense','${d}',${i})">${it.done?'OK':'C'}</button>
+                <button class="btn del-btn" onclick="delHI('expense','${d}',${i})">X</button>
+            </div>`;
         }).join('');
         document.getElementById('dkSum').innerText = `TOTAL: ₹${total}`;
     }
 
-    /* --- History Logic --- */
+    // --- HISTORY & EDITING ---
     function renderH() {
         let area = document.getElementById('hArea'); area.innerHTML = '';
         let sorted = [...(history[hType]||[])].sort((a,b) => { let da=a.date.split('/'), db=b.date.split('/'); return new Date(db[2], db[1]-1, db[0]) - new Date(da[2], da[1]-1, da[0]); });
         let curM = "", html = "", mTot = 0;
         sorted.forEach(h => {
             let p = h.date.split('/'), m = months[parseInt(p[1])-1] + " " + p[2], dTot = h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-            if(curM !== m && curM !== ""){ area.innerHTML += `<div class="month-label"><span>${curM}</span><span>₹${mTot}</span></div>` + html; html=""; mTot=0; }
+            if(curM !== m && curM !== ""){ area.innerHTML += `<div class="month-label"><span>${curM}</span><span>Total: ₹${mTot}</span></div>` + html; html=""; mTot=0; }
             curM = m; mTot += dTot;
-            html += `<div class="item-row" style="grid-template-columns: 1fr 100px 50px 50px;"><span>${h.date}</span><b>₹${dTot}</b><button class="btn ok-btn" onclick="editH('${h.date}')">EDIT</button><button class="btn del-btn" onclick="delH('${h.date}')">DEL</button></div>`;
+            html += `<div class="item-row" style="grid-template-columns: 1fr 100px 50px 50px;"><span>${h.date}</span><b>₹${dTot}</b><button class="btn ok-btn" onclick="editH('${h.date}')">EDIT</button><button class="btn del-btn" onclick="delH('${h.date}')">X</button></div>`;
         });
-        if(curM) area.innerHTML += `<div class="month-label"><span>${curM}</span><span>₹${mTot}</span></div>` + html;
+        if(curM) area.innerHTML += `<div class="month-label"><span>${curM}</span><span>Total: ₹${mTot}</span></div>` + html;
     }
 
     function editH(date) {
         let rec = history[hType].find(h => h.date === date); if(!rec) return;
         let area = document.getElementById('eList');
         area.innerHTML = rec.items.map((it, i) => `<div class="dk-grid"><span>${i+1}.</span><b>${it.name}</b><input type="number" value="${it.qty}" oninput="updHF('${hType}','${date}',${i},'qty',this.value)" class="u-box"><input type="number" value="${it.price}" oninput="updHF('${hType}','${date}',${i},'price',this.value)" class="p-box"><button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="lockH('${hType}','${date}',${i})">${it.done?'OK':'C'}</button><button class="btn del-btn" onclick="delHI('${hType}','${date}',${i})">X</button></div>`).join('');
-        document.getElementById('eSum').innerText = `DAY TOTAL: ₹${rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`;
+        document.getElementById('eSum').innerText = `TOTAL: ₹${rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`;
         openPage('editPage');
     }
 
     function updHF(type, d, i, f, v) { let ex = history[type].find(h=>h.date===d); if(ex){ ex.items[i][f]=v; save(() => { if(type==='expense') renderDK(d); if(document.getElementById('editPage').style.display==='flex') editH(d); }); } }
     function lockH(type, d, i) { let ex = history[type].find(h=>h.date===d); if(ex){ ex.items[i].done=!ex.items[i].done; save(() => { if(type==='expense') renderDK(d); if(document.getElementById('editPage').style.display==='flex') editH(d); }); } }
-    function delHI(type, d, i) { if(confirm("Del?")){ history[type].find(h=>h.date===d).items.splice(i,1); save(() => { if(type==='expense') renderDK(d); if(document.getElementById('editPage').style.display==='flex') editH(d); }); } }
-    function delH(d) { if(confirm("पूरा दिन डिलीट करें?")){ history[hType] = history[hType].filter(h => h.date !== d); save(() => renderH()); } }
+    function delHI(type, d, i) { if(confirm("Delete Item?")){ history[type].find(h=>h.date===d).items.splice(i,1); save(() => { if(type==='expense') renderDK(d); if(document.getElementById('editPage').style.display==='flex') editH(d); }); } }
+    function delH(d) { if(confirm("Delete entire day?")){ history[hType] = history[hType].filter(h => h.date !== d); save(() => renderH()); } }
 
-    /* --- Calc & Final List with Price --- */
-    function openCalc() { tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, price: it.lastPrice || '', unit: it.unit, done: false })); renderC(); openPage('calcPage'); }
+    // --- BILL CALCULATOR ---
+    function openCalc() { tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, price: '', unit: it.unit, done: false })); renderC(); openPage('calcPage'); }
     function renderC() {
         let area = document.getElementById('cList');
-        area.innerHTML = tCalc.map((it, i) => `<div class="item-row" style="grid-template-columns: 1fr 60px 80px 50px;"><b>${it.name}</b><span>${it.qty} ${it.unit}</span><input type="number" value="${it.price}" placeholder="Rate" oninput="tCalc[${i}].price=this.value;renderCSum()" class="p-box"><button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="tCalc[${i}].done=!it.done;renderC()">${it.done?'OK':'C'}</button></div>`).join('');
+        area.innerHTML = tCalc.map((it, i) => `<div class="item-row" style="grid-template-columns: 1fr 60px 85px 50px;"><b>${it.name}</b><span>${it.qty} ${it.unit}</span><input type="number" placeholder="₹" oninput="tCalc[${i}].price=this.value;renderCSum()" class="p-box"><button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="tCalc[${i}].done=!it.done;renderC()">${it.done?'OK':'C'}</button></div>`).join('');
         renderCSum();
     }
-    function renderCSum() { document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; }
+    function renderCSum() { document.getElementById('cSum').innerText = `BILL TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; }
 
+    // --- FINAL LIST ---
     function showFinalList() {
-        let sel = items.filter(it => it.sel); if(!sel.length) return alert("Select items!");
+        let sel = items.filter(it => it.sel); if(!sel.length) return alert("Select items first!");
         let out = document.getElementById('fOut');
-        out.innerHTML = `<h2 style="text-align:center;color:#0984e3;border-bottom:3px solid #0984e3;padding-bottom:10px;">GROCERY LIST</h2>`;
+        out.innerHTML = `<h2 style="text-align:center;color:#0984e3;border-bottom:3px solid #0984e3;padding-bottom:10px;margin-bottom:15px;">Saman List</h2>`;
         ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {
             let filtered = sel.filter(it => it.cat === c);
             if(filtered.length){
-                out.innerHTML += `<div style="background:#2d3436; color:#fff; padding:5px 10px; border-radius:4px; font-size:12px; margin-top:15px;">${c}</div>` + 
-                filtered.map((it, j) => `<div style="display:flex; justify-content:space-between; padding:12px 5px; border-bottom:1px dashed #ccc;">
-                    <span>${j+1}. ${it.name}</span>
-                    <span><b>${it.qty} ${it.unit}</b> ${it.lastPrice ? ' (₹'+it.lastPrice+')' : ''}</span>
-                </div>`).join('');
+                out.innerHTML += `<div style="background:#2d3436; color:#fff; padding:6px 12px; border-radius:4px; font-size:12px; margin:15px 0 8px 0; display:inline-block;">${c}</div>` + filtered.map((it, j) => `
+                    <div style="display:flex; justify-content:space-between; padding:12px 5px; border-bottom:1px dashed #ccc; font-weight:bold;">
+                        <span>${j+1}. ${it.name}</span>
+                        <span style="color:#0984e3;">${it.qty} ${it.unit}</span>
+                    </div>`).join('');
             }
         });
         openPage('listPage');
     }
+
     function takeShot() { html2canvas(document.getElementById('shotArea')).then(c => { let a = document.createElement('a'); a.download='List.png'; a.href=c.toDataURL(); a.click(); }); }
 </script>
 </body>
