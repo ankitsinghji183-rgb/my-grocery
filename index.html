@@ -86,7 +86,7 @@
 </div>
 
 <div id="kInPage" class="full-page">
-    <div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Daily Kharch</span></div>
+    <div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Daily Kharch Add</span></div>
     <div class="card">
         <div class="in-row">
             <input type="text" id="kName" style="flex:1" placeholder="Item Name">
@@ -123,15 +123,13 @@
 
     function openPage(id) { 
         document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); 
-        let target = document.getElementById(id);
-        if(target) target.style.display = 'flex'; 
+        let pg = document.getElementById(id);
+        if(pg) pg.style.display = 'flex'; 
         document.body.style.overflow = "hidden";
         window.history.pushState({page: id}, ""); 
     }
 
-    function closeCurrentPage() {
-        window.history.back();
-    }
+    function closeCurrentPage() { window.history.back(); }
 
     db.on('value', (snapshot) => {
         const data = snapshot.val();
@@ -158,10 +156,8 @@
         cont.innerHTML = sorted.map((it) => {
             if(activeF !== 'All' && it.cat !== activeF) return '';
             if(query && !it.name.toLowerCase().includes(query)) return '';
-
             let displaySerial = (activeF === 'All') ? ++globalCounter : ++categoryCounters[it.cat];
             let rIdx = items.indexOf(it);
-            
             return `<div class="item-row ${it.sel?'sel-bg':''}">
                 <span onclick="toggleI(${rIdx})"><b>${displaySerial}.${it.name}</b></span>
                 <input type="number" step="0.001" value="${it.qty}" oninput="updateQty(${rIdx}, this.value)" class="u-box">
@@ -177,33 +173,19 @@
 
     function updateQty(idx, val) { items[idx].qty = val; save(false); }
     function updateUnit(idx, val) { items[idx].unit = val; save(false); }
-    
     function addItem() { 
         let n = document.getElementById('itemName').value, c = document.getElementById('catSelect').value; 
-        if(n){ 
-            items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); 
-            save(true); 
-            document.getElementById('itemName').value=''; 
-        } 
+        if(n){ items.unshift({name: n, cat: c, sel: false, qty: '', unit: 'Kg'}); save(true); document.getElementById('itemName').value=''; } 
     }
-
     function toggleI(i) { items[i].sel = !items[i].sel; save(true); }
     function delMasterItem(i) { if(confirm("Del?")){ items.splice(i,1); save(true); } }
     function setFilter(f) { activeF = f; renderMaster(); }
     function unselectAll() { if(confirm("Unselect All Items?")) { items.forEach(it => it.sel = false); save(true); } }
 
     function getSmartUnit(val, unit, lang) {
-        let v = parseFloat(val);
-        if (isNaN(v) || v === 0) return "";
-        let u = { 
-            HI: { Kg: "किलो", Pc: "पीस", Ltr: "लीटर", Rs: "रु", Gram: "ग्राम", HalfK: "आधा किलो", HalfL: "आधा लीटर", Pav: "पाव" }, 
-            EN: { Kg: "Kg", Pc: "Pc", Ltr: "Ltr", Rs: "Rs", Gram: "gm", HalfK: "Half Kg", HalfL: "Half Ltr", Pav: "Pav", ML: "ml" } 
-        }[lang];
-        if (unit === 'Kg') {
-            if (v === 0.5) return u.HalfK;
-            if (v === 0.25) return u.Pav + " " + u.Kg;
-            if (v < 1) return (v * 1000) + " " + u.Gram;
-        }
+        let v = parseFloat(val); if (isNaN(v) || v === 0) return "";
+        let u = { HI: { Kg: "किलो", Pc: "पीस", Ltr: "लीटर", Rs: "रु", Gram: "ग्राम", HalfK: "आधा किलो", HalfL: "आधा लीटर", Pav: "पाव" }, EN: { Kg: "Kg", Pc: "Pc", Ltr: "Ltr", Rs: "Rs", Gram: "gm", HalfK: "Half Kg", HalfL: "Half Ltr", Pav: "Pav", ML: "ml" } }[lang];
+        if (unit === 'Kg') { if (v === 0.5) return u.HalfK; if (v === 0.25) return u.Pav + " " + u.Kg; if (v < 1) return (v * 1000) + " " + u.Gram; }
         if (unit === 'Ltr' && v < 1) return (v * 1000) + " " + (lang==='HI'?'ML':'ml');
         return v + " " + u[unit];
     }
@@ -214,17 +196,12 @@
         out.innerHTML = `<h3 style="text-align:center; border-bottom:2px solid #000;">${currLang==='HI'?'खरीदारी की सूची':'Shopping List'}</h3>`;
         ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {
             let f = sel.filter(it => it.cat === c);
-            if(f.length) {
-                out.innerHTML += `<div style="background:#eee;padding:5px;font-weight:bold;font-size:11px;">${c}</div>` + 
-                f.map((it, j) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #ddd;font-size:12px;">
-                <span><b>${j+1}.${it.name}</b></span><span style="font-weight:bold;">${getSmartUnit(it.qty, it.unit, currLang)}</span><span style="border-bottom:1px solid #000;width:35px;"></span></div>`).join('');
-            }
+            if(f.length) { out.innerHTML += `<div style="background:#eee;padding:5px;font-weight:bold;font-size:11px;">${c}</div>` + f.map((it, j) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #ddd;font-size:12px;"><span><b>${j+1}.${it.name}</b></span><span style="font-weight:bold;">${getSmartUnit(it.qty, it.unit, currLang)}</span><span style="border-bottom:1px solid #000;width:35px;"></span></div>`).join(''); }
         });
         openPage('listPage');
     }
 
-    // ====================== DAILY KHARCH LOGIC ======================
-
+    // --- DAILY KHARCH LOGIC (FIXED) ---
     function openDailyKharch() { 
         let d = new Date().toLocaleDateString('en-GB'); 
         openPage('kInPage'); 
@@ -249,71 +226,39 @@
     }
 
     function renderDK(date) { 
-        let area = document.getElementById('dkList');
-        if(!area) return;
+        let area = document.getElementById('dkList'); if(!area) return;
         let ex = (history.expense || []).find(h => h.date === date), t = 0; 
-        if(!ex || !ex.items.length) { area.innerHTML = "<p style='text-align:center; padding:20px;'>No items today.</p>"; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; } 
-        
+        if(!ex || !ex.items.length) { area.innerHTML = "<p style='text-align:center; padding:20px;'>No items.</p>"; document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return; } 
         area.innerHTML = ex.items.map((it, i) => { 
-            t += parseFloat(it.price) || 0; 
-            let isLocked = it.done || false; 
+            t += parseFloat(it.price) || 0; let isLocked = it.done || false; 
             return `<div class="dk-grid"><b>${it.name}</b><input type="number" value="${it.qty}" ${isLocked?'disabled':''} oninput="updateDKItem('${date}',${i},'qty',this.value)" class="u-box"><input type="number" value="${it.price}" ${isLocked?'disabled':''} oninput="updateDKItem('${date}',${i},'price',this.value)" class="p-box"><button class="btn ${isLocked?'ok-btn':'lock-btn'}" onclick="lockDK('${date}',${i})">${isLocked?'OK':'CON'}</button><button class="btn del-btn" onclick="delDKItem('${date}',${i})">DEL</button></div>`; 
         }).join(''); 
         document.getElementById('dkSum').innerText = `TOTAL: ₹${t}`; 
     }
 
-    function updateDKItem(d, idx, f, v) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx][f] = v; save(false); } }
+    function updateDKItem(d, idx, f, v) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx][f] = v; save(false); let t=ex.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0); document.getElementById('dkSum').innerText=`TOTAL: ₹${t}`; } }
     function lockDK(d, idx) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx].done = !ex.items[idx].done; save(false); renderDK(ex.date); } }
     function delDKItem(d, idx) { if(confirm("Del?")){ history.expense.find(h => h.date === d).items.splice(idx,1); save(false); renderDK(d); } }
 
-    // ====================== CALCULATION LOGIC (FIXED QTY) ======================
-
+    // --- CALCULATION LOGIC (SMART ADDITION FIXED) ---
     function openCalc() { 
-        tCalc = items.filter(it => it.sel).map(it => ({ 
-            name: it.name, 
-            qty: it.qty || "", 
-            unit: it.unit || "Kg", 
-            price: "", 
-            done: false, 
-            lastQty: parseFloat(it.qty) || 0, 
-            lastPrice: 0 
-        })); 
-        renderC(); 
-        openPage('calcPage'); 
+        tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty || "", unit: it.unit || "Kg", price: "", done: false })); 
+        renderC(); openPage('calcPage'); 
     }
 
     function smartAddition(idx, field, val) { 
-        let it = tCalc[idx];
-        let d = new Date().toLocaleDateString('en-GB');
-        let ex = (history.shopping || []).find(h => h.date === d);
-        if(!ex){ 
-            ex = {date: d, items: []}; 
-            if(!history.shopping) history.shopping = []; 
-            history.shopping.unshift(ex); 
-        } 
+        let it = tCalc[idx], d = new Date().toLocaleDateString('en-GB');
+        if(!history.shopping) history.shopping = [];
+        let ex = history.shopping.find(h => h.date === d);
+        if(!ex){ ex = {date: d, items: []}; history.shopping.unshift(ex); } 
         
         let histItem = ex.items.find(o => o.name.toLowerCase() === it.name.toLowerCase()); 
-        if(!histItem){ 
-            histItem = {name: it.name, qty: 0, price: 0, unit: it.unit, done: false}; 
-            ex.items.push(histItem); 
-        } 
+        if(!histItem){ histItem = {name: it.name, qty: 0, price: 0, unit: it.unit, done: false}; ex.items.push(histItem); } 
 
-        if(field === 'qty'){ 
-            let newVal = parseFloat(val) || 0;
-            histItem.qty = newVal; 
-            it.lastQty = newVal;
-            it.qty = val;
-        } 
-        if(field === 'price'){ 
-            let newVal = parseFloat(val) || 0;
-            histItem.price = newVal; 
-            it.lastPrice = newVal;
-            it.price = val;
-            save(false); 
-        } 
-        if(field === 'unit'){ 
-            histItem.unit = val; it.unit = val; save(false);
-        } 
+        if(field === 'qty') { it.qty = val; histItem.qty = parseFloat(val) || 0; }
+        if(field === 'price') { it.price = val; histItem.price = parseFloat(val) || 0; save(false); }
+        if(field === 'unit') { it.unit = val; histItem.unit = val; save(false); }
+
         document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; 
     }
 
@@ -337,8 +282,7 @@
         save(false); renderC(); 
     }
 
-    // ====================== HISTORY LOGIC ======================
-
+    // --- HISTORY LOGIC ---
     function renderH() { 
         let area = document.getElementById('hArea'); area.innerHTML = ''; 
         let dataArr = (history[hType] || []); 
