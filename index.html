@@ -1,333 +1,214 @@
-<!DOCTYPE html>
-<html lang="hi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grocery Master v78 Full Pro</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; }
-        html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #2d3436; }
-        .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0f4f8; display: none; flex-direction: column; z-index: 100; overflow: hidden; }
-        #mainView { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; z-index: 1; }
-        .p-head { background: #0984e3; color: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 18px; box-shadow: 0 3px 10px rgba(0,0,0,0.15); flex-shrink: 0; }
-        .p-head span:first-child { cursor: pointer; padding: 4px 8px; background: rgba(255,255,255,0.2); border-radius: 6px; font-size: 14px; }
-        .scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px; -webkit-overflow-scrolling: touch; }
-        .card { background: white; padding: 12px; margin-bottom: 10px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e1e8ed; }
-        .in-row { display: flex; gap: 6px; width: 100%; align-items: center; }
-        input, select { padding: 8px 6px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 13px; height: 42px; background: #fff; min-width: 0; }
-        input:disabled { background: #f1f2f6; color: #7f8c8d; border: 1px dashed #bdc3c7; font-weight: bold; }
-        .u-box { width: 55px !important; text-align: center; flex-shrink: 0; }
-        .p-box { width: 85px !important; font-weight: 800; color: #27ae60; flex-shrink: 0; }
-        .unit-sel { width: 62px !important; font-size: 12px; background: #f1f2f6; border: none; }
-        .btn { border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; font-size: 12px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .f-btn { flex: 1; background: #636e72; font-size: 9px; height: 36px; }
-        .f-btn.active { background: #0984e3 !important; }
-        .del-btn { background: #ff7675 !important; width: 38px; }
-        .ok-btn { background: #2ecc71 !important; width: 38px; }
-        .lock-btn { background: #fdcb6e !important; color: #2d3436; width: 38px; }
-        .item-row { display: grid; grid-template-columns: 1fr 52px 62px 28px 38px; gap: 6px; align-items: center; padding: 10px; border-bottom: 1px solid #eee; background: white; border-radius: 8px; margin-bottom: 4px; }
-        .dk-grid { display: grid; grid-template-columns: 24px 1fr 52px 80px 38px 38px; gap: 5px; align-items: center; padding: 10px 8px; border-bottom: 1px solid #eee; background: white; font-size: 13px; border-radius: 6px; margin-bottom: 3px; }
-        .sel-bg { background: #fff9db !important; border-left: 5px solid #fcc419; }
-        .sum-box { padding: 14px; background: #e3f2fd; font-weight: 900; text-align: right; border-top: 4px solid #0984e3; font-size: 18px; color: #0984e3; }
-        .b-nav { width: 100%; background: white; padding: 10px; border-top: 1px solid #dfe6e9; display: flex; gap: 10px; }
-        .month-header { background: #dfe6e9; padding: 10px; font-weight: 800; font-size: 13px; border-radius: 6px; margin: 10px 0 5px 0; }
-        .hist-row { display: grid; grid-template-columns: 1fr 90px 44px 44px; gap: 6px; align-items: center; padding: 12px 10px; border-bottom: 1px solid #f1f2f6; background: white; border-radius: 8px; margin-bottom: 4px; }
-    </style>
-</head>
-<body>
+Grocery Master v78 Full Pro
 
-    <div id="mainView">
-        <div class="p-head">
-            <span onclick="hType='shopping'; renderH(); openPage('historyPage')">⌛ HISTORY</span>
-            <span>Grocery Master v78</span>
-        </div>
-        <div class="scroll">
-            <div class="card">
-                <div class="in-row">
-                    <input type="text" id="itemName" placeholder="Item naam..." style="flex:1;" oninput="renderMaster()">
-                    <select id="catSelect">
-                        <option>GROCERY</option><option>SABJI</option><option>BODY</option><option>OTHER</option>
-                    </select>
-                    <button class="btn ok-btn" onclick="addItem()" style="width:60px;">ADD</button>
-                </div>
-            </div>
-            <div class="in-row" style="margin-bottom:10px;">
-                <button onclick="setFilter('All')" id="btn-All" class="btn f-btn active">ALL</button>
-                <button onclick="setFilter('GROCERY')" id="btn-GROCERY" class="btn f-btn">GROCERY</button>
-                <button onclick="setFilter('SABJI')" id="btn-SABJI" class="btn f-btn">SABJI</button>
-                <button onclick="setFilter('BODY')" id="btn-BODY" class="btn f-btn">BODY</button>
-                <button onclick="setFilter('OTHER')" id="btn-OTHER" class="btn f-btn">ANYA</button>
-                <button onclick="unselectAll()" class="btn del-btn" style="height:36px; font-size:9px;">CLR</button>
-            </div>
-            <div id="masterList"></div>
-        </div>
-        <div class="b-nav">
-            <button class="btn ok-btn" style="flex:1; font-size:16px;" onclick="showFinalList()">📋 LIST BANAO</button>
-            <button class="btn lock-btn" style="flex:1; font-size:16px;" onclick="openDailyKharch()">💸 DAILY KHARCH</button>
-        </div>
-    </div>
+    
 
-    <div id="dailyKharchPage" class="full-page">
-        <div class="p-head">
-            <span onclick="closePage()">← BACK</span>
-            <span id="dkDateLabel">00/00/0000</span>
-        </div>
-        <div class="scroll">
-            <div class="card">
-                <div class="in-row">
-                    <input type="text" id="kName" placeholder="Item naam..." style="flex:1;">
-                    <input type="number" id="kQty" placeholder="Qty" class="u-box">
-                    <input type="number" id="kPrice" placeholder="₹ Price" class="p-box">
-                    <button class="btn ok-btn" onclick="addK()" style="width:50px;">ADD</button>
-                </div>
-            </div>
-            <div id="dkList"></div>
-        </div>
-        <div class="sum-box" id="dkSum">TOTAL: ₹0</div>
-    </div>
+    
 
-    <div id="historyPage" class="full-page">
-        <div class="p-head">
-            <span onclick="closePage()">← BACK</span>
-            <span id="hTitle">History</span>
-        </div>
-        <div class="top-hist" style="display:flex; gap:8px; padding:10px;">
-            <div class="btn f-btn active" style="flex:1; height:40px; font-size:12px;" onclick="hType='shopping'; renderH()">📦 Saman</div>
-            <div class="btn f-btn active" style="flex:1; height:40px; font-size:12px;" onclick="hType='expense'; renderH()">💰 Kharch</div>
-        </div>
-        <div class="scroll" id="hArea"></div>
-    </div>
+    
 
-    <div id="editPage" class="full-page">
-        <div class="p-head">
-            <span onclick="closePage()">← BACK</span>
-            <span>✏️ Edit & Update</span>
-        </div>
-        <div class="scroll" id="eList"></div>
-        <div class="sum-box" id="eSum">TOTAL: ₹0</div>
-    </div>
+    </p> <p>        * {</p> <p>            box-sizing: border-box;</p> <p>            -webkit-tap-highlight-color: transparent;</p> <p>            outline: none;</p> <p>            0;</p> <p>            padding: 0;</p> <p>        }</p> <p> </p> <p>        html, body {</p> <p>            width: 100%;</p> <p>            height: 100%;</p> <p>            overflow: hidden; /* body scroll band - sirf pages scroll karein */</p> <p>            'Segoe UI', sans-serif;</p> <p>            background: #f0f4f8;</p> <p>            color: #2d3436;</p> <p>        }</p> <p> </p> <p>        /* =====================</p> <p>           FULL PAGE SCREENS</p> <p>           ===================== */</p> <p>        .full-page {</p> <p>            position: fixed;</p> <p>            top: 0; left: 0;</p> <p>            width: 100%;</p> <p>            height: 100%;</p> <p>            background: #f0f4f8;</p> <p>            display: none;          /* default hidden */</p> <p>            flex-direction: column;</p> <p>            z-index: 100;</p> <p>            overflow: hidden;       /* peeche wali screen nahi dikhegi */</p> <p>        }</p> <p> </p> <p>        /* Main view bhi same fixed layout */</p> <p>        #mainView {</p> <p>            position: fixed;</p> <p>            top: 0; left: 0;</p> <p>            width: 100%;</p> <p>            height: 100%;</p> <p>            display: flex;</p> <p>            flex-direction: column;</p> <p>            overflow: hidden;</p> <p>            z-index: 1;</p> <p>        }</p> <p> </p> <p>        /* =====================</p> <p>           HEADER</p> <p>           ===================== */</p> <p>        .p-head {</p> <p>            background: #0984e3;</p> <p>            color: white;</p> <p>            padding: 15px;</p> <p>            display: flex;</p> <p>            align-items: center;</p> <p>            justify-content: space-between;</p> <p>            font-weight: 700;</p> <p>            font-size: 18px;</p> <p>            box-shadow: 0 3px 10px rgba(0,0,0,0.15);</p> <p>            flex-shrink: 0; /* header size fixed rahe */</p> <p>        }</p> <p> </p> <p>        .p-head span:first-child {</p> <p>            cursor: pointer;</p> <p>            padding: 4px 8px;</p> <p>            background: rgba(255,255,255,0.2);</p> <p>            border-radius: 6px;</p> <p>            font-size: 14px;</p> <p>        }</p> <p> </p> <p>        /* =====================</p> <p>           SCROLL AREA</p> <p>           ===================== */</p> <p>        .scroll {</p> <p>            flex: 1;</p> <p>            overflow-y: auto;</p> <p>            overflow-x: hidden;</p> <p>            padding: 10px;</p> <p>            padding-bottom: 10px;</p> <p>            -webkit-overflow-scrolling: touch;</p> <p>        }</p> <p> </p> <p>        /* =====================</p> <p>           CARDS</p> <p>           ===================== */</p> <p>        .card {</p> <p>            background: white;</p> <p>            padding: 12px;</p> <p>            10px;</p> <p>            border-radius: 12px;</p> <p>            box-shadow: 0 4px 6px rgba(0,0,0,0.05);</p> <p>            border: 1px solid #e1e8ed;</p> <p>            flex-shrink: 0;</p> <p>        }</p> <p> </p> <p>        /* =====================</p> <p>           INPUT ROW — screen fit</p> <p>           ===================== */</p> <p>        .in-row {</p> <p>            display: flex;</p> <p>            gap: 6px;</p> <p>            width: 100%;</p> <p>            align-items: center;</p> <p>            flex-wrap: nowrap;</p> <p>        }</p> <p> </p> <p>        input, select {</p> <p>            padding: 8px 6px;</p> <p>            border: 1px solid #dfe6e9;</p> <p>            border-radius: 8px;</p> <p>            font-size: 13px;</p> <p>            height: 42px;</p> <p>            background: #fff;</p> <p>            min-width: 0; /* flex overflow fix */</p> <p>        }</p> <p> </p> <p>        input:disabled {</p> <p>            background: #f1f2f6;</p> <p>            color: #7f8c8d;</p> <p>            border: 1px dashed #bdc3c7;</p> <p>            font-weight: bold;</p> <p>        }</p> <p> </p> <p>        /* Fixed width boxes */</p> <p>        .u-box  { width: 52px !important; text-align: center; flex-shrink: 0; }</p> <p>        .p-box  { width: 80px !important; font-weight: 800; color: #27ae60; flex-shrink: 0; }</p> <p>        .unit-sel { width: 62px !important; font-size: 12px; background: #f1f2f6; border: none; flex-shrink: 0; }</p> <p> </p> <p>        /* =====================</p> <p>           BUTTONS</p> <p>           ===================== */</p> <p>        .btn {</p> <p>            border: none;</p> <p>            border-radius: 8px;</p> <p>            color: white;</p> <p>            font-weight: 700;</p> <p>            cursor: pointer;</p> <p>            font-size: 12px;</p> <p>            height: 42px;</p> <p>            display: flex;</p> <p>            align-items: center;</p> <p>            justify-content: center;</p> <p>            flex-shrink: 0;</p> <p>            white-space: nowrap;</p> <p>        }</p> <p> </p> <p>        .f-btn {</p> <p>            flex: 1;</p> <p>            padding: 10px 2px;</p> <p>            background: #636e72;</p> <p>            font-size: 9px;</p> <p>            font-weight: 800;</p> <p>            height: 36px;</p> <p>        }</p> <p>        .f-btn.active { background: #0984e3 !important; }</p> <p> </p> <p>        .del-btn  { background: #ff7675 !important; min-width: 38px; width: 38px; }</p> <p>        .ok-btn   { background: #2ecc71 !important; min-width: 38px; width: 38px; }</p> <p>        .lock-btn { background: #fdcb6e !important; color: #2d3436; min-width: 38px; width: 38px; }</p> <p> </p> <p>        /* =====================</p> <p>           MASTER LIST ITEM ROW</p> <p>           ===================== */</p> <p>        .item-row {</p> <p>            display: grid;</p> <p>            grid-template-columns: 1fr 52px 62px 28px 38px;</p> <p>            gap: 6px;</p> <p>            align-items: center;</p> <p>            padding: 12px 8px;</p> <p>            border-bottom: 1px solid #f1f2f6;</p> <p>            background: white;</p> <p>            4px;</p> <p>            border-radius: 8px;</p> <p>        }</p> <p> </p> <p>        .item-row input {</p> <p>            width: 100%;</p> <p>        }</p> <p> </p> <p>        /* =====================</p> <p>           DAILY KHARCH GRID</p> <p>           ===================== */</p> <p>        .dk-grid {</p> <p>            display: grid;</p> <p>            grid-template-columns: 24px 1fr 52px 80px 38px 38px;</p> <p>            gap: 5px;</p> <p>            align-items: center;</p> <p>            padding: 10px 8px;</p> <p>            border-bottom: 1px solid #eee;</p> <p>            background: white;</p> <p>            font-size: 13px;</p> <p>            3px;</p> <p>            border-radius: 6px;</p> <p>        }</p> <p> </p> <p>        .dk-grid input {</p> <p>            width: 100%;</p> <p>            min-width: 0;</p> <p>        }</p> <p> </p> <p>        .sel-bg {</p> <p>            background: #fff9db !important;</p> <p>            border-left: 5px solid #fcc419;</p> <p>        }</p> <p> </p> <p>        /* =====================</p> <p>           SUM BOX — fixed bottom</p> <p>           ===================== */</p> <p>        .sum-box {</p> <p>            padding: 14px 18px;</p> <p>            background: #e3f2fd;</p> <p>            font-weight: 900;</p> <p>            text-align: right;</p> <p>            border-top: 4px solid #0984e3;</p> <p>            font-size: 18px;</p> <p>            color: #0984e3;</p> <p>            flex-shrink: 0;</p> <p>        }</p> <p> </p> <p>        /* =====================</p> <p>           BOTTOM NAV</p> <p>           ===================== */</p> <p>        .b-nav {</p> <p>            width: 100%;</p> <p>            background: white;</p> <p>            padding: 10px 12px;</p> <p>            border-top: 1px solid #dfe6e9;</p> <p>            display: flex;</p> <p>            gap: 10px;</p> <p>            flex-shrink: 0;</p> <p>        }</p> <p> </p> <p>        /* =====================</p> <p>           TOP HISTORY BOXES</p> <p>           ===================== */</p> <p>        .top-hist {</p> <p>            display: flex;</p> <p>            gap: 8px;</p> <p>            padding: 10px 12px;</p> <p>            flex-shrink: 0;</p> <p>        }</p> <p> </p> <p>        .h-box {</p> <p>            flex: 1;</p> <p>            background: #f8f9fa;</p> <p>            border: 1px solid #dfe6e9;</p> <p>            padding: 14px 0;</p> <p>            text-align: center;</p> <p>            border-radius: 12px;</p> <p>            font-weight: 800;</p> <p>            font-size: 11px;</p> <p>            color: #0984e3;</p> <p>            cursor: pointer;</p> <p>        }</p> <p> </p> <p>        /* =====================</p> <p>           HISTORY ROW</p> <p>           ===================== */</p> <p>        .hist-row {</p> <p>            display: grid;</p> <p>            grid-template-columns: 1fr 90px 44px 44px;</p> <p>            gap: 6px;</p> <p>            align-items: center;</p> <p>            padding: 12px 10px;</p> <p>            border-bottom: 1px solid #f1f2f6;</p> <p>            background: white;</p> <p>            4px;</p> <p>            border-radius: 8px;</p> <p>        }</p> <p> </p> <p>        /* =====================</p> <p>           EDIT PAGE GRID</p> <p>           ===================== */</p> <p>        .edit-grid {</p> <p>            display: grid;</p> <p>            grid-template-columns: 24px 1fr 52px 80px 38px 38px;</p> <p>            gap: 5px;</p> <p>            align-items: center;</p> <p>            padding: 10px 8px;</p> <p>            border-bottom: 1px solid #eee;</p> <p>            background: white;</p> <p>            font-size: 13px;</p> <p>            3px;</p> <p>            border-radius: 6px;</p> <p>        }</p> <p> </p> <p>        .edit-grid input {</p> <p>            width: 100%;</p> <p>            min-width: 0;</p> <p>        }</p> <p> </p> <p>        /* =====================</p> <p>           CALC PAGE</p> <p>           ===================== */</p> <p>        .calc-row {</p> <p>            display: grid;</p> <p>            grid-template-columns: 1fr 70px 80px 44px;</p> <p>            gap: 6px;</p> <p>            align-items: center;</p> <p>            padding: 12px 8px;</p> <p>            border-bottom: 1px solid #f1f2f6;</p> <p>            background: white;</p> <p>            4px;</p> <p>            border-radius: 8px;</p> <p>        }</p> <p> </p> <p>        /* =====================</p> <p>           MONTH HEADER in History</p> <p>           ===================== */</p> <p>        .month-header {</p> <p>            background: #dfe6e9;</p> <p>            padding: 10px 12px;</p> <p>            font-weight: 800;</p> <p>            font-size: 13px;</p> <p>            border-radius: 6px;</p> <p>            4px;</p> <p>        }</p> <p> </p> <p>        /* =====================</p> <p>           LIST PAGE OUTPUT</p> <p>           ===================== */</p> <p>        #shotArea {</p> <p>            padding: 20px;</p> <p>            background: white;</p> <p>        }</p> <p> </p> <p>    
 
-    <div id="listPage" class="full-page">
-        <div class="p-head"><span onclick="closePage()">← BACK</span><span>🛒 Shopping List</span></div>
-        <div class="scroll" id="shotArea"><div id="fOut"></div></div>
-        <div class="b-nav">
-            <button class="btn ok-btn" style="flex:1;" onclick="takeShot()">📷 SAVE IMAGE</button>
-            <button class="btn lock-btn" style="flex:1;" onclick="openCalc()">🧮 OPEN CALC</button>
-        </div>
-    </div>
+ 
 
-    <div id="calcPage" class="full-page">
-        <div class="p-head"><span onclick="closePage()">← BACK</span><span>🧮 Bill Calculator</span></div>
-        <div class="scroll" id="cList"></div>
-        <div class="sum-box" id="cSum">BILL TOTAL: ₹0</div>
-    </div>
+    
 
-<script>
-    const firebaseConfig = { databaseURL: "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database().ref('grocery/3');
+        
 
-    let items = [], history = { shopping: [], expense: [] }, activeF = 'All', hType = 'shopping', tCalc = [];
-    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+📦 Saman History
 
-    // NAVIGATION FIX
-    function openPage(id) {
-        document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none');
-        document.getElementById(id).style.display = 'flex';
-        window.history.pushState({ p: id }, '');
-    }
-    function closePage() { window.history.back(); }
-    window.onpopstate = (e) => {
-        document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none');
-        if(e.state && e.state.p) document.getElementById(e.state.p).style.display = 'flex';
-    };
+        
 
-    // FIREBASE SYNC
-    db.on('value', (snap) => {
-        const d = snap.val();
-        if (d) {
-            items = d.items || [];
-            history = d.history || { shopping: [], expense: [] };
-            if (!Array.isArray(history.shopping)) history.shopping = Object.values(history.shopping || {});
-            if (!Array.isArray(history.expense))  history.expense  = Object.values(history.expense  || {});
-            renderMaster();
-        }
-    });
-    const save = (cb) => db.set({ items, history }).then(() => { if (cb) cb(); });
+💰 Kharch History
 
-    // MASTER LIST
-    function renderMaster() {
-        let cont = document.getElementById('masterList');
-        let q = document.getElementById('itemName').value.toLowerCase();
-        let filtered = items.filter(it => (activeF === 'All' || it.cat === activeF) && it.name.toLowerCase().includes(q));
-        cont.innerHTML = filtered.map((it) => {
-            let rIdx = items.indexOf(it);
-            return `<div class="item-row ${it.sel ? 'sel-bg' : ''}">
-                <b onclick="toggleI(${rIdx})" style="font-size:13px;">${it.name}</b>
-                <input type="number" step="0.001" value="${it.qty}" oninput="items[${rIdx}].qty=this.value; save()" class="u-box" inputmode="decimal">
-                <select onchange="items[${rIdx}].unit=this.value; save()" class="unit-sel">
-                    <option value="Kg" ${it.unit=='Kg'?'selected':''}>Kg</option>
-                    <option value="Pc" ${it.unit=='Pc'?'selected':''}>Pc</option>
-                    <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option>
-                    <option value="Rs" ${it.unit=='Rs'?'selected':''}>Rs</option>
-                </select>
-                <input type="checkbox" ${it.sel ? 'checked' : ''} onclick="toggleI(${rIdx})" style="width:20px; height:20px;">
-                <button class="btn del-btn" onclick="delMasterItem(${rIdx})">✕</button>
-            </div>`;
-        }).join('');
-    }
-    function toggleI(i) { items[i].sel = !items[i].sel; save(); }
-    function addItem() {
-        let n = document.getElementById('itemName').value.trim();
-        if (n) {
-            items.unshift({ name: n, cat: document.getElementById('catSelect').value, sel: true, qty: '', unit: 'Kg' });
-            save(); document.getElementById('itemName').value = '';
-        }
-    }
-    function delMasterItem(i) { if (confirm("Hata dein?")) { items.splice(i, 1); save(); } }
-    function setFilter(f) {
-        activeF = f;
-        document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('btn-' + f).classList.add('active');
-        renderMaster();
-    }
-    function unselectAll() { if (confirm("Sab clear?")) { items.forEach(it => it.sel = false); save(); } }
+    
 
-    // DAILY KHARCH - SMART ADD FIX
-    function openDailyKharch() {
-        let d = new Date().toLocaleDateString('en-GB');
-        document.getElementById('dkDateLabel').innerText = d;
-        renderDK(d);
-        openPage('dailyKharchPage'); // Ye ab turant khulega
-    }
+ 
 
-    function addK() {
-        let n = document.getElementById('kName').value.trim();
-        let q = parseFloat(document.getElementById('kQty').value) || 0;
-        let p = parseFloat(document.getElementById('kPrice').value) || 0;
-        if (!n) return;
+    
 
-        let d = new Date().toLocaleDateString('en-GB');
-        let rec = history.expense.find(h => h.date === d);
-        if (!rec) { rec = { date: d, items: [] }; history.expense.unshift(rec); }
+        
 
-        // SMART ADD: Same naam hone par plus kar do
-        let exist = rec.items.find(it => it.name.toLowerCase() === n.toLowerCase());
-        if(exist) {
-            exist.qty = (parseFloat(exist.qty) || 0) + q;
-            exist.price = (parseFloat(exist.price) || 0) + p;
-        } else {
-            rec.items.push({ name: n, qty: q, price: p, done: false });
-        }
+            
 
-        save(() => {
-            renderDK(d);
-            document.getElementById('kName').value = '';
-            document.getElementById('kQty').value = '';
-            document.getElementById('kPrice').value = '';
-            document.getElementById('kName').focus();
-        });
-    }
+            
 
-    function renderDK(d) {
-        let rec = history.expense.find(h => h.date === d);
-        let area = document.getElementById('dkList'), total = 0;
-        if (!rec || !rec.items.length) {
-            area.innerHTML = "<p style='text-align:center; padding:20px;'>Aaj koi kharcha nahi hai.</p>";
-            document.getElementById('dkSum').innerText = "TOTAL: ₹0"; return;
-        }
-        area.innerHTML = rec.items.map((it, i) => {
-            total += parseFloat(it.price) || 0;
-            return `<div class="dk-grid">
-                <span>${i+1}</span><b>${it.name}</b>
-                <input type="number" value="${it.qty}" oninput="updHF('expense','${d}',${i},'qty',this.value)" class="u-box">
-                <input type="number" value="${it.price}" oninput="updHF('expense','${d}',${i},'price',this.value)" class="p-box">
-                <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="lockH('expense','${d}',${i})">${it.done?'✓':'🔒'}</button>
-                <button class="btn del-btn" onclick="delHI('expense','${d}',${i})">✕</button>
-            </div>`;
-        }).join('');
-        document.getElementById('dkSum').innerText = `TOTAL: ₹${total.toFixed(2)}`;
-    }
+                GROCERY
 
-    // HISTORY & EDIT
-    function renderH() {
-        let area = document.getElementById('hArea'); area.innerHTML = '';
-        let sorted = [...(history[hType] || [])].sort((a,b) => b.date.localeCompare(a.date));
-        sorted.forEach(h => {
-            let dTot = h.items.reduce((a, b) => a + (parseFloat(b.price) || 0), 0);
-            area.innerHTML += `<div class="hist-row">
-                <span>${h.date}</span><b>₹${dTot.toFixed(2)}</b>
-                <button class="btn ok-btn" onclick="editH('${h.date}')">EDIT</button>
-                <button class="btn del-btn" onclick="delH('${h.date}')">✕</button>
-            </div>`;
-        });
-    }
+                SABJI
 
-    function editH(date) {
-        currentEditDate = date;
-        let rec = history[hType].find(h => h.date === date);
-        let area = document.getElementById('eList'), total = rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0), 0);
-        area.innerHTML = rec.items.map((it, i) => 
-            `<div class="dk-grid">
-                <span>${i+1}</span><input type="text" value="${it.name}" oninput="updHF('${hType}','${date}',${i},'name',this.value)">
-                <input type="number" value="${it.qty}" oninput="updHF('${hType}','${date}',${i},'qty',this.value)" class="u-box">
-                <input type="number" value="${it.price}" oninput="updHF('${hType}','${date}',${i},'price',this.value)" class="p-box">
-                <button class="btn del-btn" onclick="delHI('${hType}','${date}',${i})">✕</button>
-            </div>`
-        ).join('');
-        document.getElementById('eSum').innerText = `TOTAL: ₹${total.toFixed(2)}`;
-        openPage('editPage');
-    }
+                BODY
 
-    function updHF(t, d, i, f, v) {
-        let rec = history[t].find(h => h.date === d);
-        if(rec) {
-            rec.items[i][f] = v;
-            save(() => {
-                if(t==='expense') renderDK(d);
-                let nt = rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0), 0);
-                if(document.getElementById('eSum')) document.getElementById('eSum').innerText = `TOTAL: ₹${nt.toFixed(2)}`;
-            });
-        }
-    }
+                ANYA
 
-    function lockH(t,d,i) { history[t].find(h=>h.date===d).items[i].done = !history[t].find(h=>h.date===d).items[i].done; save(()=>renderDK(d)); }
-    function delHI(t,d,i) { if(confirm("Delete?")) { history[t].find(h=>h.date===d).items.splice(i,1); save(()=>{ if(t==='expense')renderDK(d); if(t===hType)editH(d); }); } }
-    function delH(d) { if(confirm("Poora delete?")) { history[hType] = history[hType].filter(h=>h.date!==d); save(()=>renderH()); } }
+            
 
-    // OTHERS
-    function showFinalList() {
-        let sel = items.filter(it => it.sel);
-        let out = document.getElementById('fOut');
-        out.innerHTML = `<h2 style="text-align:center; color:#0984e3; border-bottom:2px solid #0984e3; padding-bottom:5px;">🛒 SHOPPING LIST</h2>`;
-        ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {
-            let f = sel.filter(it => it.cat === c);
-            if(f.length) {
-                out.innerHTML += `<div style="background:#2d3436; color:#fff; padding:4px; margin-top:10px;">${c}</div>` + 
-                f.map((it, j) => `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px dashed #ccc;"><span>${j+1}. ${it.name}</span><b>${it.qty} ${it.unit}</b></div>`).join('');
-            }
-        });
-        openPage('listPage');
-    }
+            ADD
 
-    function openCalc() {
-        tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty, unit: it.unit, price: '', done: false }));
-        renderC(); openPage('calcPage');
-    }
-    function renderC() {
-        document.getElementById('cList').innerHTML = tCalc.map((it, i) => `
-            <div class="dk-grid">
-                <b>${it.name}</b><span>${it.qty}</span>
-                <input type="number" value="${it.price}" oninput="tCalc[${i}].price=this.value; renderCSum()" class="p-box" placeholder="₹">
-                <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="tCalc[${i}].done=!tCalc[${i}].done; renderC()">${it.done?'✓':'🔒'}</button>
-            </div>`).join('');
-        renderCSum();
-    }
-    function renderCSum() { let t = tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0); document.getElementById('cSum').innerText = `TOTAL: ₹${t.toFixed(2)}`; }
-    function takeShot() { html2canvas(document.getElementById('shotArea')).then(c => { let a = document.createElement('a'); a.download='List.png'; a.href=c.toDataURL(); a.click(); }); }
-</script>
-</body>
-</html>
+        
+
+        
+
+            <button onclick="setFilter('All')"     id="btn-All"     class="btn f-btn active">ALL
+
+            GROCERY
+
+            <button onclick="setFilter('SABJI')"   id="btn-SABJI"   class="btn f-btn">SABJI
+
+            <button onclick="setFilter('BODY')"    id="btn-BODY"    class="btn f-btn">BODY
+
+            <button onclick="setFilter('OTHER')"   id="btn-OTHER"   class="btn f-btn">ANYA
+
+            CLR
+
+        
+
+    
+
+ 
+
+    
+
+    
+
+ 
+
+    
+
+        📋 LIST BANAO
+
+        💸 DAILY KHARCH
+
+    
+
+ 
+
+    
+
+        ← BACK
+
+        💸 Daily Kharcha
+
+        
+
+    
+
+ 
+
+    
+
+    
+
+        
+
+            
+
+            
+
+            
+
+            ADD
+
+        
+
+    
+
+ 
+
+    
+
+    
+
+ 
+
+    
+
+    
+
+TOTAL: ₹0
+
+ 
+
+    
+
+        ← BACK
+
+        History
+
+        
+
+    
+
+    
+
+ 
+
+    
+
+        ← BACK
+
+        ✏️ Edit & Lock
+
+        
+
+    
+
+    
+
+    
+
+ 
+
+    
+
+        ← BACK
+
+        🧮 Bill Calculator
+
+        
+
+    
+
+    
+
+    
+
+ 
+
+    
+
+        ← BACK
+
+        🛒 Shopping List
+
+        
+
+    
+
+    
+
+        
+
+            
+
+        
+
+    
+
+    
+
+        📷 SAVE IMAGE
+
+        🧮 OPEN CALC
+
+    
+
+ 
+
+    // =====================     // FIREBASE SETUP     // =====================     const firebaseConfig = {         databaseURL: "https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/"     };     firebase.initializeApp(firebaseConfig);     const db = firebase.database().ref('grocery/3');       let items = [];     let history = { shopping: [], expense: [] };     let activeF = 'All';     let hType = 'shopping';     let tCalc = [];     let currentEditDate = '';       const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];       // =====================     // NAVIGATION — peeche wali screen nahi dikhegi     // =====================     function openPage(id) {         // Pehle sab band karo         document.querySelectorAll('.full-page').forEach(p => {             p.style.display = 'none';         });         // Ab sirf target page kholo         let el = document.getElementById(id);         if (el) {             el.style.display = 'flex';             window.history.pushState({ p: id }, '');         }     }       function closePage() {         window.history.back();     }       window.onpopstate = () => {         document.querySelectorAll('.full-page').forEach(p => {             p.style.display = 'none';         });     };       // =====================     // FIREBASE SYNC     // =====================     db.on('value', (snap) => {         const d = snap.val();         if (d) {             items = d.items || [];             history = d.history || { shopping: [], expense: [] };             if (!Array.isArray(history.shopping)) history.shopping = Object.values(history.shopping || {});             if (!Array.isArray(history.expense))  history.expense  = Object.values(history.expense  || {});             renderMaster();         }     });       const save = (cb) => {         db.set({ items, history }).then(() => { if (cb) cb(); });     };       // =====================     // MASTER LIST     // =====================     function renderMaster() {         let cont = document.getElementById('masterList');         let q = document.getElementById('itemName').value.toLowerCase();         let filtered = items.filter(it =>             (activeF === 'All' || it.cat === activeF) &&             it.name.toLowerCase().includes(q)         );         let gCount = 0;         cont.innerHTML = filtered.map((it) => {             let rIdx = items.indexOf(it);             return `<div class="item-row ${it.sel ? 'sel-bg' : ''}">                 <span onclick="toggleI(${rIdx})" style="cursor:pointer; font-size:13px;"><b>${++gCount}. ${it.name}</b></span>                 <input type="number" step="0.001" value="${it.qty}" oninput="items[${rIdx}].qty=this.value; save()" class="u-box" inputmode="decimal">                 <select onchange="items[${rIdx}].unit=this.value; save()" class="unit-sel">                     <option value="Kg"  ${it.unit=='Kg' ?'selected':''}>Kg</option>                     <option value="Pc"  ${it.unit=='Pc' ?'selected':''}>Pc</option>                     <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option>                     <option value="Rs"  ${it.unit=='Rs' ?'selected':''}>Rs</option>                 </select>                 <input type="checkbox" ${it.sel ? 'checked' : ''} onclick="toggleI(${rIdx})" style="width:22px; height:22px;">                 <button class="btn del-btn" onclick="delMasterItem(${rIdx})">✕</button>             </div>`;         }).join('');     }       function toggleI(i) { items[i].sel = !items[i].sel; save(); }       function addItem() {         let n = document.getElementById('itemName').value.trim();         if (n) {             items.unshift({ name: n, cat: document.getElementById('catSelect').value, sel: true, qty: '', unit: 'Kg' });             save();             document.getElementById('itemName').value = '';         }     }       function delMasterItem(i) {         if (confirm("Hata dein?")) { items.splice(i, 1); save(); }     }       function setFilter(f) {         activeF = f;         document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));         let btn = document.getElementById('btn-' + f);         if (btn) btn.classList.add('active');         renderMaster();     }       function unselectAll() {         if (confirm("Sab selections clear karein?")) {             items.forEach(it => it.sel = false);             save();         }     }       // =====================     // DAILY KHARCH — BUG FIXED     // =====================     function openDailyKharch() {         let d = new Date().toLocaleDateString('en-GB');         document.getElementById('dkDateLabel').innerText = d;         renderDK(d);         openPage('dailyKharchPage');     }       // ADD function — sirf naam zaroori, price/qty optional     function addK() {         let n = document.getElementById('kName').value.trim();         let q = parseFloat(document.getElementById('kQty').value) || 0;         let p = parseFloat(document.getElementById('kPrice').value) || 0;           if (!n) { alert("Item ka naam bharein!"); return; }           let d = new Date().toLocaleDateString('en-GB');         let rec = history.expense.find(h => h.date === d);         if (!rec) { rec = { date: d, items: [] }; history.expense.unshift(rec); }         rec.items.push({ name: n, qty: q, price: p, done: false });           save(() => {             renderDK(d);             document.getElementById('kName').value  = '';             document.getElementById('kQty').value   = '';             document.getElementById('kPrice').value = '';             document.getElementById('kName').focus();         });     }       function renderDK(d) {         let rec   = history.expense.find(h => h.date === d);         let area  = document.getElementById('dkList');         let total = 0;           if (!rec || !rec.items.length) {             area.innerHTML = "<p style='text-align:center; padding:30px; color:#b2bec3;'>Aaj koi kharcha nahi hai.</p>";             document.getElementById('dkSum').innerText = "TOTAL: ₹0";             return;         }           area.innerHTML = rec.items.map((it, i) => {             total += parseFloat(it.price) || 0;             return `<div class="dk-grid">                 <span style="color:#636e72;">${i+1}.</span>                 <b style="font-size:13px; word-break:break-word;">${it.name}</b>                 <input type="number" ${it.done ? 'disabled' : ''} value="${it.qty}"   oninput="updHF('expense','${d}',${i},'qty',this.value)"   class="u-box" inputmode="decimal">                 <input type="number" ${it.done ? 'disabled' : ''} value="${it.price}" oninput="updHF('expense','${d}',${i},'price',this.value)" class="p-box" inputmode="decimal">                 <button class="btn ${it.done ? 'ok-btn' : 'lock-btn'}" onclick="lockH('expense','${d}',${i})">${it.done ? '✓' : '🔒'}</button>                 <button class="btn del-btn" onclick="delHI('expense','${d}',${i})">✕</button>             </div>`;         }).join('');           document.getElementById('dkSum').innerText = `TOTAL: ₹${total.toFixed(2)}`;     }       // =====================     // HISTORY ENGINE     // =====================     function renderH() {         let titleMap = { shopping: '📦 Saman History', expense: '💰 Kharch History' };         document.getElementById('hTitle').innerText = titleMap[hType];           let area = document.getElementById('hArea');         area.innerHTML = '';           let sorted = [...(history[hType] || [])].sort((a, b) => {             let da = a.date.split('/'), db = b.date.split('/');             return new Date(db[2], db[1]-1, db[0]) - new Date(da[2], da[1]-1, da[0]);         });           let curM = '', html = '', mTot = 0;           sorted.forEach(h => {             let p    = h.date.split('/');             let m    = months[parseInt(p[1])-1] + ' ' + p[2];             let dTot = h.items.reduce((a, b) => a + (parseFloat(b.price) || 0), 0);               if (curM !== m && curM !== '') {                 area.innerHTML += `<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>` + html;                 html = ''; mTot = 0;             }             curM = m; mTot += dTot;             html += `<div class="hist-row">                 <span style="font-size:13px;">${h.date}</span>                 <b style="color:#0984e3;">₹${dTot.toFixed(2)}</b>                 <button class="btn ok-btn" onclick="editH('${h.date}')">EDIT</button>                 <button class="btn del-btn" onclick="delH('${h.date}')">✕</button>             </div>`;         });           if (curM) {             area.innerHTML += `<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>` + html;         }           if (!sorted.length) {             area.innerHTML = "<p style='text-align:center; padding:30px; color:#b2bec3;'>Koi history nahi hai.</p>";         }     }       function editH(date) {         currentEditDate = date;         let rec = history[hType].find(h => h.date === date);         if (!rec) return;           let area = document.getElementById('eList');         let total = rec.items.reduce((a, b) => a + (parseFloat(b.price) || 0), 0);           area.innerHTML = rec.items.map((it, i) =>             `<div class="edit-grid">                 <span style="color:#636e72;">${i+1}.</span>                 <input type="text"   ${it.done ? 'disabled' : ''} value="${it.name}"  oninput="updHF('${hType}','${date}',${i},'name',this.value)"  style="font-size:13px;">                 <input type="number" ${it.done ? 'disabled' : ''} value="${it.qty}"   oninput="updHF('${hType}','${date}',${i},'qty',this.value)"   class="u-box" inputmode="decimal">                 <input type="number" ${it.done ? 'disabled' : ''} value="${it.price}" oninput="updHF('${hType}','${date}',${i},'price',this.value)" class="p-box" inputmode="decimal">                 <button class="btn ${it.done ? 'ok-btn' : 'lock-btn'}" onclick="lockH('${hType}','${date}',${i})">${it.done ? '✓' : '🔒'}</button>                 <button class="btn del-btn" onclick="delHI('${hType}','${date}',${i})">✕</button>             </div>`         ).join('');           document.getElementById('eSum').innerText = `TOTAL: ₹${total.toFixed(2)}`;         openPage('editPage');     }       function updHF(type, d, i, f, v) {         let ex = history[type].find(h => h.date === d);         if (ex) {             ex.items[i][f] = v;             save(() => {                 if (type === 'expense') renderDK(d);                 // Edit page sum update                 let rec = history[type].find(h => h.date === d);                 if (rec && document.getElementById('editPage').style.display === 'flex') {                     let t = rec.items.reduce((a,b) => a+(parseFloat(b.price)||0), 0);                     document.getElementById('eSum').innerText = `TOTAL: ₹${t.toFixed(2)}`;                 }             });         }     }       function lockH(type, d, i) {         let ex = history[type].find(h => h.date === d);         if (ex) {             ex.items[i].done = !ex.items[i].done;             save(() => {                 if (type === 'expense') renderDK(d);                 if (document.getElementById('editPage').style.display === 'flex') editH(d);             });         }     }       function delHI(type, d, i) {         if (confirm("Item delete karein?")) {             history[type].find(h => h.date === d).items.splice(i, 1);             save(() => {                 if (type === 'expense') renderDK(d);                 if (document.getElementById('editPage').style.display === 'flex') editH(d);             });         }     }       function delH(d) {         if (confirm("Poora din ka record hataein?")) {             history[hType] = history[hType].filter(h => h.date !== d);             save(() => renderH());         }     }       // =====================     // FINAL LIST & CALC     // =====================     function showFinalList() {         let sel = items.filter(it => it.sel);         if (!sel.length) { alert("Pehle koi item choose karo!"); return; }           let out = document.getElementById('fOut');         out.innerHTML = `<h2 style="text-align:center; color:#0984e3; border-bottom:3px solid #0984e3; padding-bottom:10px; 15px;">🛒 SAMAN LIST</h2>`;           ['GROCERY','SABJI','BODY','OTHER'].forEach(c => {             let filtered = sel.filter(it => it.cat === c);             if (filtered.length) {                 out.innerHTML += `<div style="background:#2d3436; color:#fff; padding:6px 12px; border-radius:4px; font-size:12px; 15px 0 8px 0; display:inline-block;">${c}</div>` +                     filtered.map((it, j) =>                         `<div style="display:flex; justify-content:space-between; padding:12px 5px; border-bottom:1px dashed #ccc; font-weight:bold;">                             <span>${j+1}. ${it.name}</span>                             <span style="color:#0984e3;">${it.qty} ${it.unit}</span>                         </div>`                     ).join('');             }         });           openPage('listPage');     }       function openCalc() {         tCalc = items.filter(it => it.sel).map(it => ({             name: it.name, qty: it.qty, unit: it.unit, price: '', done: false         }));         renderC();         openPage('calcPage');     }       function renderC() {         let area = document.getElementById('cList');         area.innerHTML = tCalc.map((it, i) =>             `<div class="calc-row">                 <b style="font-size:13px;">${it.name}</b>                 <span style="color:#636e72; font-size:12px;">${it.qty} ${it.unit}</span>                 <input type="number" ${it.done ? 'disabled' : ''} placeholder="₹ Rate"                     value="${it.price}"                     oninput="tCalc[${i}].price=this.value; renderCSum()"                     class="p-box" inputmode="decimal">                 <button class="btn ${it.done ? 'ok-btn' : 'lock-btn'}"                     onclick="tCalc[${i}].done=!tCalc[${i}].done; renderC()">                     ${it.done ? '✓' : '🔒'}                 </button>             </div>`         ).join('');         renderCSum();     }       function renderCSum() {         let total = tCalc.reduce((a, b) => a + (parseFloat(b.price) || 0), 0);         document.getElementById('cSum').innerText = `BILL TOTAL: ₹${total.toFixed(2)}`;     }       function takeShot() {         html2canvas(document.getElementById('shotArea')).then(c => {             let a = document.createElement('a');             a.download = 'SamanList.png';             a.href = c.toDataURL();             a.click();         });     } 
+
+Saman history ka edit pr calc screen ka item ka price or quantity update hone ki bjay add ho jese mene 1 chips ka pocket 10 rs ka liya bd m 2 chips ka paket 20 ka liya to saman history ke edit pr 3 quantity or 30 rs ho jaye
+Daily kharcha wala add item se item add nahi ho rha jaise search box wale mein add item krte hi list bn jati hai wese hi list bnao jb kharcha wale cscreen mein add krte hai to 
+
+Bhai request bar bar chek kr or daily kharcha wale mei add button dabane pr item add ho jaye or uski list bn jaye 
+
+Kuch bhi chodke or code ko chota krke ya cut krk code mt banana
