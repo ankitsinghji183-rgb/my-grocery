@@ -86,7 +86,7 @@
 </div>
 
 <div id="kInPage" class="full-page">
-    <div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Daily Kharch Add</span></div>
+    <div class="p-head"><span onclick="closeCurrentPage()">Back</span><span>Daily Kharch</span></div>
     <div class="card">
         <div class="in-row">
             <input type="text" id="kName" style="flex:1" placeholder="Item Name">
@@ -124,9 +124,11 @@
     function openPage(id) { 
         document.querySelectorAll('.full-page').forEach(p => p.style.display = 'none'); 
         let pg = document.getElementById(id);
-        if(pg) pg.style.display = 'flex'; 
-        document.body.style.overflow = "hidden";
-        window.history.pushState({page: id}, ""); 
+        if(pg) {
+            pg.style.display = 'flex'; 
+            document.body.style.overflow = "hidden";
+            window.history.pushState({page: id}, ""); 
+        }
     }
 
     function closeCurrentPage() { window.history.back(); }
@@ -201,7 +203,7 @@
         openPage('listPage');
     }
 
-    // --- DAILY KHARCH LOGIC (FIXED) ---
+    // --- DAILY KHARCH LOGIC ---
     function openDailyKharch() { 
         let d = new Date().toLocaleDateString('en-GB'); 
         openPage('kInPage'); 
@@ -217,9 +219,12 @@
             if(!ex){ ex = {date: d, items: []}; history.expense.unshift(ex); } 
             
             let old = ex.items.find(o => o.name.toLowerCase() === n.toLowerCase()); 
-            if(old){ old.qty = parseFloat(old.qty) + q; old.price = parseFloat(old.price) + p; } 
-            else { ex.items.push({name: n, qty: q, price: p, done: false}); } 
-            
+            if(old){ 
+                old.qty = parseFloat(old.qty) + q; 
+                old.price = parseFloat(old.price) + p; 
+            } else { 
+                ex.items.push({name: n, qty: q, price: p, done: false}); 
+            } 
             save(false); renderDK(d); 
             document.getElementById('kName').value=''; document.getElementById('kQty').value=''; document.getElementById('kPrice').value=''; 
         } 
@@ -236,11 +241,14 @@
         document.getElementById('dkSum').innerText = `TOTAL: ₹${t}`; 
     }
 
-    function updateDKItem(d, idx, f, v) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx][f] = v; save(false); let t=ex.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0); document.getElementById('dkSum').innerText=`TOTAL: ₹${t}`; } }
+    function updateDKItem(d, idx, f, v) { 
+        let ex = history.expense.find(h => h.date === d); 
+        if(ex){ ex.items[idx][f] = v; save(false); let t=ex.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0); document.getElementById('dkSum').innerText=`TOTAL: ₹${t}`; } 
+    }
     function lockDK(d, idx) { let ex = history.expense.find(h => h.date === d); if(ex){ ex.items[idx].done = !ex.items[idx].done; save(false); renderDK(ex.date); } }
     function delDKItem(d, idx) { if(confirm("Del?")){ history.expense.find(h => h.date === d).items.splice(idx,1); save(false); renderDK(d); } }
 
-    // --- CALCULATION LOGIC (SMART ADDITION FIXED) ---
+    // --- CALCULATION LOGIC ---
     function openCalc() { 
         tCalc = items.filter(it => it.sel).map(it => ({ name: it.name, qty: it.qty || "", unit: it.unit || "Kg", price: "", done: false })); 
         renderC(); openPage('calcPage'); 
@@ -258,7 +266,6 @@
         if(field === 'qty') { it.qty = val; histItem.qty = parseFloat(val) || 0; }
         if(field === 'price') { it.price = val; histItem.price = parseFloat(val) || 0; save(false); }
         if(field === 'unit') { it.unit = val; histItem.unit = val; save(false); }
-
         document.getElementById('cSum').innerText = `TOTAL: ₹${tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0)}`; 
     }
 
@@ -274,7 +281,7 @@
     function lockToggleCalc(idx) { 
         tCalc[idx].done = !tCalc[idx].done; 
         let d = new Date().toLocaleDateString('en-GB'); 
-        let ex = history.shopping ? history.shopping.find(h => h.date === d) : null;
+        let ex = (history.shopping || []).find(h => h.date === d);
         if(ex){
             let histItem = ex.items.find(o => o.name.toLowerCase() === tCalc[idx].name.toLowerCase());
             if(histItem) histItem.done = tCalc[idx].done;
@@ -284,7 +291,8 @@
 
     // --- HISTORY LOGIC ---
     function renderH() { 
-        let area = document.getElementById('hArea'); area.innerHTML = ''; 
+        let area = document.getElementById('hArea'); if(!area) return;
+        area.innerHTML = ''; 
         let dataArr = (history[hType] || []); 
         let sortedData = [...dataArr].sort((a,b) => { let da = a.date.split('/'), db = b.date.split('/'); return new Date(db[2], db[1]-1, db[0]) - new Date(da[2], da[1]-1, da[0]); }); 
         let currentMonth = "", monthTotal = 0, tempHtml = ""; 
@@ -308,7 +316,12 @@
         openPage('editPage'); 
     }
 
-    function updateHistItem(hIdx, iIdx, f, v) { history[hType][hIdx].items[iIdx][f] = v; save(false); let sum = history[hType][hIdx].items.reduce((a,b)=>a+(parseFloat(b.price)||0),0); document.getElementById('eSum').innerText = `TOTAL: ₹${sum}`; }
+    function updateHistItem(hIdx, iIdx, f, v) { 
+        history[hType][hIdx].items[iIdx][f] = v; 
+        save(false); 
+        let sum = history[hType][hIdx].items.reduce((a,b)=>a+(parseFloat(b.price)||0),0); 
+        document.getElementById('eSum').innerText = `TOTAL: ₹${sum}`; 
+    }
     function toggleLock(hIdx, iIdx) { history[hType][hIdx].items[iIdx].done = !history[hType][hIdx].items[iIdx].done; save(false); editHistory(hIdx); }
     function delHistItem(hIdx, iIdx) { if(confirm("Del?")){ history[hType][hIdx].items.splice(iIdx,1); save(false); editHistory(hIdx); } }
     function delH(i) { if(confirm("Del?")){ history[hType].splice(i,1); save(false); renderH(); } }
