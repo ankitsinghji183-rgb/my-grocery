@@ -45,7 +45,6 @@
         .lang-btn{padding:5px 12px;border:2px solid white;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;background:transparent;color:white;height:34px;}
         .lang-btn.active{background:white;color:#0984e3;}
         
-        /* Dropdown History Style */
         .hist-detail-panel {
             display: none;
             background: #fff;
@@ -159,18 +158,15 @@
 </div>
 
 <script>
-// ====== FIREBASE ======
 const firebaseConfig={databaseURL:"https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/"};
 firebase.initializeApp(firebaseConfig);
 const DB=firebase.database().ref('grocery/3');
 
-// ====== STATE ======
 let items=[],expense=[],shopping=[];
 let activeF='All',hType='shopping',tCalc=[];
 let currentEditDate='',activePage='main',listLang='hi';
 const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-// ====== LOAD ======
 DB.get().then(snap=>{
     const d=snap.val();
     if(d){
@@ -189,7 +185,6 @@ DB.get().then(snap=>{
 function toArr(x){ return Array.isArray(x)?x:Object.values(x||{}); }
 function save(){ DB.set({items,history:{expense,shopping}}); }
 
-// ====== NAV ======
 function openPage(id){
     activePage=id;
     document.querySelectorAll('.full-page').forEach(p=>p.style.display='none');
@@ -205,14 +200,10 @@ window.onpopstate=()=>{
     renderMaster();
 };
 
-// ====== MASTER LIST ======
 function renderMaster(){
     let cont=document.getElementById('masterList'); if(!cont) return;
     let q=document.getElementById('itemName').value.toLowerCase();
-    
-    // Sort logic: Selected items upar (true upar, false niche)
     let sortedMaster = [...items].sort((a,b) => (b.sel === a.sel)? 0 : b.sel? 1 : -1);
-    
     let filtered=sortedMaster.filter(it=>(activeF==='All'||it.cat===activeF)&&it.name.toLowerCase().includes(q));
     let n=0;
     cont.innerHTML=filtered.map(it=>{
@@ -234,7 +225,6 @@ function renderMaster(){
 function toggleI(i){ items[i].sel=!items[i].sel; save(); renderMaster(); }
 function addItem(){
     let n=document.getElementById('itemName').value.trim(); if(!n) return;
-    // Naya item added item auto select na ho (sel: false)
     items.unshift({name:n,cat:document.getElementById('catSelect').value,sel:false,qty:'',unit:'Kg'});
     save(); document.getElementById('itemName').value=''; renderMaster();
 }
@@ -247,17 +237,19 @@ function setFilter(f){
 }
 function unselectAll(){ if(confirm("Sab clear?")){ items.forEach(it=>it.sel=false); save(); renderMaster(); } }
 
-// ====== DAILY KHARCH ======
 function openKharchAdd(){
     hType='expense';
     let today=new Date().toLocaleDateString('en-GB');
     let rec=expense.find(h=>h.date===today);
-    if(!rec){ rec={date:today,items:[]}; expense.unshift(rec); save(); }
+    if(!rec){ 
+        rec={date:today,items:[]}; 
+        expense.unshift(rec); 
+        save(); 
+    }
     currentEditDate=today;
     openEditPage();
 }
 
-// ====== HISTORY ======
 function openHistory(type){
     hType=type;
     openPage('hPage');
@@ -297,25 +289,18 @@ function renderH(){
             html=''; mTot=0;
         }
         curM=m; mTot+=dTot;
-        
         let dateId = h.date.replace(/\//g, '-');
         let itemLines = h.items.map((it, i) => `<div class="h-det-line"><span>${i+1}. ${it.name} (${it.qty||0} ${it.unit||''})</span><b>₹${it.price||0}</b></div>`).join('');
-
-        html+=`
-        <div class="hist-row" onclick="toggleHistDetail('${dateId}')">
+        html+=`<div class="hist-row" onclick="toggleHistDetail('${dateId}')">
             <span style="font-size:13px;">${h.date} ▼</span>
             <b style="color:#0984e3;">₹${dTot.toFixed(2)}</b>
             <button class="btn ok-btn" style="font-size:10px;" onclick="event.stopPropagation(); editH('${h.date}')">EDIT</button>
             <button class="btn del-btn" onclick="event.stopPropagation(); delH('${h.date}')">✕</button>
-        </div>
-        <div class="hist-detail-panel" id="det-${dateId}">
-            ${itemLines}
-        </div>`;
+        </div><div class="hist-detail-panel" id="det-${dateId}">${itemLines}</div>`;
     });
     if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
 }
 
-// ====== EDIT ======
 function editH(date){
     currentEditDate=date;
     openEditPage();
@@ -343,12 +328,9 @@ function renderEditList(){
     area.innerHTML=rec.items.map((it,i)=>
         `<div class="edit-grid">
             <span style="color:#636e72;">${i+1}.</span>
-            <input type="text" ${it.done?'disabled':''} value="${it.name}"
-                onchange="eField(${i},'name',this.value)" style="font-size:13px;min-width:0;">
-            <input type="number" ${it.done?'disabled':''} value="${it.qty||''}"
-                onchange="eField(${i},'qty',this.value)" class="u-box" inputmode="decimal">
-            <input type="number" ${it.done?'disabled':''} value="${it.price||''}"
-                onchange="eField(${i},'price',this.value)" class="p-box" inputmode="decimal">
+            <input type="text" ${it.done?'disabled':''} value="${it.name}" onchange="eField(${i},'name',this.value)" style="font-size:13px;min-width:0;">
+            <input type="number" ${it.done?'disabled':''} value="${it.qty||''}" onchange="eField(${i},'qty',this.value)" class="u-box" inputmode="decimal">
+            <input type="number" ${it.done?'disabled':''} value="${it.price||''}" onchange="eField(${i},'price',this.value)" class="p-box" inputmode="decimal">
             <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="eLock(${i})">${it.done?'✓':'🔒'}</button>
             <button class="btn del-btn" onclick="eDel(${i})">✕</button>
         </div>`
@@ -362,7 +344,6 @@ function eAddItem(){
     let q=parseFloat(document.getElementById('eAddQty').value)||0;
     let p=parseFloat(document.getElementById('eAddPrice').value)||0;
     if(!n){alert("Naam zaroor bharein!"); return;}
-
     let arr=getArr();
     let rec=arr.find(h=>h.date===currentEditDate);
     if(!rec){
@@ -370,19 +351,10 @@ function eAddItem(){
         if(hType==='expense') expense.unshift(rec); else shopping.unshift(rec);
     }
     let ex=rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
-    if(ex){
-        ex.qty  =(parseFloat(ex.qty)||0)+q;
-        ex.price=(parseFloat(ex.price)||0)+p;
-    } else {
-        rec.items.push({name:n,qty:q,price:p,done:false});
-    }
-
-    document.getElementById('eAddName').value='';
-    document.getElementById('eAddQty').value='';
-    document.getElementById('eAddPrice').value='';
-
-    renderEditList();
-    save();
+    if(ex){ ex.qty=(parseFloat(ex.qty)||0)+q; ex.price=(parseFloat(ex.price)||0)+p; } 
+    else { rec.items.push({name:n,qty:q,price:p,done:false}); }
+    document.getElementById('eAddName').value=''; document.getElementById('eAddQty').value=''; document.getElementById('eAddPrice').value='';
+    renderEditList(); save();
 }
 
 function eField(i,f,v){
@@ -396,7 +368,6 @@ function eField(i,f,v){
 function eLock(i){
     let arr=getArr();
     let rec=arr.find(h=>h.date===currentEditDate); if(!rec) return;
-    // Price bina dale bhi lock ho sakega
     rec.items[i].done=!rec.items[i].done;
     renderEditList(); save();
 }
@@ -415,173 +386,79 @@ function delH(date){
     }
 }
 
-// ====== LANG & LIST FORMAT ======
 function setLang(lang){
     listLang=lang;
-    let hi=document.getElementById('btnHi');
-    let en=document.getElementById('btnEn');
-    if(lang==='hi'){
-        hi.classList.add('active'); en.classList.remove('active');
-    } else {
-        en.classList.add('active'); hi.classList.remove('active');
-    }
+    let hi=document.getElementById('btnHi'), en=document.getElementById('btnEn');
+    if(lang==='hi'){ hi.classList.add('active'); en.classList.remove('active'); } 
+    else { en.classList.add('active'); hi.classList.remove('active'); }
     renderFinalList();
 }
 
 function fmtQty(qty,unit,lang){
     let q=parseFloat(qty);
-    if(isNaN(q)||qty===''||qty===undefined||qty===null) return '';
-    let isHalf=(Math.abs(q-0.5)<0.001);
-    let is200 =(Math.abs(q-0.2)<0.001);
-    let is250 =(Math.abs(q-0.25)<0.001);
-    let is100 =(Math.abs(q-0.1)<0.001);
-    let is750 =(Math.abs(q-0.75)<0.001);
-
+    if(isNaN(q)||qty===''||qty===undefined) return '';
+    let isHalf=(Math.abs(q-0.5)<0.001), is200=(Math.abs(q-0.2)<0.001), is250=(Math.abs(q-0.25)<0.001), is100=(Math.abs(q-0.1)<0.001), is750=(Math.abs(q-0.75)<0.001);
     if(lang==='en'){
-        if(unit==='Kg'){
-            if(isHalf) return 'Half Kg';
-            if(is200)  return '200 Gram';
-            if(is250)  return '250 Gram';
-            if(is100)  return '100 Gram';
-            if(is750)  return '750 Gram';
-            return `${q} Kg`;
-        }
-        if(unit==='Ltr'){
-            if(isHalf) return 'Half Litre';
-            if(is200)  return '200 ML';
-            if(is250)  return '250 ML';
-            if(is100)  return '100 ML';
-            if(is750)  return '750 ML';
-            return `${q} Litre`;
-        }
-        if(unit==='Pc')  return `${q} Pc`;
-        if(unit==='Rs')  return `${q} Rs`;
+        if(unit==='Kg'){ if(isHalf) return 'Half Kg'; if(is200) return '200 Gram'; if(is250) return '250 Gram'; if(is100) return '100 Gram'; if(is750) return '750 Gram'; return `${q} Kg`; }
+        if(unit==='Ltr'){ if(isHalf) return 'Half Litre'; if(is200) return '200 ML'; if(is250) return '250 ML'; if(is100) return '100 ML'; if(is750) return '750 ML'; return `${q} Litre`; }
         return `${q} ${unit}`;
     }
-
-    if(unit==='Kg'){
-        if(isHalf) return 'आधा किलो';
-        if(is200)  return '200 ग्राम';
-        if(is250)  return '250 ग्राम';
-        if(is100)  return '100 ग्राम';
-        if(is750)  return '750 ग्राम';
-        return `${q} किलो`;
-    }
-    if(unit==='Ltr'){
-        if(isHalf) return 'आधा लीटर';
-        if(is200)  return '200 ML';
-        if(is250)  return '250 ML';
-        if(is100)  return '100 ML';
-        if(is750)  return '750 ML';
-        return `${q} लीटर`;
-    }
-    if(unit==='Pc')  return `${q} पीस`;
-    if(unit==='Rs')  return `${q} रुपये`;
-    return `${qty} ${unit}`;
+    if(unit==='Kg'){ if(isHalf) return 'आधा किलो'; if(is200) return '200 ग्राम'; if(is250) return '250 ग्राम'; if(is100) return '100 ग्राम'; if(is750) return '750 ग्राम'; return `${q} किलो`; }
+    if(unit==='Ltr'){ if(isHalf) return 'आधा लीटर'; if(is200) return '200 ML'; if(is250) return '250 ML'; if(is100) return '100 ML'; if(is750) return '750 ML'; return `${q} लीटर`; }
+    return `${qty} ${unit==='Pc'?'पीस':unit==='Rs'?'रुपये':unit}`;
 }
 
 function catLabel(c,lang){
     if(lang==='hi'){
-        if(c==='GROCERY') return 'GROC';
-        if(c==='SABJI')   return 'सब्जी';
-        if(c==='BODY')    return 'शरीर';
-        if(c==='OTHER')   return 'अन्य';
+        if(c==='GROCERY') return 'GROC'; if(c==='SABJI') return 'सब्जी'; if(c==='BODY') return 'शरीर'; if(c==='OTHER') return 'अन्य';
     }
     return c;
 }
 
-// ====== FINAL LIST ======
 let lastSelItems=[];
 function showFinalList(){
     lastSelItems=items.filter(it=>it.sel);
     if(!lastSelItems.length){alert("Pehle item choose karo!"); return;}
-    renderFinalList();
-    openPage('listPage');
+    renderFinalList(); openPage('listPage');
 }
 
 function renderFinalList(){
     let isHi=(listLang==='hi');
     let out=document.getElementById('fOut'); if(!out) return;
-    document.getElementById('listTitle').innerText=isHi?'सामान सूची':'Shopping List';
-    let col1=isHi?'सामान':'ITEM';
-    let col2=isHi?'मात्रा':'QTY';
-    let col3=isHi?'कीमत':'RATE';
-
     out.innerHTML=`<h2 style="text-align:center;color:#0984e3;border-bottom:3px solid #0984e3;padding-bottom:10px;margin-bottom:15px;">${isHi?'🛒 सामान सूची':'🛒 Shopping List'}</h2>`;
-
     ['GROCERY','SABJI','BODY','OTHER'].forEach(c=>{
-        let f=lastSelItems.filter(it=>it.cat===c);
-        if(!f.length) return;
+        let f=lastSelItems.filter(it=>it.cat===c); if(!f.length) return;
         out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:5px 12px;border-radius:4px;font-size:12px;margin:14px 0 7px;display:inline-block;">${catLabel(c,listLang)}</div>`;
-        out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;font-size:11px;font-weight:900;color:#636e72;padding:5px;border-bottom:2px solid #dfe6e9;">
-            <span>${col1}</span>
-            <span style="text-align:center;">${col2}</span>
-            <span style="text-align:center;">${col3}</span>
-        </div>`;
-        f.forEach((it,j)=>{
-            out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;padding:11px 5px;border-bottom:1px dashed #ccc;font-weight:bold;align-items:center;">
-                <span style="font-size:13px;">${j+1}. ${it.name}</span>
-                <span style="text-align:center;color:#0984e3;font-size:13px;">${fmtQty(it.qty,it.unit,listLang)}</span>
-                <span style="text-align:center;color:#e17055;font-size:13px;">₹____</span>
-            </div>`;
-        });
+        out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;font-size:11px;font-weight:900;color:#636e72;padding:5px;border-bottom:2px solid #dfe6e9;"><span>${isHi?'सामान':'ITEM'}</span><span style="text-align:center;">${isHi?'मात्रा':'QTY'}</span><span style="text-align:center;">${isHi?'कीमत':'RATE'}</span></div>`;
+        f.forEach((it,j)=>{ out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;padding:11px 5px;border-bottom:1px dashed #ccc;font-weight:bold;align-items:center;"><span style="font-size:13px;">${j+1}. ${it.name}</span><span style="text-align:center;color:#0984e3;font-size:13px;">${fmtQty(it.qty,it.unit,listLang)}</span><span style="text-align:center;color:#e17055;font-size:13px;">₹____</span></div>`; });
     });
 }
 
-// ====== CALC ======
 function openCalc(){
     tCalc=items.filter(it=>it.sel).map(it=>({name:it.name,qty:parseFloat(it.qty)||0,unit:it.unit,price:0,done:false}));
     renderC(); openPage('calcPage');
 }
 function renderC(){
     document.getElementById('cList').innerHTML=tCalc.map((it,i)=>
-        `<div class="calc-row">
-            <b style="font-size:13px;">${it.name}</b>
-            <span style="color:#636e72;font-size:12px;">${it.qty} ${it.unit}</span>
-            <input type="number" ${it.done?'disabled':''} placeholder="₹ Rate"
-                value="${it.price>0?it.price:''}"
-                onchange="calcPrice(${i},this.value)" class="p-box" inputmode="decimal">
-            <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="calcLock(${i})">${it.done?'✓':'🔒'}</button>
-        </div>`
+        `<div class="calc-row"><b style="font-size:13px;">${it.name}</b><span style="color:#636e72;font-size:12px;">${it.qty} ${it.unit}</span><input type="number" ${it.done?'disabled':''} placeholder="₹ Rate" value="${it.price>0?it.price:''}" onchange="calcPrice(${i},this.value)" class="p-box" inputmode="decimal"><button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="calcLock(${i})">${it.done?'✓':'🔒'}</button></div>`
     ).join('');
     renderCSum();
 }
 function calcPrice(i,v){ tCalc[i].price=parseFloat(v)||0; renderCSum(); autoSaveCalc(); }
-function calcLock(i){ 
-    // Price 0 hone par bhi lock hoga aur save ho jayega
-    tCalc[i].done=!tCalc[i].done; 
-    renderC(); 
-    autoSaveCalc(); 
-}
+function calcLock(i){ tCalc[i].done=!tCalc[i].done; renderC(); autoSaveCalc(); }
 function autoSaveCalc(){
-    // Ab ye filled items (chahe price 0 ho) ko history mein save karega agar wo done/lock hain
-    let readyItems=tCalc.filter(it=>it.done); 
-    if(!readyItems.length) return;
-    
+    let readyItems=tCalc.filter(it=>it.done); if(!readyItems.length) return;
     let d=new Date().toLocaleDateString('en-GB');
     let rec=shopping.find(h=>h.date===d);
     if(!rec){ rec={date:d,items:[]}; shopping.unshift(rec); }
-    
     readyItems.forEach(ni=>{
         let ex=rec.items.find(e=>e.name.toLowerCase()===ni.name.toLowerCase());
-        if(ex){ 
-            ex.qty=ni.qty; 
-            ex.price=ni.price; 
-        } else {
-            rec.items.push({name:ni.name,qty:ni.qty,unit:ni.unit,price:ni.price,done:true});
-        }
+        if(ex){ ex.qty=ni.qty; ex.price=ni.price; } else { rec.items.push({name:ni.name,qty:ni.qty,unit:ni.unit,price:ni.price,done:true}); }
     });
     save();
 }
-function renderCSum(){
-    let t=tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-    document.getElementById('cSum').innerText=`BILL TOTAL: ₹${t.toFixed(2)}`;
-}
-function takeShot(){
-    html2canvas(document.getElementById('shotArea')).then(c=>{
-        let a=document.createElement('a'); a.download='SamanList.png'; a.href=c.toDataURL(); a.click();
-    });
-}
+function renderCSum(){ let t=tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0); document.getElementById('cSum').innerText=`BILL TOTAL: ₹${t.toFixed(2)}`; }
+function takeShot(){ html2canvas(document.getElementById('shotArea')).then(c=>{ let a=document.createElement('a'); a.download='SamanList.png'; a.href=c.toDataURL(); a.click(); }); }
 </script>
 </body>
 </html>
