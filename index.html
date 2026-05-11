@@ -33,7 +33,7 @@
         .item-row{display:grid;grid-template-columns:1fr 50px 58px 26px 36px;gap:5px;align-items:center;padding:10px 7px;border-bottom:1px solid #f1f2f6;background:white;margin-bottom:3px;border-radius:8px;}
         .edit-grid{display:grid;grid-template-columns:20px 1fr 50px 76px 36px 36px;gap:4px;align-items:center;padding:9px 6px;background:white;margin-bottom:3px;border-radius:6px;border-bottom:1px solid #eee;}
         .calc-row{display:grid;grid-template-columns:1fr 62px 76px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:3px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
-        .hist-row{display:grid;grid-template-columns:1fr 82px 40px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:0px;border-radius:8px;border-bottom:1px solid #f1f2f6;cursor:pointer;}
+        .hist-row{display:grid;grid-template-columns:1fr 82px 40px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:0px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
         .sel-bg{background:#fff9db!important;border-left:4px solid #fcc419;}
         .sum-box{padding:12px 15px;background:#e3f2fd;font-weight:900;text-align:right;border-top:3px solid #0984e3;font-size:16px;color:#0984e3;flex-shrink:0;}
         .b-nav{width:100%;background:white;padding:8px 10px;border-top:1px solid #dfe6e9;display:flex;gap:8px;flex-shrink:0;}
@@ -44,23 +44,10 @@
         .add-row-title{font-size:11px;font-weight:800;color:#27ae60;margin-bottom:6px;}
         .lang-btn{padding:5px 12px;border:2px solid white;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;background:transparent;color:white;height:34px;}
         .lang-btn.active{background:white;color:#0984e3;}
-        
-        .hist-detail-panel {
-            display: none;
-            background: #fff;
-            margin: 0 0 8px 0;
-            padding: 5px 10px;
-            border-radius: 0 0 8px 8px;
-            border: 1px solid #eee;
-            border-top: none;
-        }
-        .h-det-line {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            padding: 4px 0;
-            border-bottom: 1px solid #f9f9f9;
-        }
+
+        /* Dropdown Detail Style */
+        .hist-detail-panel { display: none; background: #fff; margin-bottom: 8px; padding: 5px 10px; border-radius: 0 0 8px 8px; border: 1px solid #eee; border-top: none; }
+        .h-det-line { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; border-bottom: 1px solid #f9f9f9; }
     </style>
 </head>
 <body>
@@ -158,15 +145,18 @@
 </div>
 
 <script>
+// ====== FIREBASE ======
 const firebaseConfig={databaseURL:"https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/"};
 firebase.initializeApp(firebaseConfig);
 const DB=firebase.database().ref('grocery/3');
 
+// ====== STATE ======
 let items=[],expense=[],shopping=[];
 let activeF='All',hType='shopping',tCalc=[];
 let currentEditDate='',activePage='main',listLang='hi';
 const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
+// ====== LOAD ======
 DB.get().then(snap=>{
     const d=snap.val();
     if(d){
@@ -185,6 +175,7 @@ DB.get().then(snap=>{
 function toArr(x){ return Array.isArray(x)?x:Object.values(x||{}); }
 function save(){ DB.set({items,history:{expense,shopping}}); }
 
+// ====== NAV ======
 function openPage(id){
     activePage=id;
     document.querySelectorAll('.full-page').forEach(p=>p.style.display='none');
@@ -192,9 +183,7 @@ function openPage(id){
     document.getElementById(id).style.display='flex';
     window.history.pushState({p:id},'');
 }
-
 function closePage(){ activePage='main'; window.history.back(); }
-
 window.onpopstate=()=>{
     activePage='main';
     document.querySelectorAll('.full-page').forEach(p=>p.style.display='none');
@@ -202,9 +191,11 @@ window.onpopstate=()=>{
     renderMaster();
 };
 
+// ====== MASTER LIST (WITH SMART SORTING) ======
 function renderMaster(){
     let cont=document.getElementById('masterList'); if(!cont) return;
     let q=document.getElementById('itemName').value.toLowerCase();
+    // Selected items hamesha top par rahenge
     let sortedMaster = [...items].sort((a,b) => (b.sel === a.sel)? 0 : b.sel? 1 : -1);
     let filtered=sortedMaster.filter(it=>(activeF==='All'||it.cat===activeF)&&it.name.toLowerCase().includes(q));
     let n=0;
@@ -224,58 +215,48 @@ function renderMaster(){
         </div>`;
     }).join('');
 }
-
 function toggleI(i){ items[i].sel=!items[i].sel; save(); renderMaster(); }
-
 function addItem(){
     let n=document.getElementById('itemName').value.trim(); if(!n) return;
     items.unshift({name:n,cat:document.getElementById('catSelect').value,sel:false,qty:'',unit:'Kg'});
     save(); document.getElementById('itemName').value=''; renderMaster();
 }
-
 function delItem(i){ if(confirm("Hata dein?")){ items.splice(i,1); save(); renderMaster(); } }
-
 function setFilter(f){
     activeF=f;
     document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
     let b=document.getElementById('btn-'+f); if(b) b.classList.add('active');
     renderMaster();
 }
-
 function unselectAll(){ if(confirm("Sab clear?")){ items.forEach(it=>it.sel=false); save(); renderMaster(); } }
 
+// ====== DAILY KHARCH BUTTON LOGIC ======
 function openKharchAdd(){
     hType='expense';
     let today=new Date().toLocaleDateString('en-GB');
     let rec=expense.find(h=>h.date===today);
+    // Agar aaj ka folder nahi hai, toh banao
     if(!rec){ 
         rec={date:today,items:[]}; 
         expense.unshift(rec); 
         save(); 
     }
     currentEditDate=today;
-    // Turant UI update karke edit page kholna
-    renderEditList(); 
-    openPage('editPage');
-    document.getElementById('editTitle').innerText='💰 Kharch Edit';
-    document.getElementById('editDateLabel').innerText=currentEditDate;
+    openEditPage(); // Seedha Edit page par le jao
 }
 
+// ====== HISTORY ======
 function openHistory(type){
     hType=type;
     openPage('hPage');
     renderH();
 }
-
 function getArr(){ return hType==='expense'?expense:shopping; }
 
-function toggleHistDetail(dateId) {
-    let el = document.getElementById('det-'+dateId);
-    if(el.style.display === 'block') {
-        el.style.display = 'none';
-    } else {
-        el.style.display = 'block';
-    }
+function toggleDetail(id) {
+    let el = document.getElementById('det-' + id);
+    if(el.style.display === 'block') el.style.display = 'none';
+    else el.style.display = 'block';
 }
 
 function renderH(){
@@ -288,6 +269,7 @@ function renderH(){
         let da=a.date.split('/'),db=b.date.split('/');
         return new Date(db[2],db[1]-1,db[0])-new Date(da[2],da[1]-1,da[0]);
     });
+
     if(!sorted.length){
         area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Koi history nahi hai.</p>";
         return;
@@ -301,26 +283,36 @@ function renderH(){
             html=''; mTot=0;
         }
         curM=m; mTot+=dTot;
-        let dateId = h.date.replace(/\//g, '-');
-        let itemLines = h.items.map((it, i) => `<div class="h-det-line"><span>${i+1}. ${it.name} (${it.qty||0} ${it.unit||''})</span><b>₹${it.price||0}</b></div>`).join('');
-        html+=`<div class="hist-row" onclick="toggleHistDetail('${dateId}')">
+        
+        // Detail Lines
+        let detLines = h.items.map((it, i) => `<div class="h-det-line"><span>${i+1}. ${it.name} (${it.qty||0})</span><b>₹${it.price||0}</b></div>`).join('');
+        let divId = h.date.replace(/\//g, '-');
+
+        html+=`<div class="hist-row" onclick="toggleDetail('${divId}')">
             <span style="font-size:13px;">${h.date} ▼</span>
             <b style="color:#0984e3;">₹${dTot.toFixed(2)}</b>
-            <div style="display:flex;gap:5px;">
-               <button class="btn ok-btn" style="font-size:10px;" onclick="event.stopPropagation(); editH('${h.date}')">EDIT</button>
-               <button class="btn del-btn" onclick="event.stopPropagation(); delH('${h.date}')">✕</button>
-            </div>
-        </div><div class="hist-detail-panel" id="det-${dateId}">${itemLines}</div>`;
+            <button class="btn ok-btn" style="font-size:10px;" onclick="event.stopPropagation(); editH('${h.date}')">EDIT</button>
+            <button class="btn del-btn" onclick="event.stopPropagation(); delH('${h.date}')">✕</button>
+        </div>
+        <div class="hist-detail-panel" id="det-${divId}">${detLines}</div>`;
     });
     if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
 }
 
+// ====== EDIT PAGE ======
 function editH(date){
     currentEditDate=date;
-    renderEditList();
-    openPage('editPage');
+    openEditPage();
+}
+
+function openEditPage(){
     document.getElementById('editTitle').innerText=hType==='expense'?'💰 Kharch Edit':'📦 Saman Edit';
     document.getElementById('editDateLabel').innerText=currentEditDate;
+    document.getElementById('eAddName').value='';
+    document.getElementById('eAddQty').value='';
+    document.getElementById('eAddPrice').value='';
+    renderEditList();
+    openPage('editPage');
 }
 
 function renderEditList(){
@@ -372,14 +364,12 @@ function eField(i,f,v){
     document.getElementById('eSum').innerText=`TOTAL: ₹${t.toFixed(2)}`;
     save();
 }
-
 function eLock(i){
     let arr=getArr();
     let rec=arr.find(h=>h.date===currentEditDate); if(!rec) return;
     rec.items[i].done=!rec.items[i].done;
     renderEditList(); save();
 }
-
 function eDel(i){
     if(confirm("Delete?")){
         let arr=getArr();
@@ -387,7 +377,6 @@ function eDel(i){
         if(rec){ rec.items.splice(i,1); renderEditList(); save(); }
     }
 }
-
 function delH(date){
     if(confirm("Poora din hataein?")){
         if(hType==='expense') expense=expense.filter(h=>h.date!==date);
@@ -396,33 +385,25 @@ function delH(date){
     }
 }
 
+// ====== LANG & FINAL LIST ======
 function setLang(lang){
     listLang=lang;
-    let hi=document.getElementById('btnHi'), en=document.getElementById('btnEn');
-    if(lang==='hi'){ hi.classList.add('active'); en.classList.remove('active'); } 
-    else { en.classList.add('active'); hi.classList.remove('active'); }
+    document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById(lang==='hi'?'btnHi':'btnEn').classList.add('active');
     renderFinalList();
 }
 
 function fmtQty(qty,unit,lang){
-    let q=parseFloat(qty);
-    if(isNaN(q)||qty===''||qty===undefined) return '';
-    let isHalf=(Math.abs(q-0.5)<0.001), is200=(Math.abs(q-0.2)<0.001), is250=(Math.abs(q-0.25)<0.001), is100=(Math.abs(q-0.1)<0.001), is750=(Math.abs(q-0.75)<0.001);
+    let q=parseFloat(qty); if(isNaN(q)||qty==='') return '';
+    let isH=(Math.abs(q-0.5)<0.01), is200=(Math.abs(q-0.2)<0.01), is250=(Math.abs(q-0.25)<0.01), is100=(Math.abs(q-0.1)<0.01), is750=(Math.abs(q-0.75)<0.01);
     if(lang==='en'){
-        if(unit==='Kg'){ if(isHalf) return 'Half Kg'; if(is200) return '200 Gram'; if(is250) return '250 Gram'; if(is100) return '100 Gram'; if(is750) return '750 Gram'; return `${q} Kg`; }
-        if(unit==='Ltr'){ if(isHalf) return 'Half Litre'; if(is200) return '200 ML'; if(is250) return '250 ML'; if(is100) return '100 ML'; if(is750) return '750 ML'; return `${q} Litre`; }
-        return `${q} ${unit}`;
+        if(unit==='Kg'){ if(isH) return 'Half Kg'; if(is200) return '200g'; if(is250) return '250g'; if(is100) return '100g'; if(is750) return '750g'; return q+' Kg'; }
+        if(unit==='Ltr'){ if(isH) return 'Half Ltr'; return q+' Ltr'; }
+        return q+' '+unit;
     }
-    if(unit==='Kg'){ if(isHalf) return 'आधा किलो'; if(is200) return '200 ग्राम'; if(is250) return '250 ग्राम'; if(is100) return '100 ग्राम'; if(is750) return '750 ग्राम'; return `${q} किलो`; }
-    if(unit==='Ltr'){ if(isHalf) return 'आधा लीटर'; if(is200) return '200 ML'; if(is250) return '250 ML'; if(is100) return '100 ML'; if(is750) return '750 ML'; return `${q} लीटर`; }
-    return `${qty} ${unit==='Pc'?'पीस':unit==='Rs'?'रुपये':unit}`;
-}
-
-function catLabel(c,lang){
-    if(lang==='hi'){
-        if(c==='GROCERY') return 'GROC'; if(c==='SABJI') return 'सब्जी'; if(c==='BODY') return 'शरीर'; if(c==='OTHER') return 'अन्य';
-    }
-    return c;
+    if(unit==='Kg'){ if(isH) return 'आधा किलो'; if(is200) return '200 ग्राम'; if(is250) return '250 ग्राम'; if(is100) return '100 ग्राम'; if(is750) return '750 ग्राम'; return q+' किलो'; }
+    if(unit==='Ltr'){ if(isH) return 'आधा लीटर'; return q+' लीटर'; }
+    return q+' '+(unit==='Pc'?'पीस':unit==='Rs'?'रुपये':unit);
 }
 
 let lastSelItems=[];
@@ -438,12 +419,13 @@ function renderFinalList(){
     out.innerHTML=`<h2 style="text-align:center;color:#0984e3;border-bottom:3px solid #0984e3;padding-bottom:10px;margin-bottom:15px;">${isHi?'🛒 सामान सूची':'🛒 Shopping List'}</h2>`;
     ['GROCERY','SABJI','BODY','OTHER'].forEach(c=>{
         let f=lastSelItems.filter(it=>it.cat===c); if(!f.length) return;
-        out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:5px 12px;border-radius:4px;font-size:12px;margin:14px 0 7px;display:inline-block;">${catLabel(c,listLang)}</div>`;
+        out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:5px 12px;border-radius:4px;font-size:12px;margin:14px 0 7px;display:inline-block;">${isHi?(c==='GROCERY'?'GROC':c==='SABJI'?'सब्जी':c==='BODY'?'शरीर':'अन्य'):c}</div>`;
         out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;font-size:11px;font-weight:900;color:#636e72;padding:5px;border-bottom:2px solid #dfe6e9;"><span>${isHi?'सामान':'ITEM'}</span><span style="text-align:center;">${isHi?'मात्रा':'QTY'}</span><span style="text-align:center;">${isHi?'कीमत':'RATE'}</span></div>`;
         f.forEach((it,j)=>{ out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;padding:11px 5px;border-bottom:1px dashed #ccc;font-weight:bold;align-items:center;"><span style="font-size:13px;">${j+1}. ${it.name}</span><span style="text-align:center;color:#0984e3;font-size:13px;">${fmtQty(it.qty,it.unit,listLang)}</span><span style="text-align:center;color:#e17055;font-size:13px;">₹____</span></div>`; });
     });
 }
 
+// ====== BILL CALC ======
 function openCalc(){
     tCalc=items.filter(it=>it.sel).map(it=>({name:it.name,qty:parseFloat(it.qty)||0,unit:it.unit,price:0,done:false}));
     renderC(); openPage('calcPage');
@@ -457,13 +439,13 @@ function renderC(){
 function calcPrice(i,v){ tCalc[i].price=parseFloat(v)||0; renderCSum(); autoSaveCalc(); }
 function calcLock(i){ tCalc[i].done=!tCalc[i].done; renderC(); autoSaveCalc(); }
 function autoSaveCalc(){
-    let readyItems=tCalc.filter(it=>it.done); if(!readyItems.length) return;
+    let filled=tCalc.filter(it=>it.done); if(!filled.length) return;
     let d=new Date().toLocaleDateString('en-GB');
     let rec=shopping.find(h=>h.date===d);
     if(!rec){ rec={date:d,items:[]}; shopping.unshift(rec); }
-    readyItems.forEach(ni=>{
+    filled.forEach(ni=>{
         let ex=rec.items.find(e=>e.name.toLowerCase()===ni.name.toLowerCase());
-        if(ex){ ex.qty=ni.qty; ex.price=ni.price; } else { rec.items.push({name:ni.name,qty:ni.qty,unit:ni.unit,price:ni.price,done:true}); }
+        if(ex){ ex.qty=ni.qty; ex.price=ni.price; } else rec.items.push({name:ni.name,qty:ni.qty,unit:ni.unit,price:ni.price,done:true});
     });
     save();
 }
