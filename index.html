@@ -192,7 +192,9 @@ function openPage(id){
     document.getElementById(id).style.display='flex';
     window.history.pushState({p:id},'');
 }
+
 function closePage(){ activePage='main'; window.history.back(); }
+
 window.onpopstate=()=>{
     activePage='main';
     document.querySelectorAll('.full-page').forEach(p=>p.style.display='none');
@@ -222,19 +224,24 @@ function renderMaster(){
         </div>`;
     }).join('');
 }
+
 function toggleI(i){ items[i].sel=!items[i].sel; save(); renderMaster(); }
+
 function addItem(){
     let n=document.getElementById('itemName').value.trim(); if(!n) return;
     items.unshift({name:n,cat:document.getElementById('catSelect').value,sel:false,qty:'',unit:'Kg'});
     save(); document.getElementById('itemName').value=''; renderMaster();
 }
+
 function delItem(i){ if(confirm("Hata dein?")){ items.splice(i,1); save(); renderMaster(); } }
+
 function setFilter(f){
     activeF=f;
     document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
     let b=document.getElementById('btn-'+f); if(b) b.classList.add('active');
     renderMaster();
 }
+
 function unselectAll(){ if(confirm("Sab clear?")){ items.forEach(it=>it.sel=false); save(); renderMaster(); } }
 
 function openKharchAdd(){
@@ -247,7 +254,11 @@ function openKharchAdd(){
         save(); 
     }
     currentEditDate=today;
-    openEditPage();
+    // Turant UI update karke edit page kholna
+    renderEditList(); 
+    openPage('editPage');
+    document.getElementById('editTitle').innerText='💰 Kharch Edit';
+    document.getElementById('editDateLabel').innerText=currentEditDate;
 }
 
 function openHistory(type){
@@ -255,6 +266,7 @@ function openHistory(type){
     openPage('hPage');
     renderH();
 }
+
 function getArr(){ return hType==='expense'?expense:shopping; }
 
 function toggleHistDetail(dateId) {
@@ -294,8 +306,10 @@ function renderH(){
         html+=`<div class="hist-row" onclick="toggleHistDetail('${dateId}')">
             <span style="font-size:13px;">${h.date} ▼</span>
             <b style="color:#0984e3;">₹${dTot.toFixed(2)}</b>
-            <button class="btn ok-btn" style="font-size:10px;" onclick="event.stopPropagation(); editH('${h.date}')">EDIT</button>
-            <button class="btn del-btn" onclick="event.stopPropagation(); delH('${h.date}')">✕</button>
+            <div style="display:flex;gap:5px;">
+               <button class="btn ok-btn" style="font-size:10px;" onclick="event.stopPropagation(); editH('${h.date}')">EDIT</button>
+               <button class="btn del-btn" onclick="event.stopPropagation(); delH('${h.date}')">✕</button>
+            </div>
         </div><div class="hist-detail-panel" id="det-${dateId}">${itemLines}</div>`;
     });
     if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
@@ -303,17 +317,10 @@ function renderH(){
 
 function editH(date){
     currentEditDate=date;
-    openEditPage();
-}
-
-function openEditPage(){
-    document.getElementById('editTitle').innerText=hType==='expense'?'💰 Kharch Edit':'📦 Saman Edit';
-    document.getElementById('editDateLabel').innerText=currentEditDate;
-    document.getElementById('eAddName').value='';
-    document.getElementById('eAddQty').value='';
-    document.getElementById('eAddPrice').value='';
     renderEditList();
     openPage('editPage');
+    document.getElementById('editTitle').innerText=hType==='expense'?'💰 Kharch Edit':'📦 Saman Edit';
+    document.getElementById('editDateLabel').innerText=currentEditDate;
 }
 
 function renderEditList(){
@@ -365,12 +372,14 @@ function eField(i,f,v){
     document.getElementById('eSum').innerText=`TOTAL: ₹${t.toFixed(2)}`;
     save();
 }
+
 function eLock(i){
     let arr=getArr();
     let rec=arr.find(h=>h.date===currentEditDate); if(!rec) return;
     rec.items[i].done=!rec.items[i].done;
     renderEditList(); save();
 }
+
 function eDel(i){
     if(confirm("Delete?")){
         let arr=getArr();
@@ -378,6 +387,7 @@ function eDel(i){
         if(rec){ rec.items.splice(i,1); renderEditList(); save(); }
     }
 }
+
 function delH(date){
     if(confirm("Poora din hataein?")){
         if(hType==='expense') expense=expense.filter(h=>h.date!==date);
