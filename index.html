@@ -33,7 +33,7 @@
         .item-row{display:grid;grid-template-columns:1fr 50px 58px 26px 36px;gap:5px;align-items:center;padding:10px 7px;border-bottom:1px solid #f1f2f6;background:white;margin-bottom:3px;border-radius:8px;}
         .edit-grid{display:grid;grid-template-columns:20px 1fr 50px 76px 36px 36px;gap:4px;align-items:center;padding:9px 6px;background:white;margin-bottom:3px;border-radius:6px;border-bottom:1px solid #eee;}
         .calc-row{display:grid;grid-template-columns:1fr 62px 76px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:3px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
-        .hist-row{display:grid;grid-template-columns:1fr 82px 40px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:3px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
+        .hist-row{display:grid;grid-template-columns:1fr 82px 40px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:0px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
         .sel-bg{background:#fff9db!important;border-left:4px solid #fcc419;}
         .sum-box{padding:12px 15px;background:#e3f2fd;font-weight:900;text-align:right;border-top:3px solid #0984e3;font-size:16px;color:#0984e3;flex-shrink:0;}
         .b-nav{width:100%;background:white;padding:8px 10px;border-top:1px solid #dfe6e9;display:flex;gap:8px;flex-shrink:0;}
@@ -44,6 +44,10 @@
         .add-row-title{font-size:11px;font-weight:800;color:#27ae60;margin-bottom:6px;}
         .lang-btn{padding:5px 12px;border:2px solid white;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;background:transparent;color:white;height:34px;}
         .lang-btn.active{background:white;color:#0984e3;}
+
+        /* History Dropdown Logic */
+        .hist-items-dropdown { display: none; background: #fff; margin-bottom: 8px; padding: 5px 10px; border-radius: 0 0 8px 8px; border: 1px solid #eee; border-top: none; }
+        .h-det-line { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px solid #f9f9f9; color: #444; }
     </style>
 </head>
 <body>
@@ -98,7 +102,7 @@
         <span id="editDateLabel" style="font-size:12px;opacity:0.85;"></span>
     </div>
     <div class="add-row" style="margin:8px;">
-        <div class="add-row-title">Naya Kharch Add Karein</div>
+        <div class="add-row-title">Item Jodo</div>
         <div class="in-row">
             <input type="text"   id="eAddName"  style="flex:1;" placeholder="Saman ka naam">
             <input type="number" id="eAddQty"   class="u-box" placeholder="Qty"  inputmode="decimal">
@@ -141,18 +145,15 @@
 </div>
 
 <script>
-// ====== FIREBASE ======
+// ====== CONFIG ======
 const firebaseConfig={databaseURL:"https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/"};
 firebase.initializeApp(firebaseConfig);
 const DB=firebase.database().ref('grocery/3');
 
-// ====== STATE ======
-let items=[],expense=[],shopping=[];
-let activeF='All',hType='shopping',tCalc=[];
-let currentEditDate='',activePage='main',listLang='hi';
+let items=[],expense=[],shopping=[],activeF='All',hType='shopping',tCalc=[],currentEditDate='',activePage='main',listLang='hi';
 const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-// ====== LOAD ======
+// ====== LOAD DATA ======
 DB.get().then(snap=>{
     const d=snap.val();
     if(d){
@@ -164,14 +165,12 @@ DB.get().then(snap=>{
     document.getElementById('loadingScreen').style.display='none';
     document.getElementById('mainView').style.display='flex';
     renderMaster();
-}).catch(()=>{
-    document.getElementById('loadingScreen').innerHTML='<h2>Error</h2><p>Net check karke reload karein</p>';
 });
 
 function toArr(x){ return Array.isArray(x)?x:Object.values(x||{}); }
 function save(){ DB.set({items,history:{expense,shopping}}); }
 
-// ====== NAV ======
+// ====== NAVIGATION ======
 function openPage(id){
     activePage=id;
     document.querySelectorAll('.full-page').forEach(p=>p.style.display='none');
@@ -191,7 +190,8 @@ window.onpopstate=()=>{
 function renderMaster(){
     let cont=document.getElementById('masterList'); if(!cont) return;
     let q=document.getElementById('itemName').value.toLowerCase();
-    let filtered=items.filter(it=>(activeF==='All'||it.cat===activeF)&&it.name.toLowerCase().includes(q));
+    let sortedMaster = [...items].sort((a,b) => (b.sel === a.sel)? 0 : b.sel? 1 : -1);
+    let filtered=sortedMaster.filter(it=>(activeF==='All'||it.cat===activeF)&&it.name.toLowerCase().includes(q));
     let n=0;
     cont.innerHTML=filtered.map(it=>{
         let i=items.indexOf(it);
@@ -215,58 +215,57 @@ function addItem(){
     items.unshift({name:n,cat:document.getElementById('catSelect').value,sel:false,qty:'',unit:'Kg'});
     save(); document.getElementById('itemName').value=''; renderMaster();
 }
-function delItem(i){ if(confirm("Hata dein?")){ items.splice(i,1); save(); renderMaster(); } }
+function delItem(i){ if(confirm("Delete?")){ items.splice(i,1); save(); renderMaster(); } }
 function setFilter(f){
     activeF=f;
     document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
-    let b=document.getElementById('btn-'+f); if(b) b.classList.add('active');
+    document.getElementById('btn-'+f).classList.add('active');
     renderMaster();
 }
-function unselectAll(){ if(confirm("Sab clear?")){ items.forEach(it=>it.sel=false); save(); renderMaster(); } }
+function unselectAll(){ items.forEach(it=>it.sel=false); save(); renderMaster(); }
 
-// ====== DAILY KHARCH BUTTON LOGIC ======
+// ====== DAILY KHARCH LOGIC ======
 function openKharchAdd(){
     hType='expense';
-    let today=new Date().toLocaleDateString('en-GB');
-    let rec=expense.find(h=>h.date===today);
-    // Agar aaj ka folder nahi hai, toh turant banayein
-    if(!rec){ 
-        rec={date:today,items:[]}; 
-        expense.unshift(rec); 
-        save(); 
+    let today = new Date().toLocaleDateString('en-GB');
+    let rec = expense.find(h => h.date === today);
+    if(!rec){
+        rec = { date: today, items: [] };
+        expense.unshift(rec);
+        save();
     }
-    currentEditDate=today;
+    currentEditDate = today;
     openEditPage();
 }
 
-// ====== HISTORY ======
+// ====== HISTORY RENDER (WITH DROPDOWN) ======
 function openHistory(type){
     hType=type;
     openPage('hPage');
     renderH();
 }
-function getArr(){ return hType==='expense'?expense:shopping; }
+
+function toggleHistItems(id) {
+    let el = document.getElementById('hist-det-' + id);
+    el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+}
 
 function renderH(){
     let tm={shopping:'📦 Saman History',expense:'💰 Kharch History'};
     document.getElementById('hTitle').innerText=tm[hType];
     let area=document.getElementById('hArea'); area.innerHTML='';
-    let arr=getArr();
+    let arr=hType==='expense'?expense:shopping;
     
-    // Khali dates ko filter karein
     let filteredArr = arr.filter(h => h.items && h.items.length > 0);
-
     let sorted=[...filteredArr].sort((a,b)=>{
         let da=a.date.split('/'),db=b.date.split('/');
         return new Date(db[2],db[1]-1,db[0])-new Date(da[2],da[1]-1,da[0]);
     });
 
-    if(!sorted.length){
-        area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Abhi koi history nahi hai.</p>";
-        return;
-    }
+    if(!sorted.length){ area.innerHTML="<p style='text-align:center;padding:28px;'>Koi data nahi hai.</p>"; return; }
+
     let curM='',html='',mTot=0;
-    sorted.forEach(h=>{
+    sorted.forEach((h, idx)=>{
         let p=h.date.split('/'),m=months[parseInt(p[1])-1]+' '+p[2];
         let dTot=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
         if(curM!==m&&curM!==''){
@@ -274,53 +273,52 @@ function renderH(){
             html=''; mTot=0;
         }
         curM=m; mTot+=dTot;
-        html+=`<div class="hist-row">
-            <span style="font-size:13px;">${h.date}</span>
+
+        let divId = h.date.replace(/\//g, '-');
+        let detRows = h.items.map((it, i) => `<div class="h-det-line"><span>${i+1}. ${it.name} (${it.qty||0})</span><b>₹${it.price||0}</b></div>`).join('');
+
+        html+=`<div class="hist-row" onclick="toggleHistItems('${divId}')">
+            <span style="font-size:13px;">${h.date} ▼</span>
             <b style="color:#0984e3;">₹${dTot.toFixed(2)}</b>
-            <button class="btn ok-btn" style="font-size:10px;" onclick="editH('${h.date}')">EDIT</button>
-            <button class="btn del-btn" onclick="delH('${h.date}')">✕</button>
-        </div>`;
+            <button class="btn ok-btn" style="font-size:10px;" onclick="event.stopPropagation(); editH('${h.date}')">EDIT</button>
+            <button class="btn del-btn" onclick="event.stopPropagation(); delH('${h.date}')">✕</button>
+        </div>
+        <div class="hist-items-dropdown" id="hist-det-${divId}">${detRows}</div>`;
     });
     if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
 }
 
-// ====== EDIT PAGE LOGIC ======
+// ====== EDIT PAGE ======
 function editH(date){
     currentEditDate=date;
     openEditPage();
 }
 
 function openEditPage(){
-    document.getElementById('editTitle').innerText=hType==='expense'?'💰 Kharch Edit':'📦 Saman Edit';
-    document.getElementById('editDateLabel').innerText=currentEditDate;
-    
-    // Form reset karein
+    document.getElementById('editTitle').innerText = hType==='expense'?'💰 Kharch Edit':'📦 Saman Edit';
+    document.getElementById('editDateLabel').innerText = currentEditDate;
     document.getElementById('eAddName').value='';
     document.getElementById('eAddQty').value='';
     document.getElementById('eAddPrice').value='';
-    
     renderEditList();
     openPage('editPage');
 }
 
 function renderEditList(){
-    let arr=getArr();
-    let rec=arr.find(h=>h.date===currentEditDate);
-    let area=document.getElementById('eList');
-    if(!rec||!rec.items.length){
-        area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Niche diye gaye 'Add Item' se saman bharein.</p>";
+    let arr = hType==='expense'?expense:shopping;
+    let rec = arr.find(h=>h.date===currentEditDate);
+    let area = document.getElementById('eList');
+    if(!rec || !rec.items.length){
+        area.innerHTML="<p style='text-align:center;padding:28px;'>Item add karein...</p>";
         document.getElementById('eSum').innerText='TOTAL: ₹0';
         return;
     }
     area.innerHTML=rec.items.map((it,i)=>
         `<div class="edit-grid">
             <span style="color:#636e72;">${i+1}.</span>
-            <input type="text" ${it.done?'disabled':''} value="${it.name}"
-                onchange="eField(${i},'name',this.value)" style="font-size:13px;min-width:0;">
-            <input type="number" ${it.done?'disabled':''} value="${it.qty||''}"
-                onchange="eField(${i},'qty',this.value)" class="u-box" inputmode="decimal">
-            <input type="number" ${it.done?'disabled':''} value="${it.price||''}"
-                onchange="eField(${i},'price',this.value)" class="p-box" inputmode="decimal">
+            <input type="text" ${it.done?'disabled':''} value="${it.name}" onchange="eField(${i},'name',this.value)">
+            <input type="number" ${it.done?'disabled':''} value="${it.qty||''}" onchange="eField(${i},'qty',this.value)" class="u-box" inputmode="decimal">
+            <input type="number" ${it.done?'disabled':''} value="${it.price||''}" onchange="eField(${i},'price',this.value)" class="p-box" inputmode="decimal">
             <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="eLock(${i})">${it.done?'✓':'🔒'}</button>
             <button class="btn del-btn" onclick="eDel(${i})">✕</button>
         </div>`
@@ -333,118 +331,65 @@ function eAddItem(){
     let n=document.getElementById('eAddName').value.trim();
     let q=parseFloat(document.getElementById('eAddQty').value)||0;
     let p=parseFloat(document.getElementById('eAddPrice').value)||0;
-    
-    if(!n){alert("Pehle saman ka naam likhein!"); return;}
-
-    let arr=getArr();
-    let rec=arr.find(h=>h.date===currentEditDate);
+    if(!n) return;
+    let arr = hType==='expense'?expense:shopping;
+    let rec = arr.find(h=>h.date===currentEditDate);
     if(!rec){
         rec={date:currentEditDate,items:[]};
         if(hType==='expense') expense.unshift(rec); else shopping.unshift(rec);
     }
-    
-    // Check agar item pehle se hai toh sirf update karein
-    let ex=rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
-    if(ex){
-        ex.qty  =(parseFloat(ex.qty)||0)+q;
-        ex.price=(parseFloat(ex.price)||0)+p;
-    } else {
-        rec.items.push({name:n,qty:q,price:p,done:false});
-    }
-
-    // Clear inputs
-    document.getElementById('eAddName').value='';
-    document.getElementById('eAddQty').value='';
-    document.getElementById('eAddPrice').value='';
-
-    renderEditList();
-    save();
+    rec.items.push({name:n,qty:q,price:p,done:false});
+    document.getElementById('eAddName').value=''; document.getElementById('eAddQty').value=''; document.getElementById('eAddPrice').value='';
+    renderEditList(); save();
 }
 
 function eField(i,f,v){
-    let arr=getArr();
-    let rec=arr.find(h=>h.date===currentEditDate); if(!rec) return;
+    let arr=hType==='expense'?expense:shopping;
+    let rec=arr.find(h=>h.date===currentEditDate);
     rec.items[i][f]=(f==='name')?v:(parseFloat(v)||0);
-    let t=rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-    document.getElementById('eSum').innerText=`TOTAL: ₹${t.toFixed(2)}`;
     save();
 }
+
 function eLock(i){
-    let arr=getArr();
-    let rec=arr.find(h=>h.date===currentEditDate); if(!rec) return;
+    let arr=hType==='expense'?expense:shopping;
+    let rec=arr.find(h=>h.date===currentEditDate);
     rec.items[i].done=!rec.items[i].done;
     renderEditList(); save();
 }
+
 function eDel(i){
-    if(confirm("Yeh item hata dein?")){
-        let arr=getArr();
-        let rec=arr.find(h=>h.date===currentEditDate);
-        if(rec){ rec.items.splice(i,1); renderEditList(); save(); }
-    }
+    let arr=hType==='expense'?expense:shopping;
+    let rec=arr.find(h=>h.date===currentEditDate);
+    rec.items.splice(i,1); renderEditList(); save();
 }
+
 function delH(date){
-    if(confirm("Poora din ki history delete karein?")){
+    if(confirm("Delete poora din?")){
         if(hType==='expense') expense=expense.filter(h=>h.date!==date);
         else shopping=shopping.filter(h=>h.date!==date);
         save(); renderH();
     }
 }
 
-// ====== FINAL LIST FORMAT ======
-function setLang(lang){
-    listLang=lang;
-    document.getElementById('btnHi').classList.toggle('active', lang==='hi');
-    document.getElementById('btnEn').classList.toggle('active', lang==='en');
-    renderFinalList();
-}
+// ====== FINAL LIST & IMAGE ======
+function setLang(lang){ listLang=lang; renderFinalList(); }
+function takeShot(){ html2canvas(document.getElementById('shotArea')).then(c=>{ let a=document.createElement('a'); a.download='List.png'; a.href=c.toDataURL(); a.click(); }); }
 
-function fmtQty(qty,unit,lang){
-    let q=parseFloat(qty);
-    if(isNaN(q)||qty==='') return '';
-    let isHalf=(Math.abs(q-0.5)<0.001);
-    
-    if(lang==='en'){
-        if(unit==='Kg' && isHalf) return 'Half Kg';
-        if(unit==='Ltr' && isHalf) return 'Half Litre';
-        return `${q} ${unit}`;
-    }
-    if(unit==='Kg'){
-        if(isHalf) return 'आधा किलो';
-        return `${q} किलो`;
-    }
-    if(unit==='Ltr'){
-        if(isHalf) return 'आधा लीटर';
-        return `${q} लीटर`;
-    }
-    return `${qty} ${unit==='Pc'?'पीस':unit==='Rs'?'रुपये':unit}`;
-}
-
-let lastSelItems=[];
 function showFinalList(){
     lastSelItems=items.filter(it=>it.sel);
-    if(!lastSelItems.length){alert("Pehle list mein item select karein!"); return;}
-    renderFinalList();
-    openPage('listPage');
+    if(!lastSelItems.length) return;
+    renderFinalList(); openPage('listPage');
 }
 
 function renderFinalList(){
     let isHi=(listLang==='hi');
-    let out=document.getElementById('fOut'); if(!out) return;
-    document.getElementById('listTitle').innerText=isHi?'सामान सूची':'Shopping List';
-    
+    let out=document.getElementById('fOut');
     out.innerHTML=`<h2 style="text-align:center;color:#0984e3;border-bottom:3px solid #0984e3;padding-bottom:10px;margin-bottom:15px;">${isHi?'🛒 सामान सूची':'🛒 Shopping List'}</h2>`;
-
     ['GROCERY','SABJI','BODY','OTHER'].forEach(c=>{
-        let f=lastSelItems.filter(it=>it.cat===c);
-        if(!f.length) return;
-        let cName = isHi ? (c==='SABJI'?'सब्जी':c==='BODY'?'शरीर':c==='OTHER'?'अन्य':'किराना') : c;
-        out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;margin:12px 0 5px;display:inline-block;">${cName}</div>`;
+        let f=lastSelItems.filter(it=>it.cat===c); if(!f.length) return;
+        out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;margin:12px 0 5px;display:inline-block;">${c}</div>`;
         f.forEach((it,j)=>{
-            out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 100px 60px;padding:10px 5px;border-bottom:1px dashed #ccc;font-weight:bold;align-items:center;">
-                <span style="font-size:13px;">${j+1}. ${it.name}</span>
-                <span style="text-align:center;color:#0984e3;font-size:13px;">${fmtQty(it.qty,it.unit,listLang)}</span>
-                <span style="text-align:center;color:#e17055;font-size:12px;">₹____</span>
-            </div>`;
+            out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 100px 60px;padding:10px 5px;border-bottom:1px dashed #ccc;font-weight:bold;"><span>${j+1}. ${it.name}</span><span style="text-align:center;">${it.qty} ${it.unit}</span><span style="text-align:center;">₹____</span></div>`;
         });
     });
 }
@@ -456,39 +401,23 @@ function openCalc(){
 }
 function renderC(){
     document.getElementById('cList').innerHTML=tCalc.map((it,i)=>
-        `<div class="calc-row">
-            <b style="font-size:13px;">${it.name}</b>
-            <span style="color:#636e72;font-size:11px;">${it.qty} ${it.unit}</span>
-            <input type="number" ${it.done?'disabled':''} placeholder="₹ Rate"
-                value="${it.price>0?it.price:''}"
-                onchange="calcPrice(${i},this.value)" class="p-box" inputmode="decimal">
-            <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="calcLock(${i})">${it.done?'✓':'🔒'}</button>
-        </div>`
+        `<div class="calc-row"><b>${it.name}</b><span>${it.qty} ${it.unit}</span><input type="number" ${it.done?'disabled':''} onchange="calcPrice(${i},this.value)" class="p-box" value="${it.price||''}" inputmode="decimal"><button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="calcLock(${i})">${it.done?'✓':'🔒'}</button></div>`
     ).join('');
-    renderCSum();
+    let t=tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
+    document.getElementById('cSum').innerText=`BILL TOTAL: ₹${t.toFixed(2)}`;
 }
-function calcPrice(i,v){ tCalc[i].price=parseFloat(v)||0; renderCSum(); autoSaveCalc(); }
+function calcPrice(i,v){ tCalc[i].price=parseFloat(v)||0; renderC(); autoSaveCalc(); }
 function calcLock(i){ tCalc[i].done=!tCalc[i].done; renderC(); autoSaveCalc(); }
 function autoSaveCalc(){
-    let filled=tCalc.filter(it=>it.price>0); if(!filled.length) return;
+    let filled=tCalc.filter(it=>it.done); if(!filled.length) return;
     let d=new Date().toLocaleDateString('en-GB');
     let rec=shopping.find(h=>h.date===d);
     if(!rec){ rec={date:d,items:[]}; shopping.unshift(rec); }
     filled.forEach(ni=>{
         let ex=rec.items.find(e=>e.name.toLowerCase()===ni.name.toLowerCase());
-        if(ex){ ex.price=ni.price; }
-        else rec.items.push({name:ni.name,qty:ni.qty,unit:ni.unit,price:ni.price,done:ni.done});
+        if(ex){ ex.price=ni.price; } else rec.items.push({...ni});
     });
     save();
-}
-function renderCSum(){
-    let t=tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-    document.getElementById('cSum').innerText=`BILL TOTAL: ₹${t.toFixed(2)}`;
-}
-function takeShot(){
-    html2canvas(document.getElementById('shotArea')).then(c=>{
-        let a=document.createElement('a'); a.download='SamanList.png'; a.href=c.toDataURL(); a.click();
-    });
 }
 </script>
 </body>
