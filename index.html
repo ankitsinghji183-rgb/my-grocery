@@ -50,7 +50,6 @@
 
 <div id="loadingScreen"><h2>🛒 Grocery Master</h2><p>Data load ho raha hai...</p></div>
 
-<!-- MAIN -->
 <div id="mainView" style="display:none;">
     <div class="top-hist">
         <div class="h-box" onclick="openHistory('shopping')">📦 Saman History</div>
@@ -83,7 +82,6 @@
     </div>
 </div>
 
-<!-- HISTORY PAGE -->
 <div id="hPage" class="full-page">
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
@@ -93,7 +91,6 @@
     <div class="scroll" id="hArea"></div>
 </div>
 
-<!-- EDIT PAGE -->
 <div id="editPage" class="full-page">
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
@@ -113,7 +110,6 @@
     <div id="eSum" class="sum-box">TOTAL: ₹0</div>
 </div>
 
-<!-- CALC PAGE -->
 <div id="calcPage" class="full-page">
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
@@ -124,7 +120,6 @@
     <div id="cSum" class="sum-box">BILL TOTAL: ₹0</div>
 </div>
 
-<!-- LIST PAGE -->
 <div id="listPage" class="full-page">
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
@@ -233,10 +228,9 @@ function unselectAll(){ if(confirm("Sab clear?")){ items.forEach(it=>it.sel=fals
 function openKharchAdd(){
     hType='expense';
     let today=new Date().toLocaleDateString('en-GB');
-    currentEditDate=today;
-    // Record nahi hai to bana do (save baad mein jab item add hoga)
     let rec=expense.find(h=>h.date===today);
-    if(!rec){ rec={date:today,items:[]}; expense.unshift(rec); }
+    if(!rec){ rec={date:today,items:[]}; expense.unshift(rec); save(); }
+    currentEditDate=today;
     openEditPage();
 }
 
@@ -289,7 +283,6 @@ function editH(date){
 function openEditPage(){
     document.getElementById('editTitle').innerText=hType==='expense'?'💰 Kharch Edit':'📦 Saman Edit';
     document.getElementById('editDateLabel').innerText=currentEditDate;
-    // Clear add fields
     document.getElementById('eAddName').value='';
     document.getElementById('eAddQty').value='';
     document.getElementById('eAddPrice').value='';
@@ -335,7 +328,6 @@ function eAddItem(){
         rec={date:currentEditDate,items:[]};
         if(hType==='expense') expense.unshift(rec); else shopping.unshift(rec);
     }
-    // Same naam — JODO
     let ex=rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
     if(ex){
         ex.qty  =(parseFloat(ex.qty)||0)+q;
@@ -347,7 +339,6 @@ function eAddItem(){
     document.getElementById('eAddName').value='';
     document.getElementById('eAddQty').value='';
     document.getElementById('eAddPrice').value='';
-
     renderEditList();
     save();
 }
@@ -384,7 +375,6 @@ function delH(date){
 // ====== LANG & LIST FORMAT ======
 function setLang(lang){
     listLang=lang;
-    // Hindi active = white bg, ENG inactive = transparent
     let hi=document.getElementById('btnHi');
     let en=document.getElementById('btnEn');
     if(lang==='hi'){
@@ -398,7 +388,6 @@ function setLang(lang){
 function fmtQty(qty,unit,lang){
     let q=parseFloat(qty);
     if(isNaN(q)||qty===''||qty===undefined||qty===null) return '';
-
     let isHalf=(Math.abs(q-0.5)<0.001);
     let is200 =(Math.abs(q-0.2)<0.001);
     let is250 =(Math.abs(q-0.25)<0.001);
@@ -406,7 +395,6 @@ function fmtQty(qty,unit,lang){
     let is750 =(Math.abs(q-0.75)<0.001);
 
     if(lang==='en'){
-        // English special values
         if(unit==='Kg'){
             if(isHalf) return 'Half Kg';
             if(is200)  return '200 Gram';
@@ -427,8 +415,6 @@ function fmtQty(qty,unit,lang){
         if(unit==='Rs')  return `${q} Rs`;
         return `${q} ${unit}`;
     }
-
-    // Hindi
     if(unit==='Kg'){
         if(isHalf) return 'आधा किलो';
         if(is200)  return '200 ग्राम';
@@ -450,7 +436,6 @@ function fmtQty(qty,unit,lang){
     return `${qty} ${unit}`;
 }
 
-// Cat labels
 function catLabel(c,lang){
     if(lang==='hi'){
         if(c==='GROCERY') return 'GROC';
@@ -473,11 +458,7 @@ function showFinalList(){
 function renderFinalList(){
     let isHi=(listLang==='hi');
     let out=document.getElementById('fOut'); if(!out) return;
-
-    // List page title
     document.getElementById('listTitle').innerText=isHi?'सामान सूची':'Shopping List';
-
-    // Column headers
     let col1=isHi?'सामान':'ITEM';
     let col2=isHi?'मात्रा':'QTY';
     let col3=isHi?'कीमत':'RATE';
