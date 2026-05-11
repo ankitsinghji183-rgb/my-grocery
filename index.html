@@ -14,7 +14,6 @@
         #mainView{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;z-index:1;background:#f0f4f8;}
         #loadingScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#0984e3;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:white;}
         #loadingScreen h2{font-size:22px;margin-bottom:10px;}
-        #loadingScreen p{font-size:14px;opacity:0.8;}
         .p-head{background:#0984e3;color:white;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:16px;box-shadow:0 3px 10px rgba(0,0,0,0.15);flex-shrink:0;}
         .back{cursor:pointer;padding:4px 10px;background:rgba(255,255,255,0.2);border-radius:6px;font-size:13px;}
         .scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px;-webkit-overflow-scrolling:touch;}
@@ -43,16 +42,13 @@
         .month-header{background:#dfe6e9;padding:8px 12px;font-weight:800;font-size:12px;border-radius:6px;margin-bottom:3px;}
         .add-row{background:#e8f5e9;padding:10px 8px;border-radius:8px;border:1px dashed #2ecc71;flex-shrink:0;margin-bottom:8px;}
         .add-row-title{font-size:11px;font-weight:800;color:#27ae60;margin-bottom:6px;}
-        .lang-btn{padding:5px 12px;border:2px solid #0984e3;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;background:white;color:#0984e3;height:34px;}
-        .lang-btn.active{background:#0984e3;color:white;}
+        .lang-btn{padding:5px 12px;border:2px solid white;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;background:transparent;color:white;height:34px;}
+        .lang-btn.active{background:white;color:#0984e3;}
     </style>
 </head>
 <body>
 
-<div id="loadingScreen">
-    <h2>🛒 Grocery Master</h2>
-    <p>Data load ho raha hai...</p>
-</div>
+<div id="loadingScreen"><h2>🛒 Grocery Master</h2><p>Data load ho raha hai...</p></div>
 
 <!-- MAIN -->
 <div id="mainView" style="display:none;">
@@ -63,8 +59,8 @@
     <div class="card" style="margin:0 8px 6px;">
         <div class="in-row" style="margin-bottom:7px;">
             <input type="text" id="itemName" placeholder="Saman search ya add..." style="flex:1;" oninput="renderMaster()">
-            <select id="catSelect" style="width:76px;flex-shrink:0;">
-                <option value="GROCERY">GROCERY</option>
+            <select id="catSelect" style="width:66px;flex-shrink:0;font-size:11px;">
+                <option value="GROCERY">GROC</option>
                 <option value="SABJI">SABJI</option>
                 <option value="BODY">BODY</option>
                 <option value="OTHER">ANYA</option>
@@ -97,16 +93,15 @@
     <div class="scroll" id="hArea"></div>
 </div>
 
-<!-- EDIT PAGE — Item Jodi UPAR hai -->
+<!-- EDIT PAGE -->
 <div id="editPage" class="full-page">
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
         <span id="editTitle">Edit</span>
         <span id="editDateLabel" style="font-size:12px;opacity:0.85;"></span>
     </div>
-    <!-- Item Jodi UPAR -->
     <div class="add-row" style="margin:8px;">
-        <div class="add-row-title">Item Jodi</div>
+        <div class="add-row-title">Add Item</div>
         <div class="in-row">
             <input type="text"   id="eAddName"  style="flex:1;" placeholder="Item ka naam">
             <input type="number" id="eAddQty"   class="u-box" placeholder="Qty"  inputmode="decimal">
@@ -133,7 +128,7 @@
 <div id="listPage" class="full-page">
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
-        <span>🛒 Shopping List</span>
+        <span id="listTitle">सामान सूची</span>
         <div style="display:flex;gap:5px;">
             <button class="lang-btn active" id="btnHi" onclick="setLang('hi')">हिंदी</button>
             <button class="lang-btn"        id="btnEn" onclick="setLang('en')">ENG</button>
@@ -152,23 +147,24 @@
 
 <script>
 // ====== FIREBASE ======
-const firebaseConfig = { databaseURL:"https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/" };
+const firebaseConfig={databaseURL:"https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/"};
 firebase.initializeApp(firebaseConfig);
-const DB = firebase.database().ref('grocery/3');
+const DB=firebase.database().ref('grocery/3');
 
 // ====== STATE ======
-let items=[], expense=[], shopping=[];
-let activeF='All', hType='shopping', tCalc=[];
-let currentEditDate='', activePage='main', listLang='hi';
+let items=[],expense=[],shopping=[];
+let activeF='All',hType='shopping',tCalc=[];
+let currentEditDate='',activePage='main',listLang='hi';
 const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-// ====== LOAD — DB.get() ek baar, koi listener nahi ======
+// ====== LOAD ======
 DB.get().then(snap=>{
     const d=snap.val();
     if(d){
-        items    = Array.isArray(d.items)           ? d.items           : Object.values(d.items||{});
-        expense  = Array.isArray(d.history&&d.history.expense)  ? d.history.expense  : Object.values((d.history||{}).expense||{});
-        shopping = Array.isArray(d.history&&d.history.shopping) ? d.history.shopping : Object.values((d.history||{}).shopping||{});
+        items    =toArr(d.items);
+        const h  =d.history||{};
+        expense  =toArr(h.expense);
+        shopping =toArr(h.shopping);
     }
     document.getElementById('loadingScreen').style.display='none';
     document.getElementById('mainView').style.display='flex';
@@ -177,9 +173,10 @@ DB.get().then(snap=>{
     document.getElementById('loadingScreen').innerHTML='<h2>Error</h2><p>Reload karo</p>';
 });
 
-function save(){ DB.set({items, history:{expense, shopping}}); }
+function toArr(x){ return Array.isArray(x)?x:Object.values(x||{}); }
+function save(){ DB.set({items,history:{expense,shopping}}); }
 
-// ====== NAVIGATION ======
+// ====== NAV ======
 function openPage(id){
     activePage=id;
     document.querySelectorAll('.full-page').forEach(p=>p.style.display='none');
@@ -232,15 +229,15 @@ function setFilter(f){
 }
 function unselectAll(){ if(confirm("Sab clear?")){ items.forEach(it=>it.sel=false); save(); renderMaster(); } }
 
-// ====== DAILY KHARCH — seedha Kharch History mein aaj ki date ka record banao ======
+// ====== DAILY KHARCH — aaj ki date ka record seedha banao ======
 function openKharchAdd(){
     hType='expense';
     let today=new Date().toLocaleDateString('en-GB');
-    // Aaj ka record nahi hai to bana do
+    // Aaj ka record already hai to use karo, nahi to naya banao
     let rec=expense.find(h=>h.date===today);
     if(!rec){ rec={date:today,items:[]}; expense.unshift(rec); save(); }
-    // Seedha us date ka edit kholo
-    editH(today);
+    currentEditDate=today;
+    openEditPage();
 }
 
 // ====== HISTORY ======
@@ -249,10 +246,10 @@ function openHistory(type){
     openPage('hPage');
     renderH();
 }
-function getArr(){ return hType==='expense' ? expense : shopping; }
+function getArr(){ return hType==='expense'?expense:shopping; }
 
 function renderH(){
-    let tm={shopping:'📦 Saman History', expense:'💰 Kharch History'};
+    let tm={shopping:'📦 Saman History',expense:'💰 Kharch History'};
     document.getElementById('hTitle').innerText=tm[hType];
     let area=document.getElementById('hArea'); area.innerHTML='';
     let arr=getArr();
@@ -266,7 +263,7 @@ function renderH(){
     }
     let curM='',html='',mTot=0;
     sorted.forEach(h=>{
-        let p=h.date.split('/'), m=months[parseInt(p[1])-1]+' '+p[2];
+        let p=h.date.split('/'),m=months[parseInt(p[1])-1]+' '+p[2];
         let dTot=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
         if(curM!==m&&curM!==''){
             area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
@@ -283,11 +280,15 @@ function renderH(){
     if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
 }
 
-// ====== EDIT PAGE ======
+// ====== EDIT ======
 function editH(date){
     currentEditDate=date;
-    document.getElementById('editTitle').innerText = hType==='expense'?'💰 Kharch Edit':'📦 Saman Edit';
-    document.getElementById('editDateLabel').innerText = date;
+    openEditPage();
+}
+
+function openEditPage(){
+    document.getElementById('editTitle').innerText=hType==='expense'?'💰 Kharch Edit':'📦 Saman Edit';
+    document.getElementById('editDateLabel').innerText=currentEditDate;
     // Clear add fields
     document.getElementById('eAddName').value='';
     document.getElementById('eAddQty').value='';
@@ -301,7 +302,7 @@ function renderEditList(){
     let rec=arr.find(h=>h.date===currentEditDate);
     let area=document.getElementById('eList');
     if(!rec||!rec.items.length){
-        area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Koi item nahi hai. Upar se add karo.</p>";
+        area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Koi item nahi. Upar se add karo.</p>";
         document.getElementById('eSum').innerText='TOTAL: ₹0';
         return;
     }
@@ -322,7 +323,6 @@ function renderEditList(){
     document.getElementById('eSum').innerText=`TOTAL: ₹${t.toFixed(2)}`;
 }
 
-// ADD button — same naam ho to qty+price JODO, warna naya
 function eAddItem(){
     let n=document.getElementById('eAddName').value.trim();
     let q=parseFloat(document.getElementById('eAddQty').value)||0;
@@ -335,11 +335,11 @@ function eAddItem(){
         rec={date:currentEditDate,items:[]};
         if(hType==='expense') expense.unshift(rec); else shopping.unshift(rec);
     }
-
+    // Same naam — JODO
     let ex=rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
     if(ex){
-        ex.qty   =(parseFloat(ex.qty)||0)+q;
-        ex.price =(parseFloat(ex.price)||0)+p;
+        ex.qty  =(parseFloat(ex.qty)||0)+q;
+        ex.price=(parseFloat(ex.price)||0)+p;
     } else {
         rec.items.push({name:n,qty:q,price:p,done:false});
     }
@@ -348,8 +348,8 @@ function eAddItem(){
     document.getElementById('eAddQty').value='';
     document.getElementById('eAddPrice').value='';
 
-    renderEditList(); // list update karo
-    save();           // Firebase mein save karo
+    renderEditList();
+    save();
 }
 
 function eField(i,f,v){
@@ -381,38 +381,84 @@ function delH(date){
     }
 }
 
-// ====== LANGUAGE ======
+// ====== LANG & LIST FORMAT ======
 function setLang(lang){
     listLang=lang;
-    document.getElementById('btnHi').classList.toggle('active',lang==='hi');
-    document.getElementById('btnEn').classList.toggle('active',lang==='en');
+    // Hindi active = white bg, ENG inactive = transparent
+    let hi=document.getElementById('btnHi');
+    let en=document.getElementById('btnEn');
+    if(lang==='hi'){
+        hi.classList.add('active'); en.classList.remove('active');
+    } else {
+        en.classList.add('active'); hi.classList.remove('active');
+    }
     renderFinalList();
 }
+
 function fmtQty(qty,unit,lang){
     let q=parseFloat(qty);
     if(isNaN(q)||qty===''||qty===undefined||qty===null) return '';
-    if(lang==='en') return `${qty} ${unit}`;
-    let h=(Math.abs(q-0.5)<0.001), g200=(Math.abs(q-0.2)<0.001);
-    let g250=(Math.abs(q-0.25)<0.001), g100=(Math.abs(q-0.1)<0.001), g750=(Math.abs(q-0.75)<0.001);
+
+    let isHalf=(Math.abs(q-0.5)<0.001);
+    let is200 =(Math.abs(q-0.2)<0.001);
+    let is250 =(Math.abs(q-0.25)<0.001);
+    let is100 =(Math.abs(q-0.1)<0.001);
+    let is750 =(Math.abs(q-0.75)<0.001);
+
+    if(lang==='en'){
+        // English special values
+        if(unit==='Kg'){
+            if(isHalf) return 'Half Kg';
+            if(is200)  return '200 Gram';
+            if(is250)  return '250 Gram';
+            if(is100)  return '100 Gram';
+            if(is750)  return '750 Gram';
+            return `${q} Kg`;
+        }
+        if(unit==='Ltr'){
+            if(isHalf) return 'Half Litre';
+            if(is200)  return '200 ML';
+            if(is250)  return '250 ML';
+            if(is100)  return '100 ML';
+            if(is750)  return '750 ML';
+            return `${q} Litre`;
+        }
+        if(unit==='Pc')  return `${q} Pc`;
+        if(unit==='Rs')  return `${q} Rs`;
+        return `${q} ${unit}`;
+    }
+
+    // Hindi
     if(unit==='Kg'){
-        if(h)    return 'आधा किलो';
-        if(g200) return '200 ग्राम';
-        if(g250) return '250 ग्राम';
-        if(g100) return '100 ग्राम';
-        if(g750) return '750 ग्राम';
+        if(isHalf) return 'आधा किलो';
+        if(is200)  return '200 ग्राम';
+        if(is250)  return '250 ग्राम';
+        if(is100)  return '100 ग्राम';
+        if(is750)  return '750 ग्राम';
         return `${q} किलो`;
     }
     if(unit==='Ltr'){
-        if(h)    return 'आधा लीटर';
-        if(g200) return '200 ML';
-        if(g250) return '250 ML';
-        if(g100) return '100 ML';
-        if(g750) return '750 ML';
+        if(isHalf) return 'आधा लीटर';
+        if(is200)  return '200 ML';
+        if(is250)  return '250 ML';
+        if(is100)  return '100 ML';
+        if(is750)  return '750 ML';
         return `${q} लीटर`;
     }
-    if(unit==='Pc') return `${q} पीस`;
-    if(unit==='Rs') return `${q} रुपये`;
+    if(unit==='Pc')  return `${q} पीस`;
+    if(unit==='Rs')  return `${q} रुपये`;
     return `${qty} ${unit}`;
+}
+
+// Cat labels
+function catLabel(c,lang){
+    if(lang==='hi'){
+        if(c==='GROCERY') return 'GROC';
+        if(c==='SABJI')   return 'सब्जी';
+        if(c==='BODY')    return 'शरीर';
+        if(c==='OTHER')   return 'अन्य';
+    }
+    return c;
 }
 
 // ====== FINAL LIST ======
@@ -423,15 +469,29 @@ function showFinalList(){
     renderFinalList();
     openPage('listPage');
 }
+
 function renderFinalList(){
+    let isHi=(listLang==='hi');
     let out=document.getElementById('fOut'); if(!out) return;
-    out.innerHTML=`<h2 style="text-align:center;color:#0984e3;border-bottom:3px solid #0984e3;padding-bottom:10px;margin-bottom:15px;">🛒 SAMAN LIST</h2>`;
+
+    // List page title
+    document.getElementById('listTitle').innerText=isHi?'सामान सूची':'Shopping List';
+
+    // Column headers
+    let col1=isHi?'सामान':'ITEM';
+    let col2=isHi?'मात्रा':'QTY';
+    let col3=isHi?'कीमत':'RATE';
+
+    out.innerHTML=`<h2 style="text-align:center;color:#0984e3;border-bottom:3px solid #0984e3;padding-bottom:10px;margin-bottom:15px;">${isHi?'🛒 सामान सूची':'🛒 Shopping List'}</h2>`;
+
     ['GROCERY','SABJI','BODY','OTHER'].forEach(c=>{
         let f=lastSelItems.filter(it=>it.cat===c);
         if(!f.length) return;
-        out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:5px 12px;border-radius:4px;font-size:12px;margin:14px 0 7px;display:inline-block;">${c}</div>`;
+        out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:5px 12px;border-radius:4px;font-size:12px;margin:14px 0 7px;display:inline-block;">${catLabel(c,listLang)}</div>`;
         out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;font-size:11px;font-weight:900;color:#636e72;padding:5px;border-bottom:2px solid #dfe6e9;">
-            <span>ITEM</span><span style="text-align:center;">MATRA</span><span style="text-align:center;">RATE</span>
+            <span>${col1}</span>
+            <span style="text-align:center;">${col2}</span>
+            <span style="text-align:center;">${col3}</span>
         </div>`;
         f.forEach((it,j)=>{
             out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;padding:11px 5px;border-bottom:1px dashed #ccc;font-weight:bold;align-items:center;">
@@ -461,15 +521,13 @@ function renderC(){
     ).join('');
     renderCSum();
 }
-function calcPrice(i,v){
-    tCalc[i].price=parseFloat(v)||0; renderCSum(); autoSaveCalc();
-}
+function calcPrice(i,v){ tCalc[i].price=parseFloat(v)||0; renderCSum(); autoSaveCalc(); }
 function calcLock(i){ tCalc[i].done=!tCalc[i].done; renderC(); autoSaveCalc(); }
 function autoSaveCalc(){
     let filled=tCalc.filter(it=>it.price>0); if(!filled.length) return;
     let d=new Date().toLocaleDateString('en-GB');
     let rec=shopping.find(h=>h.date===d);
-    if(!rec){rec={date:d,items:[]}; shopping.unshift(rec);}
+    if(!rec){ rec={date:d,items:[]}; shopping.unshift(rec); }
     filled.forEach(ni=>{
         let ex=rec.items.find(e=>e.name.toLowerCase()===ni.name.toLowerCase());
         if(ex){ ex.qty=(parseFloat(ex.qty)||0)+(parseFloat(ni.qty)||0); ex.price=(parseFloat(ex.price)||0)+(parseFloat(ni.price)||0); }
