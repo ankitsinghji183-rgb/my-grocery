@@ -50,7 +50,6 @@
 
 <div id="loadingScreen"><h2>🛒 Grocery Master</h2><p>Data load ho raha hai...</p></div>
 
-<!-- MAIN -->
 <div id="mainView" style="display:none;">
     <div class="top-hist">
         <div class="h-box" onclick="openHistory('shopping')">📦 Saman History</div>
@@ -83,7 +82,6 @@
     </div>
 </div>
 
-<!-- HISTORY PAGE -->
 <div id="hPage" class="full-page">
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
@@ -93,7 +91,6 @@
     <div class="scroll" id="hArea"></div>
 </div>
 
-<!-- EDIT PAGE -->
 <div id="editPage" class="full-page">
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
@@ -101,9 +98,9 @@
         <span id="editDateLabel" style="font-size:12px;opacity:0.85;"></span>
     </div>
     <div class="add-row" style="margin:8px;">
-        <div class="add-row-title">Add Item</div>
+        <div class="add-row-title">Naya Kharch Add Karein</div>
         <div class="in-row">
-            <input type="text"   id="eAddName"  style="flex:1;" placeholder="Item ka naam">
+            <input type="text"   id="eAddName"  style="flex:1;" placeholder="Saman ka naam">
             <input type="number" id="eAddQty"   class="u-box" placeholder="Qty"  inputmode="decimal">
             <input type="number" id="eAddPrice" class="p-box" placeholder="₹"    inputmode="decimal">
             <button class="btn" style="background:#2ecc71;width:48px;" onclick="eAddItem()">ADD</button>
@@ -113,7 +110,6 @@
     <div id="eSum" class="sum-box">TOTAL: ₹0</div>
 </div>
 
-<!-- CALC PAGE -->
 <div id="calcPage" class="full-page">
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
@@ -124,7 +120,6 @@
     <div id="cSum" class="sum-box">BILL TOTAL: ₹0</div>
 </div>
 
-<!-- LIST PAGE -->
 <div id="listPage" class="full-page">
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
@@ -170,7 +165,7 @@ DB.get().then(snap=>{
     document.getElementById('mainView').style.display='flex';
     renderMaster();
 }).catch(()=>{
-    document.getElementById('loadingScreen').innerHTML='<h2>Error</h2><p>Reload karo</p>';
+    document.getElementById('loadingScreen').innerHTML='<h2>Error</h2><p>Net check karke reload karein</p>';
 });
 
 function toArr(x){ return Array.isArray(x)?x:Object.values(x||{}); }
@@ -217,7 +212,7 @@ function renderMaster(){
 function toggleI(i){ items[i].sel=!items[i].sel; save(); renderMaster(); }
 function addItem(){
     let n=document.getElementById('itemName').value.trim(); if(!n) return;
-    items.unshift({name:n,cat:document.getElementById('catSelect').value,sel:true,qty:'',unit:'Kg'});
+    items.unshift({name:n,cat:document.getElementById('catSelect').value,sel:false,qty:'',unit:'Kg'});
     save(); document.getElementById('itemName').value=''; renderMaster();
 }
 function delItem(i){ if(confirm("Hata dein?")){ items.splice(i,1); save(); renderMaster(); } }
@@ -229,14 +224,18 @@ function setFilter(f){
 }
 function unselectAll(){ if(confirm("Sab clear?")){ items.forEach(it=>it.sel=false); save(); renderMaster(); } }
 
-// ====== DAILY KHARCH — aaj ki date ka record seedha banao ======
+// ====== DAILY KHARCH BUTTON LOGIC ======
 function openKharchAdd(){
     hType='expense';
     let today=new Date().toLocaleDateString('en-GB');
-    currentEditDate=today;
-    // Record nahi hai to bana do (save baad mein jab item add hoga)
     let rec=expense.find(h=>h.date===today);
-    if(!rec){ rec={date:today,items:[]}; expense.unshift(rec); }
+    // Agar aaj ka folder nahi hai, toh turant banayein
+    if(!rec){ 
+        rec={date:today,items:[]}; 
+        expense.unshift(rec); 
+        save(); 
+    }
+    currentEditDate=today;
     openEditPage();
 }
 
@@ -253,12 +252,17 @@ function renderH(){
     document.getElementById('hTitle').innerText=tm[hType];
     let area=document.getElementById('hArea'); area.innerHTML='';
     let arr=getArr();
-    let sorted=[...arr].sort((a,b)=>{
+    
+    // Khali dates ko filter karein
+    let filteredArr = arr.filter(h => h.items && h.items.length > 0);
+
+    let sorted=[...filteredArr].sort((a,b)=>{
         let da=a.date.split('/'),db=b.date.split('/');
         return new Date(db[2],db[1]-1,db[0])-new Date(da[2],da[1]-1,da[0]);
     });
+
     if(!sorted.length){
-        area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Koi history nahi hai.</p>";
+        area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Abhi koi history nahi hai.</p>";
         return;
     }
     let curM='',html='',mTot=0;
@@ -280,7 +284,7 @@ function renderH(){
     if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
 }
 
-// ====== EDIT ======
+// ====== EDIT PAGE LOGIC ======
 function editH(date){
     currentEditDate=date;
     openEditPage();
@@ -289,10 +293,12 @@ function editH(date){
 function openEditPage(){
     document.getElementById('editTitle').innerText=hType==='expense'?'💰 Kharch Edit':'📦 Saman Edit';
     document.getElementById('editDateLabel').innerText=currentEditDate;
-    // Clear add fields
+    
+    // Form reset karein
     document.getElementById('eAddName').value='';
     document.getElementById('eAddQty').value='';
     document.getElementById('eAddPrice').value='';
+    
     renderEditList();
     openPage('editPage');
 }
@@ -302,7 +308,7 @@ function renderEditList(){
     let rec=arr.find(h=>h.date===currentEditDate);
     let area=document.getElementById('eList');
     if(!rec||!rec.items.length){
-        area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Koi item nahi. Upar se add karo.</p>";
+        area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Niche diye gaye 'Add Item' se saman bharein.</p>";
         document.getElementById('eSum').innerText='TOTAL: ₹0';
         return;
     }
@@ -327,7 +333,8 @@ function eAddItem(){
     let n=document.getElementById('eAddName').value.trim();
     let q=parseFloat(document.getElementById('eAddQty').value)||0;
     let p=parseFloat(document.getElementById('eAddPrice').value)||0;
-    if(!n){alert("Naam zaroor bharein!"); return;}
+    
+    if(!n){alert("Pehle saman ka naam likhein!"); return;}
 
     let arr=getArr();
     let rec=arr.find(h=>h.date===currentEditDate);
@@ -335,7 +342,8 @@ function eAddItem(){
         rec={date:currentEditDate,items:[]};
         if(hType==='expense') expense.unshift(rec); else shopping.unshift(rec);
     }
-    // Same naam — JODO
+    
+    // Check agar item pehle se hai toh sirf update karein
     let ex=rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
     if(ex){
         ex.qty  =(parseFloat(ex.qty)||0)+q;
@@ -344,6 +352,7 @@ function eAddItem(){
         rec.items.push({name:n,qty:q,price:p,done:false});
     }
 
+    // Clear inputs
     document.getElementById('eAddName').value='';
     document.getElementById('eAddQty').value='';
     document.getElementById('eAddPrice').value='';
@@ -367,105 +376,53 @@ function eLock(i){
     renderEditList(); save();
 }
 function eDel(i){
-    if(confirm("Delete?")){
+    if(confirm("Yeh item hata dein?")){
         let arr=getArr();
         let rec=arr.find(h=>h.date===currentEditDate);
         if(rec){ rec.items.splice(i,1); renderEditList(); save(); }
     }
 }
 function delH(date){
-    if(confirm("Poora din hataein?")){
+    if(confirm("Poora din ki history delete karein?")){
         if(hType==='expense') expense=expense.filter(h=>h.date!==date);
         else shopping=shopping.filter(h=>h.date!==date);
         save(); renderH();
     }
 }
 
-// ====== LANG & LIST FORMAT ======
+// ====== FINAL LIST FORMAT ======
 function setLang(lang){
     listLang=lang;
-    // Hindi active = white bg, ENG inactive = transparent
-    let hi=document.getElementById('btnHi');
-    let en=document.getElementById('btnEn');
-    if(lang==='hi'){
-        hi.classList.add('active'); en.classList.remove('active');
-    } else {
-        en.classList.add('active'); hi.classList.remove('active');
-    }
+    document.getElementById('btnHi').classList.toggle('active', lang==='hi');
+    document.getElementById('btnEn').classList.toggle('active', lang==='en');
     renderFinalList();
 }
 
 function fmtQty(qty,unit,lang){
     let q=parseFloat(qty);
-    if(isNaN(q)||qty===''||qty===undefined||qty===null) return '';
-
+    if(isNaN(q)||qty==='') return '';
     let isHalf=(Math.abs(q-0.5)<0.001);
-    let is200 =(Math.abs(q-0.2)<0.001);
-    let is250 =(Math.abs(q-0.25)<0.001);
-    let is100 =(Math.abs(q-0.1)<0.001);
-    let is750 =(Math.abs(q-0.75)<0.001);
-
+    
     if(lang==='en'){
-        // English special values
-        if(unit==='Kg'){
-            if(isHalf) return 'Half Kg';
-            if(is200)  return '200 Gram';
-            if(is250)  return '250 Gram';
-            if(is100)  return '100 Gram';
-            if(is750)  return '750 Gram';
-            return `${q} Kg`;
-        }
-        if(unit==='Ltr'){
-            if(isHalf) return 'Half Litre';
-            if(is200)  return '200 ML';
-            if(is250)  return '250 ML';
-            if(is100)  return '100 ML';
-            if(is750)  return '750 ML';
-            return `${q} Litre`;
-        }
-        if(unit==='Pc')  return `${q} Pc`;
-        if(unit==='Rs')  return `${q} Rs`;
+        if(unit==='Kg' && isHalf) return 'Half Kg';
+        if(unit==='Ltr' && isHalf) return 'Half Litre';
         return `${q} ${unit}`;
     }
-
-    // Hindi
     if(unit==='Kg'){
         if(isHalf) return 'आधा किलो';
-        if(is200)  return '200 ग्राम';
-        if(is250)  return '250 ग्राम';
-        if(is100)  return '100 ग्राम';
-        if(is750)  return '750 ग्राम';
         return `${q} किलो`;
     }
     if(unit==='Ltr'){
         if(isHalf) return 'आधा लीटर';
-        if(is200)  return '200 ML';
-        if(is250)  return '250 ML';
-        if(is100)  return '100 ML';
-        if(is750)  return '750 ML';
         return `${q} लीटर`;
     }
-    if(unit==='Pc')  return `${q} पीस`;
-    if(unit==='Rs')  return `${q} रुपये`;
-    return `${qty} ${unit}`;
+    return `${qty} ${unit==='Pc'?'पीस':unit==='Rs'?'रुपये':unit}`;
 }
 
-// Cat labels
-function catLabel(c,lang){
-    if(lang==='hi'){
-        if(c==='GROCERY') return 'GROC';
-        if(c==='SABJI')   return 'सब्जी';
-        if(c==='BODY')    return 'शरीर';
-        if(c==='OTHER')   return 'अन्य';
-    }
-    return c;
-}
-
-// ====== FINAL LIST ======
 let lastSelItems=[];
 function showFinalList(){
     lastSelItems=items.filter(it=>it.sel);
-    if(!lastSelItems.length){alert("Pehle item choose karo!"); return;}
+    if(!lastSelItems.length){alert("Pehle list mein item select karein!"); return;}
     renderFinalList();
     openPage('listPage');
 }
@@ -473,37 +430,26 @@ function showFinalList(){
 function renderFinalList(){
     let isHi=(listLang==='hi');
     let out=document.getElementById('fOut'); if(!out) return;
-
-    // List page title
     document.getElementById('listTitle').innerText=isHi?'सामान सूची':'Shopping List';
-
-    // Column headers
-    let col1=isHi?'सामान':'ITEM';
-    let col2=isHi?'मात्रा':'QTY';
-    let col3=isHi?'कीमत':'RATE';
-
+    
     out.innerHTML=`<h2 style="text-align:center;color:#0984e3;border-bottom:3px solid #0984e3;padding-bottom:10px;margin-bottom:15px;">${isHi?'🛒 सामान सूची':'🛒 Shopping List'}</h2>`;
 
     ['GROCERY','SABJI','BODY','OTHER'].forEach(c=>{
         let f=lastSelItems.filter(it=>it.cat===c);
         if(!f.length) return;
-        out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:5px 12px;border-radius:4px;font-size:12px;margin:14px 0 7px;display:inline-block;">${catLabel(c,listLang)}</div>`;
-        out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;font-size:11px;font-weight:900;color:#636e72;padding:5px;border-bottom:2px solid #dfe6e9;">
-            <span>${col1}</span>
-            <span style="text-align:center;">${col2}</span>
-            <span style="text-align:center;">${col3}</span>
-        </div>`;
+        let cName = isHi ? (c==='SABJI'?'सब्जी':c==='BODY'?'शरीर':c==='OTHER'?'अन्य':'किराना') : c;
+        out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;margin:12px 0 5px;display:inline-block;">${cName}</div>`;
         f.forEach((it,j)=>{
-            out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;padding:11px 5px;border-bottom:1px dashed #ccc;font-weight:bold;align-items:center;">
+            out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 100px 60px;padding:10px 5px;border-bottom:1px dashed #ccc;font-weight:bold;align-items:center;">
                 <span style="font-size:13px;">${j+1}. ${it.name}</span>
                 <span style="text-align:center;color:#0984e3;font-size:13px;">${fmtQty(it.qty,it.unit,listLang)}</span>
-                <span style="text-align:center;color:#e17055;font-size:13px;">₹____</span>
+                <span style="text-align:center;color:#e17055;font-size:12px;">₹____</span>
             </div>`;
         });
     });
 }
 
-// ====== CALC ======
+// ====== BILL CALC ======
 function openCalc(){
     tCalc=items.filter(it=>it.sel).map(it=>({name:it.name,qty:parseFloat(it.qty)||0,unit:it.unit,price:0,done:false}));
     renderC(); openPage('calcPage');
@@ -512,7 +458,7 @@ function renderC(){
     document.getElementById('cList').innerHTML=tCalc.map((it,i)=>
         `<div class="calc-row">
             <b style="font-size:13px;">${it.name}</b>
-            <span style="color:#636e72;font-size:12px;">${it.qty} ${it.unit}</span>
+            <span style="color:#636e72;font-size:11px;">${it.qty} ${it.unit}</span>
             <input type="number" ${it.done?'disabled':''} placeholder="₹ Rate"
                 value="${it.price>0?it.price:''}"
                 onchange="calcPrice(${i},this.value)" class="p-box" inputmode="decimal">
@@ -530,7 +476,7 @@ function autoSaveCalc(){
     if(!rec){ rec={date:d,items:[]}; shopping.unshift(rec); }
     filled.forEach(ni=>{
         let ex=rec.items.find(e=>e.name.toLowerCase()===ni.name.toLowerCase());
-        if(ex){ ex.qty=(parseFloat(ex.qty)||0)+(parseFloat(ni.qty)||0); ex.price=(parseFloat(ex.price)||0)+(parseFloat(ni.price)||0); }
+        if(ex){ ex.price=ni.price; }
         else rec.items.push({name:ni.name,qty:ni.qty,unit:ni.unit,price:ni.price,done:ni.done});
     });
     save();
