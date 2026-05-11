@@ -233,10 +233,10 @@ function unselectAll(){ if(confirm("Sab clear?")){ items.forEach(it=>it.sel=fals
 function openKharchAdd(){
     hType='expense';
     let today=new Date().toLocaleDateString('en-GB');
-    // Aaj ka record already hai to use karo, nahi to naya banao
-    let rec=expense.find(h=>h.date===today);
-    if(!rec){ rec={date:today,items:[]}; expense.unshift(rec); save(); }
     currentEditDate=today;
+    // Record nahi hai to bana do (save baad mein jab item add hoga)
+    let rec=expense.find(h=>h.date===today);
+    if(!rec){ rec={date:today,items:[]}; expense.unshift(rec); }
     openEditPage();
 }
 
