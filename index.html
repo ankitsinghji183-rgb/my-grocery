@@ -44,6 +44,9 @@
         .add-row-title{font-size:11px;font-weight:800;color:#27ae60;margin-bottom:6px;}
         .lang-btn{padding:5px 12px;border:2px solid white;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;background:transparent;color:white;height:34px;}
         .lang-btn.active{background:white;color:#0984e3;}
+        /* Naya Style History Details ke liye */
+        .hist-details{background:#fdfdfd;padding:5px 10px 10px 10px;margin-top:-3px;margin-bottom:8px;border:1px solid #eee;border-top:none;border-radius:0 0 8px 8px;font-size:12px;}
+        .h-det-item{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed #eee;color:#555;}
     </style>
 </head>
 <body>
@@ -234,7 +237,7 @@ function openKharchAdd(){
     openEditPage();
 }
 
-// ====== HISTORY ======
+// ====== HISTORY - ISME CHANGE KIYA HAI TAAKI LIST DIKHE ======
 function openHistory(type){
     hType=type;
     openPage('hPage');
@@ -264,12 +267,22 @@ function renderH(){
             html=''; mTot=0;
         }
         curM=m; mTot+=dTot;
-        html+=`<div class="hist-row">
+        
+        // Item Details HTML Banao
+        let itemsHtml = h.items.map(it => `
+            <div class="h-det-item">
+                <span>• ${it.name} (${it.qty||0} ${it.unit||''})</span>
+                <b>₹${(parseFloat(it.price)||0).toFixed(2)}</b>
+            </div>
+        `).join('');
+
+        html+=`<div class="hist-row" style="margin-bottom:0; border-radius:8px 8px 0 0;">
             <span style="font-size:13px;">${h.date}</span>
             <b style="color:#0984e3;">₹${dTot.toFixed(2)}</b>
             <button class="btn ok-btn" style="font-size:10px;" onclick="editH('${h.date}')">EDIT</button>
             <button class="btn del-btn" onclick="delH('${h.date}')">✕</button>
-        </div>`;
+        </div>
+        <div class="hist-details">${itemsHtml || '<span style="color:#ccc;">Koi item nahi</span>'}</div>`;
     });
     if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
 }
@@ -339,6 +352,7 @@ function eAddItem(){
     document.getElementById('eAddName').value='';
     document.getElementById('eAddQty').value='';
     document.getElementById('eAddPrice').value='';
+
     renderEditList();
     save();
 }
@@ -388,6 +402,7 @@ function setLang(lang){
 function fmtQty(qty,unit,lang){
     let q=parseFloat(qty);
     if(isNaN(q)||qty===''||qty===undefined||qty===null) return '';
+
     let isHalf=(Math.abs(q-0.5)<0.001);
     let is200 =(Math.abs(q-0.2)<0.001);
     let is250 =(Math.abs(q-0.25)<0.001);
@@ -415,6 +430,7 @@ function fmtQty(qty,unit,lang){
         if(unit==='Rs')  return `${q} Rs`;
         return `${q} ${unit}`;
     }
+
     if(unit==='Kg'){
         if(isHalf) return 'आधा किलो';
         if(is200)  return '200 ग्राम';
