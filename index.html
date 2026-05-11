@@ -33,7 +33,7 @@
         .item-row{display:grid;grid-template-columns:1fr 50px 58px 26px 36px;gap:5px;align-items:center;padding:10px 7px;border-bottom:1px solid #f1f2f6;background:white;margin-bottom:3px;border-radius:8px;}
         .edit-grid{display:grid;grid-template-columns:20px 1fr 50px 76px 36px 36px;gap:4px;align-items:center;padding:9px 6px;background:white;margin-bottom:3px;border-radius:6px;border-bottom:1px solid #eee;}
         .calc-row{display:grid;grid-template-columns:1fr 62px 76px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:3px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
-        .hist-row{display:grid;grid-template-columns:1fr 82px 40px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:3px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
+        .hist-row{display:grid;grid-template-columns:1fr 82px 40px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:0px;border-radius:8px;border-bottom:1px solid #f1f2f6;cursor:pointer;}
         .sel-bg{background:#fff9db!important;border-left:4px solid #fcc419;}
         .sum-box{padding:12px 15px;background:#e3f2fd;font-weight:900;text-align:right;border-top:3px solid #0984e3;font-size:16px;color:#0984e3;flex-shrink:0;}
         .b-nav{width:100%;background:white;padding:8px 10px;border-top:1px solid #dfe6e9;display:flex;gap:8px;flex-shrink:0;}
@@ -44,6 +44,24 @@
         .add-row-title{font-size:11px;font-weight:800;color:#27ae60;margin-bottom:6px;}
         .lang-btn{padding:5px 12px;border:2px solid white;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;background:transparent;color:white;height:34px;}
         .lang-btn.active{background:white;color:#0984e3;}
+        
+        /* Dropdown History Style */
+        .hist-detail-panel {
+            display: none;
+            background: #fff;
+            margin: 0 0 8px 0;
+            padding: 5px 10px;
+            border-radius: 0 0 8px 8px;
+            border: 1px solid #eee;
+            border-top: none;
+        }
+        .h-det-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            padding: 4px 0;
+            border-bottom: 1px solid #f9f9f9;
+        }
     </style>
 </head>
 <body>
@@ -191,7 +209,11 @@ window.onpopstate=()=>{
 function renderMaster(){
     let cont=document.getElementById('masterList'); if(!cont) return;
     let q=document.getElementById('itemName').value.toLowerCase();
-    let filtered=items.filter(it=>(activeF==='All'||it.cat===activeF)&&it.name.toLowerCase().includes(q));
+    
+    // Sort logic: Selected items upar (true upar, false niche)
+    let sortedMaster = [...items].sort((a,b) => (b.sel === a.sel)? 0 : b.sel? 1 : -1);
+    
+    let filtered=sortedMaster.filter(it=>(activeF==='All'||it.cat===activeF)&&it.name.toLowerCase().includes(q));
     let n=0;
     cont.innerHTML=filtered.map(it=>{
         let i=items.indexOf(it);
@@ -212,7 +234,8 @@ function renderMaster(){
 function toggleI(i){ items[i].sel=!items[i].sel; save(); renderMaster(); }
 function addItem(){
     let n=document.getElementById('itemName').value.trim(); if(!n) return;
-    items.unshift({name:n,cat:document.getElementById('catSelect').value,sel:true,qty:'',unit:'Kg'});
+    // Naya item added item auto select na ho (sel: false)
+    items.unshift({name:n,cat:document.getElementById('catSelect').value,sel:false,qty:'',unit:'Kg'});
     save(); document.getElementById('itemName').value=''; renderMaster();
 }
 function delItem(i){ if(confirm("Hata dein?")){ items.splice(i,1); save(); renderMaster(); } }
@@ -234,7 +257,7 @@ function openKharchAdd(){
     openEditPage();
 }
 
-// ====== HISTORY - (ONLY SHOW DATES WITH ITEMS) ======
+// ====== HISTORY ======
 function openHistory(type){
     hType=type;
     openPage('hPage');
@@ -242,26 +265,31 @@ function openHistory(type){
 }
 function getArr(){ return hType==='expense'?expense:shopping; }
 
+function toggleHistDetail(dateId) {
+    let el = document.getElementById('det-'+dateId);
+    if(el.style.display === 'block') {
+        el.style.display = 'none';
+    } else {
+        el.style.display = 'block';
+    }
+}
+
 function renderH(){
     let tm={shopping:'📦 Saman History',expense:'💰 Kharch History'};
     document.getElementById('hTitle').innerText=tm[hType];
     let area=document.getElementById('hArea'); area.innerHTML='';
     let arr=getArr();
-    
-    // Yahan Filter lagaya hai taaki khali list wali dates na dikhein
     let filteredArr = arr.filter(h => h.items && h.items.length > 0);
-
     let sorted=[...filteredArr].sort((a,b)=>{
         let da=a.date.split('/'),db=b.date.split('/');
         return new Date(db[2],db[1]-1,db[0])-new Date(da[2],da[1]-1,da[0]);
     });
-
     if(!sorted.length){
         area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Koi history nahi hai.</p>";
         return;
     }
     let curM='',html='',mTot=0;
-    sorted.forEach(h=>{
+    sorted.forEach((h, idx)=>{
         let p=h.date.split('/'),m=months[parseInt(p[1])-1]+' '+p[2];
         let dTot=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
         if(curM!==m&&curM!==''){
@@ -269,11 +297,19 @@ function renderH(){
             html=''; mTot=0;
         }
         curM=m; mTot+=dTot;
-        html+=`<div class="hist-row">
-            <span style="font-size:13px;">${h.date}</span>
+        
+        let dateId = h.date.replace(/\//g, '-');
+        let itemLines = h.items.map((it, i) => `<div class="h-det-line"><span>${i+1}. ${it.name} (${it.qty||0} ${it.unit||''})</span><b>₹${it.price||0}</b></div>`).join('');
+
+        html+=`
+        <div class="hist-row" onclick="toggleHistDetail('${dateId}')">
+            <span style="font-size:13px;">${h.date} ▼</span>
             <b style="color:#0984e3;">₹${dTot.toFixed(2)}</b>
-            <button class="btn ok-btn" style="font-size:10px;" onclick="editH('${h.date}')">EDIT</button>
-            <button class="btn del-btn" onclick="delH('${h.date}')">✕</button>
+            <button class="btn ok-btn" style="font-size:10px;" onclick="event.stopPropagation(); editH('${h.date}')">EDIT</button>
+            <button class="btn del-btn" onclick="event.stopPropagation(); delH('${h.date}')">✕</button>
+        </div>
+        <div class="hist-detail-panel" id="det-${dateId}">
+            ${itemLines}
         </div>`;
     });
     if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
@@ -360,6 +396,7 @@ function eField(i,f,v){
 function eLock(i){
     let arr=getArr();
     let rec=arr.find(h=>h.date===currentEditDate); if(!rec) return;
+    // Price bina dale bhi lock ho sakega
     rec.items[i].done=!rec.items[i].done;
     renderEditList(); save();
 }
@@ -510,16 +547,29 @@ function renderC(){
     renderCSum();
 }
 function calcPrice(i,v){ tCalc[i].price=parseFloat(v)||0; renderCSum(); autoSaveCalc(); }
-function calcLock(i){ tCalc[i].done=!tCalc[i].done; renderC(); autoSaveCalc(); }
+function calcLock(i){ 
+    // Price 0 hone par bhi lock hoga aur save ho jayega
+    tCalc[i].done=!tCalc[i].done; 
+    renderC(); 
+    autoSaveCalc(); 
+}
 function autoSaveCalc(){
-    let filled=tCalc.filter(it=>it.price>0); if(!filled.length) return;
+    // Ab ye filled items (chahe price 0 ho) ko history mein save karega agar wo done/lock hain
+    let readyItems=tCalc.filter(it=>it.done); 
+    if(!readyItems.length) return;
+    
     let d=new Date().toLocaleDateString('en-GB');
     let rec=shopping.find(h=>h.date===d);
     if(!rec){ rec={date:d,items:[]}; shopping.unshift(rec); }
-    filled.forEach(ni=>{
+    
+    readyItems.forEach(ni=>{
         let ex=rec.items.find(e=>e.name.toLowerCase()===ni.name.toLowerCase());
-        if(ex){ ex.qty=(parseFloat(ex.qty)||0)+(parseFloat(ni.qty)||0); ex.price=(parseFloat(ex.price)||0)+(parseFloat(ni.price)||0); }
-        else rec.items.push({name:ni.name,qty:ni.qty,unit:ni.unit,price:ni.price,done:ni.done});
+        if(ex){ 
+            ex.qty=ni.qty; 
+            ex.price=ni.price; 
+        } else {
+            rec.items.push({name:ni.name,qty:ni.qty,unit:ni.unit,price:ni.price,done:true});
+        }
     });
     save();
 }
