@@ -33,7 +33,7 @@
         .item-row{display:grid;grid-template-columns:1fr 50px 58px 26px 36px;gap:5px;align-items:center;padding:10px 7px;border-bottom:1px solid #f1f2f6;background:white;margin-bottom:3px;border-radius:8px;}
         .edit-grid{display:grid;grid-template-columns:20px 1fr 50px 76px 36px 36px;gap:4px;align-items:center;padding:9px 6px;background:white;margin-bottom:3px;border-radius:6px;border-bottom:1px solid #eee;}
         .calc-row{display:grid;grid-template-columns:1fr 62px 76px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:3px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
-        .hist-row{display:grid;grid-template-columns:1fr 82px 40px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:3px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
+        .hist-row{display:grid;grid-template-columns:1fr 82px 40px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:0px;border-radius:8px 8px 0 0;border-bottom:1px solid #f1f2f6;}
         .sel-bg{background:#fff9db!important;border-left:4px solid #fcc419;}
         .sum-box{padding:12px 15px;background:#e3f2fd;font-weight:900;text-align:right;border-top:3px solid #0984e3;font-size:16px;color:#0984e3;flex-shrink:0;}
         .b-nav{width:100%;background:white;padding:8px 10px;border-top:1px solid #dfe6e9;display:flex;gap:8px;flex-shrink:0;}
@@ -44,9 +44,26 @@
         .add-row-title{font-size:11px;font-weight:800;color:#27ae60;margin-bottom:6px;}
         .lang-btn{padding:5px 12px;border:2px solid white;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;background:transparent;color:white;height:34px;}
         .lang-btn.active{background:white;color:#0984e3;}
-        /* Naya Style History Details ke liye */
-        .hist-details{background:#fdfdfd;padding:5px 10px 10px 10px;margin-top:-3px;margin-bottom:8px;border:1px solid #eee;border-top:none;border-radius:0 0 8px 8px;font-size:12px;}
-        .h-det-item{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed #eee;color:#555;}
+
+        /* FORCE VISIBLE DETAILS STYLE */
+        .hist-details-box {
+            background: #ffffff;
+            border: 1px solid #d1d8e0;
+            border-top: none;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .h-detail-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 4px 0;
+            border-bottom: 1px solid #f1f2f6;
+            color: #2d3436;
+        }
+        .h-detail-line:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -227,7 +244,7 @@ function setFilter(f){
 }
 function unselectAll(){ if(confirm("Sab clear?")){ items.forEach(it=>it.sel=false); save(); renderMaster(); } }
 
-// ====== DAILY KHARCH — aaj ki date ka record seedha banao ======
+// ====== DAILY KHARCH ======
 function openKharchAdd(){
     hType='expense';
     let today=new Date().toLocaleDateString('en-GB');
@@ -237,53 +254,70 @@ function openKharchAdd(){
     openEditPage();
 }
 
-// ====== HISTORY - ISME CHANGE KIYA HAI TAAKI LIST DIKHE ======
+// ====== HISTORY - (YAHAN LOGIC KO EK-EK ITEM DIKHANE KE LIYE MAJBOOT KIYA GAYA HAI) ======
 function openHistory(type){
     hType=type;
     openPage('hPage');
     renderH();
 }
-function getArr(){ return hType==='expense'?expense:shopping; }
 
 function renderH(){
     let tm={shopping:'📦 Saman History',expense:'💰 Kharch History'};
     document.getElementById('hTitle').innerText=tm[hType];
     let area=document.getElementById('hArea'); area.innerHTML='';
-    let arr=getArr();
+    let arr = (hType==='expense') ? expense : shopping;
+    
+    // Sort Date Wise
     let sorted=[...arr].sort((a,b)=>{
         let da=a.date.split('/'),db=b.date.split('/');
         return new Date(db[2],db[1]-1,db[0])-new Date(da[2],da[1]-1,da[0]);
     });
+
     if(!sorted.length){
         area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Koi history nahi hai.</p>";
         return;
     }
-    let curM='',html='',mTot=0;
+
+    let curM='', html='', mTot=0;
+
     sorted.forEach(h=>{
         let p=h.date.split('/'),m=months[parseInt(p[1])-1]+' '+p[2];
-        let dTot=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-        if(curM!==m&&curM!==''){
-            area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
+        let hItems = h.items || [];
+        let dTot=hItems.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
+
+        if(curM!==m && curM!==''){
+            area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>` + html;
             html=''; mTot=0;
         }
         curM=m; mTot+=dTot;
-        
-        // Item Details HTML Banao
-        let itemsHtml = h.items.map(it => `
-            <div class="h-det-item">
-                <span>• ${it.name} (${it.qty||0} ${it.unit||''})</span>
-                <b>₹${(parseFloat(it.price)||0).toFixed(2)}</b>
-            </div>
-        `).join('');
 
-        html+=`<div class="hist-row" style="margin-bottom:0; border-radius:8px 8px 0 0;">
-            <span style="font-size:13px;">${h.date}</span>
-            <b style="color:#0984e3;">₹${dTot.toFixed(2)}</b>
-            <button class="btn ok-btn" style="font-size:10px;" onclick="editH('${h.date}')">EDIT</button>
-            <button class="btn del-btn" onclick="delH('${h.date}')">✕</button>
-        </div>
-        <div class="hist-details">${itemsHtml || '<span style="color:#ccc;">Koi item nahi</span>'}</div>`;
+        // Force loop to generate lines for each item
+        let detailHtml = '';
+        if(hItems.length > 0) {
+            detailHtml = `<div class="hist-details-box">`;
+            hItems.forEach((it, idx) => {
+                detailHtml += `
+                    <div class="h-detail-line">
+                        <span>${idx+1}. ${it.name} ${it.qty ? '('+it.qty+' '+ (it.unit||'')+')' : ''}</span>
+                        <b style="color:#27ae60;">₹${(parseFloat(it.price)||0).toFixed(2)}</b>
+                    </div>`;
+            });
+            detailHtml += `</div>`;
+        } else {
+            detailHtml = `<div class="hist-details-box" style="color:#ccc; text-align:center;">Koi item list mein nahi hai</div>`;
+        }
+
+        html += `
+            <div class="hist-row">
+                <span style="font-size:13px; font-weight:bold;">${h.date}</span>
+                <b style="color:#0984e3;">Total: ₹${dTot.toFixed(2)}</b>
+                <button class="btn ok-btn" style="font-size:10px;" onclick="editH('${h.date}')">EDIT</button>
+                <button class="btn del-btn" onclick="delH('${h.date}')">✕</button>
+            </div>
+            ${detailHtml}
+        `;
     });
+
     if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
 }
 
@@ -292,7 +326,6 @@ function editH(date){
     currentEditDate=date;
     openEditPage();
 }
-
 function openEditPage(){
     document.getElementById('editTitle').innerText=hType==='expense'?'💰 Kharch Edit':'📦 Saman Edit';
     document.getElementById('editDateLabel').innerText=currentEditDate;
@@ -302,9 +335,8 @@ function openEditPage(){
     renderEditList();
     openPage('editPage');
 }
-
 function renderEditList(){
-    let arr=getArr();
+    let arr = (hType==='expense') ? expense : shopping;
     let rec=arr.find(h=>h.date===currentEditDate);
     let area=document.getElementById('eList');
     if(!rec||!rec.items.length){
@@ -334,8 +366,7 @@ function eAddItem(){
     let q=parseFloat(document.getElementById('eAddQty').value)||0;
     let p=parseFloat(document.getElementById('eAddPrice').value)||0;
     if(!n){alert("Naam zaroor bharein!"); return;}
-
-    let arr=getArr();
+    let arr = (hType==='expense') ? expense : shopping;
     let rec=arr.find(h=>h.date===currentEditDate);
     if(!rec){
         rec={date:currentEditDate,items:[]};
@@ -343,22 +374,19 @@ function eAddItem(){
     }
     let ex=rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
     if(ex){
-        ex.qty  =(parseFloat(ex.qty)||0)+q;
+        ex.qty=(parseFloat(ex.qty)||0)+q;
         ex.price=(parseFloat(ex.price)||0)+p;
     } else {
-        rec.items.push({name:n,qty:q,price:p,done:false});
+        rec.items.push({name:n,qty:q,price:p,done:false, unit:'Kg'});
     }
-
     document.getElementById('eAddName').value='';
     document.getElementById('eAddQty').value='';
     document.getElementById('eAddPrice').value='';
-
     renderEditList();
     save();
 }
-
 function eField(i,f,v){
-    let arr=getArr();
+    let arr = (hType==='expense') ? expense : shopping;
     let rec=arr.find(h=>h.date===currentEditDate); if(!rec) return;
     rec.items[i][f]=(f==='name')?v:(parseFloat(v)||0);
     let t=rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
@@ -366,14 +394,14 @@ function eField(i,f,v){
     save();
 }
 function eLock(i){
-    let arr=getArr();
+    let arr = (hType==='expense') ? expense : shopping;
     let rec=arr.find(h=>h.date===currentEditDate); if(!rec) return;
     rec.items[i].done=!rec.items[i].done;
     renderEditList(); save();
 }
 function eDel(i){
     if(confirm("Delete?")){
-        let arr=getArr();
+        let arr = (hType==='expense') ? expense : shopping;
         let rec=arr.find(h=>h.date===currentEditDate);
         if(rec){ rec.items.splice(i,1); renderEditList(); save(); }
     }
@@ -389,77 +417,19 @@ function delH(date){
 // ====== LANG & LIST FORMAT ======
 function setLang(lang){
     listLang=lang;
-    let hi=document.getElementById('btnHi');
-    let en=document.getElementById('btnEn');
-    if(lang==='hi'){
-        hi.classList.add('active'); en.classList.remove('active');
-    } else {
-        en.classList.add('active'); hi.classList.remove('active');
-    }
+    document.getElementById('btnHi').classList.toggle('active', lang==='hi');
+    document.getElementById('btnEn').classList.toggle('active', lang==='en');
     renderFinalList();
 }
-
 function fmtQty(qty,unit,lang){
     let q=parseFloat(qty);
-    if(isNaN(q)||qty===''||qty===undefined||qty===null) return '';
-
-    let isHalf=(Math.abs(q-0.5)<0.001);
-    let is200 =(Math.abs(q-0.2)<0.001);
-    let is250 =(Math.abs(q-0.25)<0.001);
-    let is100 =(Math.abs(q-0.1)<0.001);
-    let is750 =(Math.abs(q-0.75)<0.001);
-
-    if(lang==='en'){
-        if(unit==='Kg'){
-            if(isHalf) return 'Half Kg';
-            if(is200)  return '200 Gram';
-            if(is250)  return '250 Gram';
-            if(is100)  return '100 Gram';
-            if(is750)  return '750 Gram';
-            return `${q} Kg`;
-        }
-        if(unit==='Ltr'){
-            if(isHalf) return 'Half Litre';
-            if(is200)  return '200 ML';
-            if(is250)  return '250 ML';
-            if(is100)  return '100 ML';
-            if(is750)  return '750 ML';
-            return `${q} Litre`;
-        }
-        if(unit==='Pc')  return `${q} Pc`;
-        if(unit==='Rs')  return `${q} Rs`;
-        return `${q} ${unit}`;
-    }
-
+    if(isNaN(q)||qty==='') return '';
+    let isHi = (lang==='hi');
     if(unit==='Kg'){
-        if(isHalf) return 'आधा किलो';
-        if(is200)  return '200 ग्राम';
-        if(is250)  return '250 ग्राम';
-        if(is100)  return '100 ग्राम';
-        if(is750)  return '750 ग्राम';
-        return `${q} किलो`;
+        if(Math.abs(q-0.5)<0.01) return isHi?'आधा किलो':'Half Kg';
+        return q + (isHi?' किलो':' Kg');
     }
-    if(unit==='Ltr'){
-        if(isHalf) return 'आधा लीटर';
-        if(is200)  return '200 ML';
-        if(is250)  return '250 ML';
-        if(is100)  return '100 ML';
-        if(is750)  return '750 ML';
-        return `${q} लीटर`;
-    }
-    if(unit==='Pc')  return `${q} पीस`;
-    if(unit==='Rs')  return `${q} रुपये`;
-    return `${qty} ${unit}`;
-}
-
-function catLabel(c,lang){
-    if(lang==='hi'){
-        if(c==='GROCERY') return 'GROC';
-        if(c==='SABJI')   return 'सब्जी';
-        if(c==='BODY')    return 'शरीर';
-        if(c==='OTHER')   return 'अन्य';
-    }
-    return c;
+    return q + ' ' + unit;
 }
 
 // ====== FINAL LIST ======
@@ -470,31 +440,19 @@ function showFinalList(){
     renderFinalList();
     openPage('listPage');
 }
-
 function renderFinalList(){
     let isHi=(listLang==='hi');
     let out=document.getElementById('fOut'); if(!out) return;
-    document.getElementById('listTitle').innerText=isHi?'सामान सूची':'Shopping List';
-    let col1=isHi?'सामान':'ITEM';
-    let col2=isHi?'मात्रा':'QTY';
-    let col3=isHi?'कीमत':'RATE';
-
     out.innerHTML=`<h2 style="text-align:center;color:#0984e3;border-bottom:3px solid #0984e3;padding-bottom:10px;margin-bottom:15px;">${isHi?'🛒 सामान सूची':'🛒 Shopping List'}</h2>`;
-
     ['GROCERY','SABJI','BODY','OTHER'].forEach(c=>{
         let f=lastSelItems.filter(it=>it.cat===c);
         if(!f.length) return;
-        out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:5px 12px;border-radius:4px;font-size:12px;margin:14px 0 7px;display:inline-block;">${catLabel(c,listLang)}</div>`;
-        out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;font-size:11px;font-weight:900;color:#636e72;padding:5px;border-bottom:2px solid #dfe6e9;">
-            <span>${col1}</span>
-            <span style="text-align:center;">${col2}</span>
-            <span style="text-align:center;">${col3}</span>
-        </div>`;
+        out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:5px 12px;border-radius:4px;font-size:12px;margin:14px 0 7px;display:inline-block;">${c}</div>`;
         f.forEach((it,j)=>{
-            out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;padding:11px 5px;border-bottom:1px dashed #ccc;font-weight:bold;align-items:center;">
-                <span style="font-size:13px;">${j+1}. ${it.name}</span>
-                <span style="text-align:center;color:#0984e3;font-size:13px;">${fmtQty(it.qty,it.unit,listLang)}</span>
-                <span style="text-align:center;color:#e17055;font-size:13px;">₹____</span>
+            out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;padding:11px 5px;border-bottom:1px dashed #ccc;font-weight:bold;">
+                <span>${j+1}. ${it.name}</span>
+                <span style="text-align:center;color:#0984e3;">${fmtQty(it.qty,it.unit,listLang)}</span>
+                <span style="text-align:center;">₹____</span>
             </div>`;
         });
     });
@@ -508,11 +466,9 @@ function openCalc(){
 function renderC(){
     document.getElementById('cList').innerHTML=tCalc.map((it,i)=>
         `<div class="calc-row">
-            <b style="font-size:13px;">${it.name}</b>
-            <span style="color:#636e72;font-size:12px;">${it.qty} ${it.unit}</span>
-            <input type="number" ${it.done?'disabled':''} placeholder="₹ Rate"
-                value="${it.price>0?it.price:''}"
-                onchange="calcPrice(${i},this.value)" class="p-box" inputmode="decimal">
+            <b>${it.name}</b>
+            <span>${it.qty} ${it.unit}</span>
+            <input type="number" ${it.done?'disabled':''} placeholder="₹ Rate" onchange="calcPrice(${i},this.value)" class="p-box" inputmode="decimal">
             <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="calcLock(${i})">${it.done?'✓':'🔒'}</button>
         </div>`
     ).join('');
@@ -527,8 +483,7 @@ function autoSaveCalc(){
     if(!rec){ rec={date:d,items:[]}; shopping.unshift(rec); }
     filled.forEach(ni=>{
         let ex=rec.items.find(e=>e.name.toLowerCase()===ni.name.toLowerCase());
-        if(ex){ ex.qty=(parseFloat(ex.qty)||0)+(parseFloat(ni.qty)||0); ex.price=(parseFloat(ex.price)||0)+(parseFloat(ni.price)||0); }
-        else rec.items.push({name:ni.name,qty:ni.qty,unit:ni.unit,price:ni.price,done:ni.done});
+        if(ex){ ex.price=ni.price; } else rec.items.push({...ni});
     });
     save();
 }
