@@ -98,7 +98,13 @@
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
         <span>📦 Saman History</span>
-        <span></span>
+        <span style="position:relative;">
+            <span onclick="document.getElementById('samanHistDatePicker').showPicker?document.getElementById('samanHistDatePicker').showPicker():document.getElementById('samanHistDatePicker').click()"
+                style="font-size:12px;background:rgba(255,255,255,0.25);padding:4px 8px;border-radius:6px;cursor:pointer;">📅 Date</span>
+            <input type="date" id="samanHistDatePicker"
+                style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:0;"
+                onchange="samanHistDateGo(this.value)">
+        </span>
     </div>
     <div class="scroll" id="samanHistArea"></div>
 </div>
@@ -108,7 +114,13 @@
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
         <span>💰 Kharch</span>
-        <span id="kharchEditDate" style="font-size:12px;opacity:0.9;"></span>
+        <span style="position:relative;">
+            <span id="kharchEditDate" onclick="document.getElementById('kharchDatePicker').showPicker?document.getElementById('kharchDatePicker').showPicker():document.getElementById('kharchDatePicker').click()"
+                style="font-size:13px;background:rgba(255,255,255,0.25);padding:4px 10px;border-radius:6px;cursor:pointer;">📅 --/--/----</span>
+            <input type="date" id="kharchDatePicker"
+                style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:0;"
+                onchange="kharchDateChanged(this.value)">
+        </span>
     </div>
     <div class="add-row" style="margin:8px;">
         <div class="add-row-title">Add Item</div>
@@ -128,7 +140,13 @@
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
         <span>📦 Saman Edit</span>
-        <span id="samanEditDate" style="font-size:12px;opacity:0.9;"></span>
+        <span style="position:relative;">
+            <span id="samanEditDate" onclick="document.getElementById('samanDatePicker').showPicker?document.getElementById('samanDatePicker').showPicker():document.getElementById('samanDatePicker').click()"
+                style="font-size:13px;background:rgba(255,255,255,0.25);padding:4px 10px;border-radius:6px;cursor:pointer;">📅 --/--/----</span>
+            <input type="date" id="samanDatePicker"
+                style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:0;"
+                onchange="samanDateChanged(this.value)">
+        </span>
     </div>
     <div class="add-row" style="margin:8px;">
         <div class="add-row-title">Add Item</div>
@@ -321,7 +339,15 @@ function openKharchEdit(date){
     showPage('kharchEditPage');
 }
 function renderKharchEdit(){
-    document.getElementById('kharchEditDate').innerText=curKharchDate;
+    // Date label update — DD/MM/YYYY format mein dikhao
+    let dlabel=document.getElementById('kharchEditDate');
+    if(dlabel) dlabel.innerText='📅 '+curKharchDate;
+    // Calendar input ko bhi sync karo (YYYY-MM-DD format chahiye)
+    let dp=document.getElementById('kharchDatePicker');
+    if(dp && curKharchDate){
+        let p=curKharchDate.split('/');
+        if(p.length===3) dp.value=`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+    }
     document.getElementById('kAddName').value='';
     document.getElementById('kAddQty').value='';
     document.getElementById('kAddPrice').value='';
@@ -462,7 +488,13 @@ function openSamanEdit(date){
     showPage('samanEditPage');
 }
 function renderSamanEdit(){
-    document.getElementById('samanEditDate').innerText=curSamanDate;
+    let dlabel2=document.getElementById('samanEditDate');
+    if(dlabel2) dlabel2.innerText='📅 '+curSamanDate;
+    let dp2=document.getElementById('samanDatePicker');
+    if(dp2 && curSamanDate){
+        let p=curSamanDate.split('/');
+        if(p.length===3) dp2.value=`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+    }
     document.getElementById('sAddName').value='';
     document.getElementById('sAddQty').value='';
     document.getElementById('sAddPrice').value='';
@@ -549,6 +581,92 @@ function toggleDrop(id){
     let el=document.getElementById(id);
     if(!el) return;
     el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+
+// Calendar se date select karna — YYYY-MM-DD aata hai, DD/MM/YYYY mein convert karo
+function ymdToDmy(ymd){
+    if(!ymd) return '';
+    let p=ymd.split('-');
+    return `${p[2]}/${p[1]}/${p[0]}`;
+}
+
+// Kharch Edit — date badlo
+function kharchDateChanged(ymd){
+    let newDate=ymdToDmy(ymd);
+    if(!newDate) return;
+    curKharchDate=newDate;
+    // Record nahi hai to bana do
+    if(!expense.find(h=>h.date===curKharchDate)){
+        expense.unshift({date:curKharchDate,items:[]});
+    }
+    renderKharchEdit();
+}
+
+// Saman Edit — date badlo
+function samanDateChanged(ymd){
+    let newDate=ymdToDmy(ymd);
+    if(!newDate) return;
+    curSamanDate=newDate;
+    if(!shopping.find(h=>h.date===curSamanDate)){
+        shopping.unshift({date:curSamanDate,items:[]});
+    }
+    renderSamanEdit();
+}
+
+// Kharch History — date select karo, us date ka expand karo
+function kharchHistDateGo(ymd){
+    let date=ymdToDmy(ymd);
+    if(!date) return;
+    // Pehle check karo record hai ya nahi
+    let rec=expense.find(h=>h.date===date);
+    if(rec && rec.items && rec.items.length>0){
+        // History page mein scroll karke us date ka dropdown kholo
+        let id='kd_'+date.replace(/\//g,'_');
+        let el=document.getElementById(id);
+        if(el){
+            el.style.display='block';
+            setTimeout(()=>{ el.scrollIntoView({behavior:'smooth',block:'start'}); },100);
+        } else {
+            // List mein nahi dikh raha — seedha edit kholo
+            curKharchDate=date;
+            renderKharchEdit();
+            showPage('kharchEditPage');
+        }
+    } else {
+        // Koi record nahi — seedha us date ka edit kholo
+        curKharchDate=date;
+        if(!expense.find(h=>h.date===date)){
+            expense.unshift({date:date,items:[]});
+        }
+        renderKharchEdit();
+        showPage('kharchEditPage');
+    }
+}
+
+// Saman History — date select karo
+function samanHistDateGo(ymd){
+    let date=ymdToDmy(ymd);
+    if(!date) return;
+    let rec=shopping.find(h=>h.date===date);
+    if(rec && rec.items && rec.items.length>0){
+        let id='sd_'+date.replace(/\//g,'_');
+        let el=document.getElementById(id);
+        if(el){
+            el.style.display='block';
+            setTimeout(()=>{ el.scrollIntoView({behavior:'smooth',block:'start'}); },100);
+        } else {
+            curSamanDate=date;
+            renderSamanEdit();
+            showPage('samanEditPage');
+        }
+    } else {
+        curSamanDate=date;
+        if(!shopping.find(h=>h.date===date)){
+            shopping.unshift({date:date,items:[]});
+        }
+        renderSamanEdit();
+        showPage('samanEditPage');
+    }
 }
 function dateDiff(a,b){
     let da=a.split('/'),db=b.split('/');
