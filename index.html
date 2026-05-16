@@ -151,9 +151,6 @@
         <span></span>
     </div>
     <div class="scroll" id="cList"></div>
-    <div class="b-nav">
-        <button class="btn" style="background:#2ecc71;flex:1;height:46px;" onclick="calcConfirmSave()">✅ CONFIRM SAVE</button>
-    </div>
     <div id="cSum" class="sum-box">BILL TOTAL: ₹0</div>
 </div>
 
@@ -316,16 +313,29 @@ function renderKharchEdit(){
         return;
     }
     area.innerHTML=rec.items.map((it,i)=>
-        `<div class="edit-grid">
-            <span style="color:#636e72;">${i+1}.</span>
-            <input type="text" ${it.done?'disabled':''} value="${it.name}"
-                onchange="kField(${i},'name',this.value)" style="font-size:13px;min-width:0;">
-            <input type="number" ${it.done?'disabled':''} value="${it.qty||''}"
-                onchange="kField(${i},'qty',this.value)" class="u-box" inputmode="decimal">
-            <input type="number" ${it.done?'disabled':''} value="${it.price||''}"
-                onchange="kField(${i},'price',this.value)" class="p-box" inputmode="decimal">
-            <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="kLock(${i})">${it.done?'✓':'🔒'}</button>
-            <button class="btn del-btn" onclick="kDel(${i})">✕</button>
+        `<div style="background:white;margin-bottom:3px;border-radius:6px;border-bottom:1px solid #eee;padding:8px 6px;">
+            <div style="display:grid;grid-template-columns:18px 1fr 76px 36px 36px;gap:4px;align-items:center;margin-bottom:4px;">
+                <span style="color:#636e72;font-size:11px;">${i+1}.</span>
+                <input type="text" ${it.done?'disabled':''} value="${it.name}"
+                    onchange="kField(${i},'name',this.value)" style="font-size:13px;min-width:0;height:36px;padding:5px;">
+                <input type="number" ${it.done?'disabled':''} value="${it.price||''}"
+                    onchange="kField(${i},'price',this.value)" class="p-box" style="height:36px;" inputmode="decimal">
+                <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="kLock(${i})" style="height:36px;">${it.done?'✓':'🔒'}</button>
+                <button class="btn del-btn" onclick="kDel(${i})" style="height:36px;">✕</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;align-items:center;">
+                <span style="font-size:12px;color:#0984e3;font-weight:700;padding-left:22px;">${fmtQtyHi(it.qty,it.unit)}</span>
+                <div style="display:flex;gap:3px;align-items:center;">
+                    <input type="number" ${it.done?'disabled':''} value="${it.qty||''}"
+                        onchange="kField(${i},'qty',this.value)" style="width:55px;height:32px;font-size:12px;" inputmode="decimal">
+                    <select ${it.done?'disabled':''} onchange="kField(${i},'unit',this.value)" style="height:32px;font-size:11px;background:#f1f2f6;border:none;border-radius:6px;padding:0 2px;flex:1;">
+                        <option value="Kg"  ${it.unit=='Kg' ?'selected':''}>Kg</option>
+                        <option value="Pc"  ${it.unit=='Pc' ?'selected':''}>Pc</option>
+                        <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option>
+                        <option value="Rs"  ${it.unit=='Rs' ?'selected':''}>Rs</option>
+                    </select>
+                </div>
+            </div>
         </div>`
     ).join('');
     let t=rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
@@ -360,9 +370,11 @@ function kAddItem(){
 }
 function kField(i,f,v){
     let rec=expense.find(h=>h.date===curKharchDate); if(!rec) return;
-    rec.items[i][f]=(f==='name')?v:(parseFloat(v)||0);
+    if(f==='name'||f==='unit') rec.items[i][f]=v;
+    else rec.items[i][f]=parseFloat(v)||0;
     let t=rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
     document.getElementById('kEditSum').innerText=`TOTAL: ₹${t.toFixed(2)}`;
+    renderKharchEdit();
     save();
 }
 function kLock(i){
@@ -422,16 +434,29 @@ function renderSamanEdit(){
         return;
     }
     area.innerHTML=rec.items.map((it,i)=>
-        `<div class="edit-grid">
-            <span style="color:#636e72;">${i+1}.</span>
-            <input type="text" ${it.done?'disabled':''} value="${it.name}"
-                onchange="sField(${i},'name',this.value)" style="font-size:13px;min-width:0;">
-            <input type="number" ${it.done?'disabled':''} value="${it.qty||''}"
-                onchange="sField(${i},'qty',this.value)" class="u-box" inputmode="decimal">
-            <input type="number" ${it.done?'disabled':''} value="${it.price||''}"
-                onchange="sField(${i},'price',this.value)" class="p-box" inputmode="decimal">
-            <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="sLock(${i})">${it.done?'✓':'🔒'}</button>
-            <button class="btn del-btn" onclick="sDel(${i})">✕</button>
+        `<div style="background:white;margin-bottom:3px;border-radius:6px;border-bottom:1px solid #eee;padding:8px 6px;">
+            <div style="display:grid;grid-template-columns:18px 1fr 76px 36px 36px;gap:4px;align-items:center;margin-bottom:4px;">
+                <span style="color:#636e72;font-size:11px;">${i+1}.</span>
+                <input type="text" ${it.done?'disabled':''} value="${it.name}"
+                    onchange="sField(${i},'name',this.value)" style="font-size:13px;min-width:0;height:36px;padding:5px;">
+                <input type="number" ${it.done?'disabled':''} value="${it.price||''}"
+                    onchange="sField(${i},'price',this.value)" class="p-box" style="height:36px;" inputmode="decimal">
+                <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="sLock(${i})" style="height:36px;">${it.done?'✓':'🔒'}</button>
+                <button class="btn del-btn" onclick="sDel(${i})" style="height:36px;">✕</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;align-items:center;">
+                <span style="font-size:12px;color:#0984e3;font-weight:700;padding-left:22px;">${fmtQtyHi(it.qty,it.unit)}</span>
+                <div style="display:flex;gap:3px;align-items:center;">
+                    <input type="number" ${it.done?'disabled':''} value="${it.qty||''}"
+                        onchange="sField(${i},'qty',this.value)" style="width:55px;height:32px;font-size:12px;" inputmode="decimal">
+                    <select ${it.done?'disabled':''} onchange="sField(${i},'unit',this.value)" style="height:32px;font-size:11px;background:#f1f2f6;border:none;border-radius:6px;padding:0 2px;flex:1;">
+                        <option value="Kg"  ${it.unit=='Kg' ?'selected':''}>Kg</option>
+                        <option value="Pc"  ${it.unit=='Pc' ?'selected':''}>Pc</option>
+                        <option value="Ltr" ${it.unit=='Ltr'?'selected':''}>Ltr</option>
+                        <option value="Rs"  ${it.unit=='Rs' ?'selected':''}>Rs</option>
+                    </select>
+                </div>
+            </div>
         </div>`
     ).join('');
     let t=rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
@@ -454,9 +479,11 @@ function sAddItem(){
 }
 function sField(i,f,v){
     let rec=shopping.find(h=>h.date===curSamanDate); if(!rec) return;
-    rec.items[i][f]=(f==='name')?v:(parseFloat(v)||0);
+    if(f==='name'||f==='unit') rec.items[i][f]=v;
+    else rec.items[i][f]=parseFloat(v)||0;
     let t=rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
     document.getElementById('sEditSum').innerText=`TOTAL: ₹${t.toFixed(2)}`;
+    renderSamanEdit();
     save();
 }
 function sLock(i){
@@ -481,6 +508,18 @@ function dateDiff(a,b){
 function dateToMonth(date){
     let p=date.split('/');
     return months[parseInt(p[1])-1]+' '+p[2];
+}
+// Hindi quantity display — edit page aur calc mein use hoga
+function fmtQtyHi(qty,unit){
+    let q=parseFloat(qty);
+    if(isNaN(q)||qty===''||qty==null) return '';
+    let h5=(Math.abs(q-0.5)<0.001),g2=(Math.abs(q-0.2)<0.001);
+    let g25=(Math.abs(q-0.25)<0.001),g1=(Math.abs(q-0.1)<0.001),g75=(Math.abs(q-0.75)<0.001);
+    if(unit==='Kg'){if(h5)return 'आधा किलो';if(g2)return '200 ग्राम';if(g25)return '250 ग्राम';if(g1)return '100 ग्राम';if(g75)return '750 ग्राम';return `${q} किलो`;}
+    if(unit==='Ltr'){if(h5)return 'आधा लीटर';if(g2)return '200 ML';if(g25)return '250 ML';if(g1)return '100 ML';if(g75)return '750 ML';return `${q} लीटर`;}
+    if(unit==='Pc') return `${q} पीस`;
+    if(unit==='Rs') return `₹${q}`;
+    return `${qty} ${unit}`;
 }
 
 // ====== LANGUAGE ======
@@ -546,16 +585,20 @@ function openCalc(){
     renderC(); showPage('calcPage');
 }
 function renderC(){
-    document.getElementById('cList').innerHTML=tCalc.map((it,i)=>
-        `<div class="calc-row">
+    document.getElementById('cList').innerHTML=tCalc.map((it,i)=>{
+        // Rs unit ho to sirf price box dikhao, qty nahi
+        let qtyDisplay = it.unit==='Rs'
+            ? `<span style="color:#e17055;font-size:11px;font-weight:800;">₹ amt</span>`
+            : `<span style="color:#636e72;font-size:12px;">${fmtQtyHi(it.qty,it.unit)}</span>`;
+        return `<div class="calc-row" style="grid-template-columns:1fr ${it.unit==='Rs'?'60px':'80px'} 76px 40px;">
             <b style="font-size:13px;">${it.name}</b>
-            <span style="color:#636e72;font-size:12px;">${it.qty} ${it.unit}</span>
-            <input type="number" ${it.done?'disabled':''} placeholder="₹ Rate"
+            ${qtyDisplay}
+            <input type="number" ${it.done?'disabled':''} placeholder="₹"
                 value="${it.price>0?it.price:''}"
                 onchange="calcPrice(${i},this.value)" class="p-box" inputmode="decimal">
             <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="calcLock(${i})">${it.done?'✓':'🔒'}</button>
-        </div>`
-    ).join('');
+        </div>`;
+    }).join('');
     renderCSum();
 }
 // Price dalte hi auto save shopping history mein
@@ -565,14 +608,6 @@ function calcPrice(i,v){
     autoSaveCalc(); // auto save
 }
 function calcLock(i){tCalc[i].done=!tCalc[i].done; renderC(); autoSaveCalc();}
-
-// Confirm save — price nahi daale to bhi save kar lo
-function calcConfirmSave(){
-    let filled=tCalc.filter(it=>it.price>0);
-    if(!filled.length){alert("Kisi item ki price nahi daali!");}
-    else {autoSaveCalc(); alert("✅ Saman History mein save ho gaya!");}
-}
-function calcBack(){window.history.back();}
 
 function autoSaveCalc(){
     let filled=tCalc.filter(it=>it.price>0); if(!filled.length) return;
@@ -589,8 +624,23 @@ function renderCSum(){
     document.getElementById('cSum').innerText=`BILL TOTAL: ₹${t.toFixed(2)}`;
 }
 function takeShot(){
-    html2canvas(document.getElementById('shotArea')).then(c=>{
-        let a=document.createElement('a'); a.download='SamanList.png'; a.href=c.toDataURL(); a.click();
+    let el=document.getElementById('shotArea');
+    html2canvas(el,{
+        scale:2,
+        useCORS:true,
+        backgroundColor:'#ffffff',
+        logging:false,
+        width:el.offsetWidth,
+        height:el.offsetHeight
+    }).then(canvas=>{
+        let a=document.createElement('a');
+        a.download='SamanList.png';
+        a.href=canvas.toDataURL('image/png');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }).catch(err=>{
+        alert('Image save nahi ho paya. Browser permissions check karo.');
     });
 }
 </script>
