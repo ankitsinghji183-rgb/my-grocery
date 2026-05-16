@@ -254,7 +254,7 @@ function renderMaster(){
         let i=items.indexOf(it);
         return `<div class="item-row ${it.sel?'sel-bg':''}">
             <span onclick="toggleI(${i})" style="cursor:pointer;font-size:13px;"><b>${++n}. ${it.name}</b></span>
-            <input type="number" value="${it.qty||''}" onchange="items[${i}].qty=this.value;save();" class="u-box" inputmode="decimal">
+            ${(it.unit==='Open'||it.unit==='Send') ? '<span class="u-box" style="font-size:11px;color:#aaa;text-align:center;">—</span>' : `<input type="number" value="${it.qty||''}" onchange="items[${i}].qty=this.value;save();" class="u-box" inputmode="decimal">`}
             <select onchange="items[${i}].unit=this.value;save();" class="unit-sel">
                 <option value="Kg"    ${it.unit=='Kg'    ?'selected':''}>Kg</option>
                 <option value="Ltr"   ${it.unit=='Ltr'   ?'selected':''}>Ltr</option>
@@ -702,8 +702,8 @@ function fmtQtyHi(qty,unit){
     if(unit==='Pc')    return `${q} पीस`;
     if(unit==='Rs')    return `₹${q}`;
     if(unit==='Pkt')   return `${q} पैकेट`;
-    if(unit==='Open')  return `${q} खुला`;
-    if(unit==='Send')  return `${q} सेंड`;
+    if(unit==='Open')  return `खुला`;
+    if(unit==='Send')  return `Send`;
     if(unit==='Plate') return `${q} प्लेट`;
     if(unit==='Form')  return `${q} फॉर्म`;
     if(unit==='Cup')   return `${q} कप`;
@@ -729,8 +729,8 @@ function fmtQty(qty,unit,lang){
         if(unit==='Pc')    return `${q} Pc`;
         if(unit==='Rs')    return `${q} Rs`;
         if(unit==='Pkt')   return `${q} Pkt`;
-        if(unit==='Open')  return `${q} Open`;
-        if(unit==='Send')  return `${q} Send`;
+        if(unit==='Open')  return `Open`;
+        if(unit==='Send')  return `Send`;
         if(unit==='Plate') return `${q} Plate`;
         if(unit==='Form')  return `${q} Form`;
         if(unit==='Cup')   return `${q} Cup`;
@@ -742,8 +742,8 @@ function fmtQty(qty,unit,lang){
     if(unit==='Pc')    return `${q} पीस`;
     if(unit==='Rs')    return `${q} रुपये`;
     if(unit==='Pkt')   return `${q} पैकेट`;
-    if(unit==='Open')  return `${q} खुला`;
-    if(unit==='Send')  return `${q} सेंड`;
+    if(unit==='Open')  return `खुला`;
+    if(unit==='Send')  return `Send`;
     if(unit==='Plate') return `${q} प्लेट`;
     if(unit==='Form')  return `${q} फॉर्म`;
     if(unit==='Cup')   return `${q} कप`;
