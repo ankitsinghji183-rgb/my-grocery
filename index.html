@@ -53,8 +53,8 @@
 <!-- MAIN -->
 <div id="mainView" style="display:none;">
     <div class="top-hist">
-        <div class="h-box" onclick="openKharchHist()">💰 Kharch History</div>
         <div class="h-box" onclick="openSamanHist()">📦 Saman History</div>
+        <div class="h-box" onclick="openKharchHist()">💰 Kharch History</div>
     </div>
     <div class="card" style="margin:0 8px 6px;">
         <div class="in-row" style="margin-bottom:7px;">
@@ -88,7 +88,13 @@
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
         <span>💰 Kharch History</span>
-        <span></span>
+        <span style="position:relative;">
+            <span onclick="document.getElementById('kharchHistDatePicker').showPicker?document.getElementById('kharchHistDatePicker').showPicker():document.getElementById('kharchHistDatePicker').click()"
+                style="font-size:12px;background:rgba(255,255,255,0.25);padding:4px 8px;border-radius:6px;cursor:pointer;">📅 Date</span>
+            <input type="date" id="kharchHistDatePicker"
+                style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:0;"
+                onchange="kharchHistDateGo(this.value)">
+        </span>
     </div>
     <div class="scroll" id="kharchHistArea"></div>
 </div>
@@ -251,11 +257,14 @@ function renderMaster(){
             <input type="number" value="${it.qty||''}" onchange="items[${i}].qty=this.value;save();" class="u-box" inputmode="decimal">
             <select onchange="items[${i}].unit=this.value;save();" class="unit-sel">
                 <option value="Kg"    ${it.unit=='Kg'    ?'selected':''}>Kg</option>
-                <option value="Pc"    ${it.unit=='Pc'    ?'selected':''}>Pc</option>
                 <option value="Ltr"   ${it.unit=='Ltr'   ?'selected':''}>Ltr</option>
-                <option value="Rs"    ${it.unit=='Rs'    ?'selected':''}>Rs</option>
-                <option value="Plate" ${it.unit=='Plate' ?'selected':''}>Plate</option>
+                <option value="Pc"    ${it.unit=='Pc'    ?'selected':''}>Pc</option>
                 <option value="Pkt"   ${it.unit=='Pkt'   ?'selected':''}>Pkt</option>
+                <option value="Open"  ${it.unit=='Open'  ?'selected':''}>Open</option>
+                <option value="Rs"    ${it.unit=='Rs'    ?'selected':''}>Rs</option>
+                <option value="Send"  ${it.unit=='Send'  ?'selected':''}>Send</option>
+                <option value="Plate" ${it.unit=='Plate' ?'selected':''}>Plate</option>
+                <option value="Form"  ${it.unit=='Form'  ?'selected':''}>Form</option>
                 <option value="Cup"   ${it.unit=='Cup'   ?'selected':''}>Cup</option>
                 <option value="Glass" ${it.unit=='Glass' ?'selected':''}>Glass</option>
             </select>
@@ -376,11 +385,14 @@ function renderKharchEdit(){
                         onchange="kField(${i},'qty',this.value)" style="width:55px;height:32px;font-size:12px;" inputmode="decimal">
                     <select ${it.done?'disabled':''} onchange="kField(${i},'unit',this.value)" style="height:32px;font-size:11px;background:#f1f2f6;border:none;border-radius:6px;padding:0 2px;flex:1;">
                         <option value="Kg"    ${it.unit=='Kg'    ?'selected':''}>Kg</option>
-                        <option value="Pc"    ${it.unit=='Pc'    ?'selected':''}>Pc</option>
                         <option value="Ltr"   ${it.unit=='Ltr'   ?'selected':''}>Ltr</option>
-                        <option value="Rs"    ${it.unit=='Rs'    ?'selected':''}>Rs</option>
-                        <option value="Plate" ${it.unit=='Plate' ?'selected':''}>Plate</option>
+                        <option value="Pc"    ${it.unit=='Pc'    ?'selected':''}>Pc</option>
                         <option value="Pkt"   ${it.unit=='Pkt'   ?'selected':''}>Pkt</option>
+                        <option value="Open"  ${it.unit=='Open'  ?'selected':''}>Open</option>
+                        <option value="Rs"    ${it.unit=='Rs'    ?'selected':''}>Rs</option>
+                        <option value="Send"  ${it.unit=='Send'  ?'selected':''}>Send</option>
+                        <option value="Plate" ${it.unit=='Plate' ?'selected':''}>Plate</option>
+                        <option value="Form"  ${it.unit=='Form'  ?'selected':''}>Form</option>
                         <option value="Cup"   ${it.unit=='Cup'   ?'selected':''}>Cup</option>
                         <option value="Glass" ${it.unit=='Glass' ?'selected':''}>Glass</option>
                     </select>
@@ -523,11 +535,14 @@ function renderSamanEdit(){
                         onchange="sField(${i},'qty',this.value)" style="width:55px;height:32px;font-size:12px;" inputmode="decimal">
                     <select ${it.done?'disabled':''} onchange="sField(${i},'unit',this.value)" style="height:32px;font-size:11px;background:#f1f2f6;border:none;border-radius:6px;padding:0 2px;flex:1;">
                         <option value="Kg"    ${it.unit=='Kg'    ?'selected':''}>Kg</option>
-                        <option value="Pc"    ${it.unit=='Pc'    ?'selected':''}>Pc</option>
                         <option value="Ltr"   ${it.unit=='Ltr'   ?'selected':''}>Ltr</option>
-                        <option value="Rs"    ${it.unit=='Rs'    ?'selected':''}>Rs</option>
-                        <option value="Plate" ${it.unit=='Plate' ?'selected':''}>Plate</option>
+                        <option value="Pc"    ${it.unit=='Pc'    ?'selected':''}>Pc</option>
                         <option value="Pkt"   ${it.unit=='Pkt'   ?'selected':''}>Pkt</option>
+                        <option value="Open"  ${it.unit=='Open'  ?'selected':''}>Open</option>
+                        <option value="Rs"    ${it.unit=='Rs'    ?'selected':''}>Rs</option>
+                        <option value="Send"  ${it.unit=='Send'  ?'selected':''}>Send</option>
+                        <option value="Plate" ${it.unit=='Plate' ?'selected':''}>Plate</option>
+                        <option value="Form"  ${it.unit=='Form'  ?'selected':''}>Form</option>
                         <option value="Cup"   ${it.unit=='Cup'   ?'selected':''}>Cup</option>
                         <option value="Glass" ${it.unit=='Glass' ?'selected':''}>Glass</option>
                     </select>
@@ -686,8 +701,11 @@ function fmtQtyHi(qty,unit){
     if(unit==='Ltr'){if(h5)return 'आधा लीटर';if(g2)return '200 ML';if(g25)return '250 ML';if(g1)return '100 ML';if(g75)return '750 ML';return `${q} लीटर`;}
     if(unit==='Pc')    return `${q} पीस`;
     if(unit==='Rs')    return `₹${q}`;
-    if(unit==='Plate') return `${q} Plate`;
     if(unit==='Pkt')   return `${q} पैकेट`;
+    if(unit==='Open')  return `${q} खुला`;
+    if(unit==='Send')  return `${q} सेंड`;
+    if(unit==='Plate') return `${q} प्लेट`;
+    if(unit==='Form')  return `${q} फॉर्म`;
     if(unit==='Cup')   return `${q} कप`;
     if(unit==='Glass') return `${q} ग्लास`;
     return `${qty} ${unit}`;
@@ -708,20 +726,32 @@ function fmtQty(qty,unit,lang){
     if(lang==='en'){
         if(unit==='Kg'){if(h5)return 'Half Kg';if(g2)return '200 Gram';if(g25)return '250 Gram';if(g1)return '100 Gram';if(g75)return '750 Gram';return `${q} Kg`;}
         if(unit==='Ltr'){if(h5)return 'Half Litre';if(g2)return '200 ML';if(g25)return '250 ML';if(g1)return '100 ML';if(g75)return '750 ML';return `${q} Litre`;}
-        if(unit==='Pc') return `${q} Pc`;
-        if(unit==='Rs') return `${q} Rs`;
+        if(unit==='Pc')    return `${q} Pc`;
+        if(unit==='Rs')    return `${q} Rs`;
+        if(unit==='Pkt')   return `${q} Pkt`;
+        if(unit==='Open')  return `${q} Open`;
+        if(unit==='Send')  return `${q} Send`;
+        if(unit==='Plate') return `${q} Plate`;
+        if(unit==='Form')  return `${q} Form`;
+        if(unit==='Cup')   return `${q} Cup`;
+        if(unit==='Glass') return `${q} Glass`;
         return `${q} ${unit}`;
     }
     if(unit==='Kg'){if(h5)return 'आधा किलो';if(g2)return '200 ग्राम';if(g25)return '250 ग्राम';if(g1)return '100 ग्राम';if(g75)return '750 ग्राम';return `${q} किलो`;}
     if(unit==='Ltr'){if(h5)return 'आधा लीटर';if(g2)return '200 ML';if(g25)return '250 ML';if(g1)return '100 ML';if(g75)return '750 ML';return `${q} लीटर`;}
     if(unit==='Pc')    return `${q} पीस`;
     if(unit==='Rs')    return `${q} रुपये`;
-    if(unit==='Plate') return `${q} Plate`;
     if(unit==='Pkt')   return `${q} पैकेट`;
+    if(unit==='Open')  return `${q} खुला`;
+    if(unit==='Send')  return `${q} सेंड`;
+    if(unit==='Plate') return `${q} प्लेट`;
+    if(unit==='Form')  return `${q} फॉर्म`;
     if(unit==='Cup')   return `${q} कप`;
     if(unit==='Glass') return `${q} ग्लास`;
     return `${qty} ${unit}`;
 }
+// English fmtQty extra units
+
 function catLabel(c,lang){
     if(lang==='hi'){if(c==='SABJI')return 'सब्जी';if(c==='BODY')return 'शरीर';if(c==='OTHER')return 'अन्य';return 'GROC';}
     return c;
