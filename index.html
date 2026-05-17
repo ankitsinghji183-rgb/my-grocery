@@ -50,7 +50,7 @@
 
 <div id="loadingScreen"><h2>🛒 Grocery Master</h2><p>Data load ho raha hai...</p></div>
 
-<!-- MAIN -->
+<!-- MAIN VIEW -->
 <div id="mainView" style="display:none;">
     <div style="display:flex;gap:6px;padding:6px 8px;flex-shrink:0;align-items:stretch;">
         <div id="monthlyBox" onclick="toggleMonthDrop()" style="background:white;border-radius:10px;padding:6px 8px;box-shadow:0 2px 6px rgba(0,0,0,0.06);border:1px solid #e1e8ed;display:flex;align-items:center;flex:1.2;cursor:pointer;">
@@ -181,7 +181,7 @@
     <div id="cSum" class="sum-box">BILL TOTAL: ₹0</div>
 </div>
 
-<!-- LIST -->
+<!-- LIST VIEW -->
 <div id="listPage" class="full-page">
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
@@ -201,20 +201,19 @@
 </div>
 
 <script>
-// ====== FIREBASE ======
+// ====== FIREBASE CONFIGURATION ======
 const firebaseConfig={databaseURL:"https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/"};
 firebase.initializeApp(firebaseConfig);
 const DB=firebase.database().ref('grocery/3');
 
-// ====== STATE ======
+// ====== APPLICATION STATE ======
 let items=[],expense=[],shopping=[];
 let activeF='All',tCalc=[],listLang='hi';
 let curKharchDate='',curSamanDate='';
 const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-// ====== LOAD — sirf ek baar, koi listener nahi ======
+// ====== INITIAL DATA LOAD ======
 DB.off();
-
 DB.get().then(snap=>{
     const d=snap.val()||{};
     items    = toArr(d.items);
@@ -236,7 +235,7 @@ function save(){
     DB.set({items, history:{expense, shopping}}).catch(e=>console.error('Save error:',e));
 }
 
-// ====== NAV ======
+// ====== NAVIGATION ======
 function showPage(id){
     document.querySelectorAll('.full-page').forEach(p=>p.style.display='none');
     document.getElementById('mainView').style.display='none';
@@ -250,7 +249,7 @@ window.onpopstate=()=>{
     renderMaster();
 };
 
-// ====== MASTER LIST ======
+// ====== MASTER LIST RENDER & OPERATIONS ======
 function renderMaster(){
     let cont=document.getElementById('masterList'); if(!cont) return;
     let q=document.getElementById('itemName').value.toLowerCase();
@@ -298,7 +297,7 @@ function setFilter(f){
 }
 function unselectAll(){if(confirm("Sab clear?")){items.forEach(it=>it.sel=false);save();renderMaster();}}
 
-// ====== DAILY KHARCH ======
+// ====== DAILY KHARCH OPERATIONS ======
 function openDailyKharch(){
     curKharchDate=new Date().toLocaleDateString('en-GB');
     if(!expense.find(h=>h.date===curKharchDate)){
@@ -308,7 +307,7 @@ function openDailyKharch(){
     renderKharchEdit();
 }
 
-// ====== KHARCH HISTORY ======
+// ====== KHARCH HISTORY MANAGEMENT ======
 function openKharchHist(){
     renderKharchHist();
     showPage('kharchHistPage');
@@ -414,20 +413,15 @@ function kAddItem(){
     let q=parseFloat(document.getElementById('kAddQty').value)||0;
     let p=parseFloat(document.getElementById('kAddPrice').value)||0;
     if(!n){alert("Naam zaroor bharein!"); return;}
-
     if(!curKharchDate) curKharchDate=new Date().toLocaleDateString('en-GB');
-
     let rec=expense.find(h=>h.date===curKharchDate);
     if(!rec){rec={date:curKharchDate,items:[]};expense.unshift(rec);}
-
     let ex=rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
     if(ex){ex.qty=(parseFloat(ex.qty)||0)+q; ex.price=(parseFloat(ex.price)||0)+p;}
-    else   rec.items.push({name:n,qty:q,price:p,done:false});
-
+    else   rec.items.push({name:n,qty:q,price:p,done:false,unit:'Kg'});
     document.getElementById('kAddName').value='';
     document.getElementById('kAddQty').value='';
     document.getElementById('kAddPrice').value='';
-
     renderKharchEdit();
     renderMonthlyTotal();
     save();
@@ -441,7 +435,6 @@ function kField(i,f,v){
     renderKharchEdit();
     save();
 }
-// Helper functional scripts jo upar adhure reh gaye the unhe yahan safely joda gaya hai
 function kharchHistDateGo(val){ if(!val)return; let p=val.split('-'); openKharchEdit(`${p[2]}/${p[1]}/${p[0]}`); }
 function kharchDateChanged(val){ if(!val)return; let p=val.split('-'); curKharchDate=`${p[2]}/${p[1]}/${p[0]}`; renderKharchEdit(); }
 function kLock(i){
@@ -458,7 +451,7 @@ function delKharchRec(date){
     if(confirm("Poora din hataein?")){expense=expense.filter(h=>h.date!==date);save();renderKharchHist();}
 }
 
-// ====== SAMAN HISTORY ======
+// ====== SAMAN HISTORY MANAGEMENT ======
 function openSamanHist(){
     renderSamanHist();
     showPage('samanHistPage');
@@ -563,7 +556,7 @@ function delSamanRec(date){
 function samanHistDateGo(val){ if(!val)return; let p=val.split('-'); openSamanEdit(`${p[2]}/${p[1]}/${p[0]}`); }
 function samanDateChanged(val){ if(!val)return; let p=val.split('-'); curSamanDate=`${p[2]}/${p[1]}/${p[0]}`; renderSamanEdit(); }
 
-// ====== OTHER HELPERS ======
+// ====== DATE & CALCULATION UTILITIES ======
 function toggleDrop(id){ let el=document.getElementById(id); el.style.display=el.style.display==='none'?'block':'none'; }
 function dateDiff(a,b){ let p1=a.split('/'),p2=b.split('/'); return new Date(p1[2],p1[1]-1,p1[0])-new Date(p2[2],p2[1]-1,p2[0]); }
 function dateToMonth(d){ let p=d.split('/'); return months[parseInt(p[1])-1]+" "+p[2]; }
@@ -586,7 +579,7 @@ function renderMonthlyTotal(){
 }
 function toggleMonthDrop(){}
 
-// ====== LIST BANAO & BILL CALC ======
+// ====== FINAL LIST GENERATION & BILL CALCULATION ======
 function showFinalList(){
     let sel=items.filter(i=>i.sel);
     if(!sel.length){alert("Koi item select nahi hai!"); return;}
