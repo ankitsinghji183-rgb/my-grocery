@@ -694,52 +694,53 @@ function toggleMonthDrop(){
 }
 
 function openMonthPicker(){
-    document.getElementById('monthDrop').style.display='none';
-    // Month-year picker modal
+    // Close dropdown
+    let dd=document.getElementById('monthDrop');
+    if(dd) dd.style.display='none';
+
+    // Hidden input se native month picker kholo
+    let inp=document.getElementById('monthPickerInput');
+    if(!inp){
+        inp=document.createElement('input');
+        inp.type='month';
+        inp.id='monthPickerInput';
+        inp.style.cssText='position:fixed;opacity:0;pointer-events:none;top:50%;left:50%;width:1px;height:1px;';
+        inp.addEventListener('change',function(){
+            if(!this.value) return;
+            let parts=this.value.split('-'); // YYYY-MM
+            let yr=parts[0];
+            let mi=parseInt(parts[1])-1;
+            let sh=months[mi];
+            // Calculate total
+            let allMap={};
+            expense.forEach(h=>{
+                if(!h.items||!h.items.length) return;
+                let p=h.date.split('/');
+                let s=months[parseInt(p[1])-1],y=p[2];
+                let k=s+'_'+y; if(!allMap[k]) allMap[k]=0;
+                allMap[k]+=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
+            });
+            shopping.forEach(h=>{
+                if(!h.items||!h.items.length) return;
+                let p=h.date.split('/');
+                let s=months[parseInt(p[1])-1],y=p[2];
+                let k=s+'_'+y; if(!allMap[k]) allMap[k]=0;
+                allMap[k]+=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
+            });
+            let mk=sh+'_'+yr;
+            let t=allMap[mk]||0;
+            alert(`${sh} ${yr} — Total: ₹${Math.round(t)}`);
+        });
+        document.body.appendChild(inp);
+    }
+    // Set current month as default
     let now=new Date();
-    let modalHTML=`<div id="monthPickerModal" onclick="if(event.target===this)this.remove()" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
-        <div style="background:white;border-radius:12px;padding:16px;width:85%;max-width:320px;">
-            <div style="font-weight:800;font-size:15px;margin-bottom:12px;color:#2d3436;">Month Select karo</div>
-            <div style="display:flex;gap:8px;margin-bottom:12px;">
-                <select id="mpMonth" style="flex:1;height:40px;border:1px solid #dfe6e9;border-radius:8px;font-size:14px;padding:0 6px;">
-                    ${months.map((m,i)=>`<option value="${i}" ${i===now.getMonth()?'selected':''}>${m}</option>`).join('')}
-                </select>
-                <input type="number" id="mpYear" value="${now.getFullYear()}" style="width:80px;height:40px;border:1px solid #dfe6e9;border-radius:8px;font-size:14px;text-align:center;">
-            </div>
-            <div style="display:flex;gap:8px;">
-                <button onclick="applyMonthPicker()" style="flex:1;height:40px;background:#0984e3;color:white;border:none;border-radius:8px;font-weight:800;font-size:14px;cursor:pointer;">OK</button>
-                <button onclick="document.getElementById('monthPickerModal').remove()" style="flex:1;height:40px;background:#dfe6e9;color:#2d3436;border:none;border-radius:8px;font-weight:800;font-size:14px;cursor:pointer;">Cancel</button>
-            </div>
-        </div>
-    </div>`;
-    document.body.insertAdjacentHTML('beforeend',modalHTML);
+    inp.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    // Open picker
+    try{ inp.showPicker(); } catch(e){ inp.click(); }
 }
 
-function applyMonthPicker(){
-    let mi=parseInt(document.getElementById('mpMonth').value);
-    let yr=document.getElementById('mpYear').value;
-    let sh=months[mi];
-    document.getElementById('monthPickerModal').remove();
-    // Show selected month total
-    let mk=sh+'_'+yr;
-    let allMap={};
-    expense.forEach(h=>{
-        if(!h.items||!h.items.length) return;
-        let p=h.date.split('/');
-        let s=months[parseInt(p[1])-1],y=p[2];
-        let k=s+'_'+y; if(!allMap[k]) allMap[k]=0;
-        allMap[k]+=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-    });
-    shopping.forEach(h=>{
-        if(!h.items||!h.items.length) return;
-        let p=h.date.split('/');
-        let s=months[parseInt(p[1])-1],y=p[2];
-        let k=s+'_'+y; if(!allMap[k]) allMap[k]=0;
-        allMap[k]+=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-    });
-    let t=allMap[mk]||0;
-    alert(`${sh} ${yr} — Total: ₹${Math.round(t)}`);
-}
+// applyMonthPicker removed — handled in input event
 
 // ====== HELPERS ======
 function toggleDrop(id){
