@@ -36,7 +36,7 @@
         .hist-row{display:grid;grid-template-columns:1fr 82px 40px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:3px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
         .sel-bg{background:#fff9db!important;border-left:4px solid #fcc419;}
         .sum-box{padding:12px 15px;background:#e3f2fd;font-weight:900;text-align:right;border-top:3px solid #0984e3;font-size:16px;color:#0984e3;flex-shrink:0;}
-        .b-nav{width:100%;background:white;padding:8px 10px;border-top:1px solid #dfe6e9;display:flex;gap:8px;flex-shrink:0;}
+        .b-nav{width:100%;background:white;padding:8px 10px;border-top:1px solid #dfe6e9;display:flex;gap:8px;flex-shrink:0;position:relative;z-index:1001;}
         .top-hist{display:flex;gap:8px;padding:8px 10px;flex-shrink:0;}
         .h-box{flex:1;background:#f8f9fa;border:1px solid #dfe6e9;padding:12px 0;text-align:center;border-radius:12px;font-weight:800;font-size:11px;color:#0984e3;cursor:pointer;}
         .month-header{background:#f8f9fa;padding:8px 12px;font-weight:800;font-size:12px;border-radius:6px;margin-bottom:3px;border-left:4px solid #0984e3;}
@@ -669,11 +669,12 @@ function renderMonthlyTotal(){
             <span style="color:#636e72;">-</span>
             <span style="color:#d63031;font-weight:800;">₹${Math.round(curTotal)}</span>
         </div>
-        <div id="monthDrop" style="display:none;position:absolute;top:100%;left:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:999;min-width:160px;overflow:hidden;">
+        <div id="monthDrop" style="display:none;position:absolute;top:100%;left:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:1000;min-width:160px;overflow:hidden;">
             ${dropHTML}
 
         </div>`;
-    document.getElementById('monthlyBox').style.position='relative';
+    let mb=document.getElementById('monthlyBox');
+    if(mb){ mb.style.position='relative'; mb.style.setProperty('overflow','visible'); }
 }
 
 // ====== MONTH DROPDOWN ======
