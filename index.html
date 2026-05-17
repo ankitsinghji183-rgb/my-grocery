@@ -360,9 +360,9 @@ function renderKharchEdit(){
         let p=curKharchDate.split('/');
         if(p.length===3) dp.value=`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
     }
-    document.getElementById('kAddName').value='';
-    document.getElementById('kAddQty').value='';
-    document.getElementById('kAddPrice').value='';
+    let na=document.getElementById('kAddName'); if(na) na.value='';
+    let qa=document.getElementById('kAddQty');  if(qa) qa.value='';
+    let pa=document.getElementById('kAddPrice'); if(pa) pa.value='';
     let rec=expense.find(h=>h.date===curKharchDate);
     let area=document.getElementById('kEditList');
     if(!rec||!rec.items.length){
@@ -414,7 +414,10 @@ function kAddItem(){
     let p=parseFloat(document.getElementById('kAddPrice').value)||0;
     if(!n){alert("Naam zaroor bharein!"); return;}
 
-    // Record dhundho — zaroor hoga kyunki openDailyKharch mein bana diya
+    // curKharchDate ensure karo
+    if(!curKharchDate) curKharchDate=new Date().toLocaleDateString('en-GB');
+
+    // Record dhundho ya banao
     let rec=expense.find(h=>h.date===curKharchDate);
     if(!rec){rec={date:curKharchDate,items:[]};expense.unshift(rec);}
 
@@ -428,8 +431,9 @@ function kAddItem(){
     document.getElementById('kAddQty').value='';
     document.getElementById('kAddPrice').value='';
 
-    // Render turant
+    // List update
     renderKharchEdit();
+    renderMonthlyTotal();
     // Firebase save
     save();
 }
