@@ -52,9 +52,14 @@
 
 <!-- MAIN -->
 <div id="mainView" style="display:none;">
-    <div class="top-hist">
-        <div class="h-box" onclick="openSamanHist()">📦 Saman History</div>
-        <div class="h-box" onclick="openKharchHist()">💰 Kharch History</div>
+    <!-- Monthly Total Box -->
+    <div id="monthlyBox" style="margin:6px 8px 0;background:white;border-radius:10px;padding:8px 12px;box-shadow:0 2px 6px rgba(0,0,0,0.06);border:1px solid #e1e8ed;flex-shrink:0;">
+        <div style="font-size:10px;font-weight:800;color:#636e72;margin-bottom:4px;">MONTHLY TOTAL</div>
+        <div id="monthlyList" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+    </div>
+    <div class="top-hist" style="padding:6px 8px;">
+        <div class="h-box" style="padding:9px 0;font-size:10px;" onclick="openSamanHist()">📦 Saman</div>
+        <div class="h-box" style="padding:9px 0;font-size:10px;" onclick="openKharchHist()">💰 Kharch</div>
     </div>
     <div class="card" style="margin:0 8px 6px;">
         <div class="in-row" style="margin-bottom:7px;">
@@ -170,7 +175,7 @@
 <!-- CALC -->
 <div id="calcPage" class="full-page">
     <div class="p-head">
-        <span class="back" onclick="calcBack()">BACK</span>
+        <span class="back" onclick="showPage('listPage');renderFinalList();">BACK</span>
         <span>💰 Bill Calc</span>
         <span></span>
     </div>
@@ -219,6 +224,7 @@ DB.get().then(snap=>{
     document.getElementById('loadingScreen').style.display='none';
     document.getElementById('mainView').style.display='flex';
     renderMaster();
+    renderMonthlyTotal();
 }).catch(()=>{
     document.getElementById('loadingScreen').innerHTML='<h2>❌ Error</h2><p>Reload karo</p>';
 });
@@ -272,6 +278,7 @@ function renderMaster(){
             <button class="btn del-btn" onclick="delItem(${i})">✕</button>
         </div>`;
     }).join('');
+    renderMonthlyTotal();
 }
 function toggleI(i){items[i].sel=!items[i].sel;save();renderMaster();}
 function addItem(){
@@ -589,6 +596,59 @@ function sDel(i){
 }
 function delSamanRec(date){
     if(confirm("Poora din hataein?")){shopping=shopping.filter(h=>h.date!==date);save();renderSamanHist();}
+}
+
+// ====== MONTHLY TOTAL ======
+function renderMonthlyTotal(){
+    let box=document.getElementById('monthlyList'); if(!box) return;
+    // Expense aur shopping dono ko month wise jodo
+    let monthMap={};
+
+    // Expense (kharch)
+    expense.forEach(h=>{
+        if(!h.items||!h.items.length) return;
+        let p=h.date.split('/');
+        let key=months[parseInt(p[1])-1]+' '+p[2]; // "May 2026"
+        let short=months[parseInt(p[1])-1]; // "May"
+        let yr=p[2];
+        let mk=short+'_'+yr;
+        if(!monthMap[mk]) monthMap[mk]={short,yr,exp:0,shop:0};
+        monthMap[mk].exp += h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
+    });
+
+    // Shopping (saman)
+    shopping.forEach(h=>{
+        if(!h.items||!h.items.length) return;
+        let p=h.date.split('/');
+        let short=months[parseInt(p[1])-1];
+        let yr=p[2];
+        let mk=short+'_'+yr;
+        if(!monthMap[mk]) monthMap[mk]={short,yr,exp:0,shop:0};
+        monthMap[mk].shop += h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
+    });
+
+    let keys=Object.keys(monthMap).sort((a,b)=>{
+        let ma=monthMap[a], mb=monthMap[b];
+        let da=new Date(`${ma.yr}-${(months.indexOf(ma.short)+1).toString().padStart(2,'0')}-01`);
+        let db=new Date(`${mb.yr}-${(months.indexOf(mb.short)+1).toString().padStart(2,'0')}-01`);
+        return db-da;
+    });
+
+    if(!keys.length){
+        box.innerHTML="<span style='font-size:11px;color:#b2bec3;'>Koi data nahi</span>";
+        return;
+    }
+
+    box.innerHTML=keys.map(mk=>{
+        let m=monthMap[mk];
+        let total=m.exp+m.shop;
+        if(total<=0) return '';
+        return `<div style="background:#f8f9fa;border-radius:6px;padding:4px 8px;font-size:11px;white-space:nowrap;">
+            <span style="font-weight:900;color:#2d3436;">${m.short}</span>
+            <span style="color:#636e72;margin:0 3px;">-</span>
+            <span style="color:#d63031;font-weight:800;">₹${Math.round(total)}</span>
+        </div>`;
+    }).join('');
 }
 
 // ====== HELPERS ======
