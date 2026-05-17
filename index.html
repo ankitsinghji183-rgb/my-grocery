@@ -39,7 +39,7 @@
         .b-nav{width:100%;background:white;padding:8px 10px;border-top:1px solid #dfe6e9;display:flex;gap:8px;flex-shrink:0;}
         .top-hist{display:flex;gap:8px;padding:8px 10px;flex-shrink:0;}
         .h-box{flex:1;background:#f8f9fa;border:1px solid #dfe6e9;padding:12px 0;text-align:center;border-radius:12px;font-weight:800;font-size:11px;color:#0984e3;cursor:pointer;}
-        .month-header{background:#fff0f0;padding:8px 12px;font-weight:800;font-size:12px;border-radius:6px;margin-bottom:3px;color:#d63031;border-left:4px solid #d63031;}
+        .month-header{background:#f8f9fa;padding:8px 12px;font-weight:800;font-size:12px;border-radius:6px;margin-bottom:3px;border-left:4px solid #0984e3;}
         .add-row{background:#e8f5e9;padding:10px 8px;border-radius:8px;border:1px dashed #2ecc71;flex-shrink:0;margin-bottom:0;}
         .add-row-title{font-size:11px;font-weight:800;color:#27ae60;margin-bottom:6px;}
         .lang-btn{padding:5px 12px;border:2px solid white;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;background:transparent;color:white;height:34px;}
@@ -53,8 +53,8 @@
 <!-- MAIN -->
 <div id="mainView" style="display:none;">
     <div style="display:flex;gap:6px;padding:6px 8px;flex-shrink:0;align-items:stretch;">
-        <div id="monthlyBox" style="background:white;border-radius:10px;padding:6px 8px;box-shadow:0 2px 6px rgba(0,0,0,0.06);border:1px solid #e1e8ed;display:flex;align-items:center;flex:1.2;">
-            <div id="monthlyList" style="display:flex;flex-wrap:wrap;gap:3px;"></div>
+        <div id="monthlyBox" onclick="toggleMonthDrop()" style="background:white;border-radius:10px;padding:6px 8px;box-shadow:0 2px 6px rgba(0,0,0,0.06);border:1px solid #e1e8ed;display:flex;align-items:center;flex:1.2;cursor:pointer;">
+            <div id="monthlyList" style="display:flex;flex-wrap:wrap;gap:3px;pointer-events:none;"></div>
         </div>
         <div class="h-box" style="padding:8px 0;font-size:10px;flex:0.9;" onclick="openSamanHist()">📦 Saman</div>
         <div class="h-box" style="padding:8px 0;font-size:10px;flex:0.9;" onclick="openKharchHist()">💰 Kharch</div>
@@ -345,7 +345,7 @@ function renderKharchHist(){
             <div id="kd_${h.date.replace(/\//g,'_')}" style="display:none;">${itemsHTML_k}</div>
         </div>`;
     });
-    if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
+    if(curM) area.innerHTML+=`<div class="month-header"><span style="color:#0984e3;">${curM}</span> <span style="color:#2d3436;">— Total: </span><span style="color:#d63031;">₹${mTot.toFixed(2)}</span></div>`+html;
 }
 function openKharchEdit(date){
     curKharchDate=date;
@@ -497,7 +497,7 @@ function renderSamanHist(){
             <div id="sd_${h.date.replace(/\//g,'_')}" style="display:none;">${itemsHTML_s}</div>
         </div>`;
     });
-    if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
+    if(curM) area.innerHTML+=`<div class="month-header"><span style="color:#0984e3;">${curM}</span> <span style="color:#2d3436;">— Total: </span><span style="color:#d63031;">₹${mTot.toFixed(2)}</span></div>`+html;
 }
 function openSamanEdit(date){
     curSamanDate=date;
@@ -658,17 +658,16 @@ function renderMonthlyTotal(){
 
     let dropHTML=last6.slice(1).map(m=>
         `<div style="padding:5px 10px;font-size:12px;border-top:1px solid #f1f2f6;display:flex;justify-content:space-between;gap:12px;">
-            <span style="font-weight:700;color:#2d3436;">${m.sh} ${m.yr}</span>
+            <span style="font-weight:700;color:#0984e3;">${m.sh} <span style="color:#636e72;">${m.yr}</span></span>
             <span style="color:#d63031;font-weight:800;">₹${Math.round(m.total)}</span>
         </div>`
     ).join('');
 
     box.innerHTML=`
         <div onclick="toggleMonthDrop()" style="font-size:12px;white-space:nowrap;cursor:pointer;display:flex;align-items:center;gap:4px;">
-            <span style="font-weight:900;color:#2d3436;">${curShort}</span>
+            <span style="font-weight:900;color:#0984e3;">${curShort}</span>
             <span style="color:#636e72;">-</span>
             <span style="color:#d63031;font-weight:800;">₹${Math.round(curTotal)}</span>
-            <span style="color:#636e72;font-size:10px;">▼</span>
         </div>
         <div id="monthDrop" style="display:none;position:absolute;top:100%;left:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:999;min-width:160px;overflow:hidden;">
             ${dropHTML}
