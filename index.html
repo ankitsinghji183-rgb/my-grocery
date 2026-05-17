@@ -52,14 +52,12 @@
 
 <!-- MAIN -->
 <div id="mainView" style="display:none;">
-    <!-- Monthly Total Box -->
-    <div id="monthlyBox" style="margin:6px 8px 0;background:white;border-radius:10px;padding:8px 12px;box-shadow:0 2px 6px rgba(0,0,0,0.06);border:1px solid #e1e8ed;flex-shrink:0;">
-        <div style="font-size:10px;font-weight:800;color:#636e72;margin-bottom:4px;">MONTHLY TOTAL</div>
-        <div id="monthlyList" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
-    </div>
-    <div class="top-hist" style="padding:6px 8px;">
-        <div class="h-box" style="padding:9px 0;font-size:10px;" onclick="openSamanHist()">📦 Saman</div>
-        <div class="h-box" style="padding:9px 0;font-size:10px;" onclick="openKharchHist()">💰 Kharch</div>
+    <div style="display:flex;gap:6px;padding:6px 8px;flex-shrink:0;align-items:stretch;">
+        <div id="monthlyBox" style="background:white;border-radius:10px;padding:6px 8px;box-shadow:0 2px 6px rgba(0,0,0,0.06);border:1px solid #e1e8ed;display:flex;align-items:center;flex:1.2;">
+            <div id="monthlyList" style="display:flex;flex-wrap:wrap;gap:3px;"></div>
+        </div>
+        <div class="h-box" style="padding:8px 0;font-size:10px;flex:0.9;" onclick="openSamanHist()">📦 Saman</div>
+        <div class="h-box" style="padding:8px 0;font-size:10px;flex:0.9;" onclick="openKharchHist()">💰 Kharch</div>
     </div>
     <div class="card" style="margin:0 8px 6px;">
         <div class="in-row" style="margin-bottom:7px;">
@@ -639,16 +637,18 @@ function renderMonthlyTotal(){
         return;
     }
 
-    box.innerHTML=keys.map(mk=>{
-        let m=monthMap[mk];
-        let total=m.exp+m.shop;
-        if(total<=0) return '';
-        return `<div style="background:#f8f9fa;border-radius:6px;padding:4px 8px;font-size:11px;white-space:nowrap;">
-            <span style="font-weight:900;color:#2d3436;">${m.short}</span>
-            <span style="color:#636e72;margin:0 3px;">-</span>
-            <span style="color:#d63031;font-weight:800;">₹${Math.round(total)}</span>
-        </div>`;
-    }).join('');
+    // Sirf current month dikhao
+    let now=new Date();
+    let curShort=months[now.getMonth()];
+    let curYr=now.getFullYear().toString();
+    let curKey=curShort+'_'+curYr;
+    let cm=monthMap[curKey];
+    let total=cm?(cm.exp+cm.shop):0;
+    box.innerHTML=`<div style="font-size:12px;white-space:nowrap;">
+        <span style="font-weight:900;color:#2d3436;">${curShort}</span>
+        <span style="color:#636e72;margin:0 3px;">-</span>
+        <span style="color:#d63031;font-weight:800;">₹${Math.round(total)}</span>
+    </div>`;
 }
 
 // ====== HELPERS ======
