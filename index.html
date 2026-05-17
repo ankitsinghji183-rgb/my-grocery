@@ -36,10 +36,10 @@
         .hist-row{display:grid;grid-template-columns:1fr 82px 40px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:3px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
         .sel-bg{background:#fff9db!important;border-left:4px solid #fcc419;}
         .sum-box{padding:12px 15px;background:#e3f2fd;font-weight:900;text-align:right;border-top:3px solid #0984e3;font-size:16px;color:#0984e3;flex-shrink:0;}
-        .b-nav{width:100%;background:white;padding:8px 10px;border-top:1px solid #dfe6e9;display:flex;gap:8px;flex-shrink:0;position:relative;z-index:1001;}
+        .b-nav{width:100%;background:white;padding:8px 10px;border-top:1px solid #dfe6e9;display:flex;gap:8px;flex-shrink:0;}
         .top-hist{display:flex;gap:8px;padding:8px 10px;flex-shrink:0;}
         .h-box{flex:1;background:#f8f9fa;border:1px solid #dfe6e9;padding:12px 0;text-align:center;border-radius:12px;font-weight:800;font-size:11px;color:#0984e3;cursor:pointer;}
-        .month-header{background:#f8f9fa;padding:8px 12px;font-weight:800;font-size:12px;border-radius:6px;margin-bottom:3px;border-left:4px solid #0984e3;}
+        .month-header{background:#dfe6e9;padding:8px 12px;font-weight:800;font-size:12px;border-radius:6px;margin-bottom:3px;}
         .add-row{background:#e8f5e9;padding:10px 8px;border-radius:8px;border:1px dashed #2ecc71;flex-shrink:0;margin-bottom:0;}
         .add-row-title{font-size:11px;font-weight:800;color:#27ae60;margin-bottom:6px;}
         .lang-btn{padding:5px 12px;border:2px solid white;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;background:transparent;color:white;height:34px;}
@@ -50,14 +50,11 @@
 
 <div id="loadingScreen"><h2>🛒 Grocery Master</h2><p>Data load ho raha hai...</p></div>
 
-<!-- MAIN VIEW -->
+<!-- MAIN -->
 <div id="mainView" style="display:none;">
-    <div style="display:flex;gap:6px;padding:6px 8px;flex-shrink:0;align-items:stretch;">
-        <div id="monthlyBox" onclick="toggleMonthDrop()" style="background:white;border-radius:10px;padding:6px 8px;box-shadow:0 2px 6px rgba(0,0,0,0.06);border:1px solid #e1e8ed;display:flex;align-items:center;flex:1.2;cursor:pointer;">
-            <div id="monthlyList" style="display:flex;flex-wrap:wrap;gap:3px;pointer-events:none;"></div>
-        </div>
-        <div class="h-box" style="padding:8px 0;font-size:10px;flex:0.9;" onclick="openSamanHist()">📦 Saman</div>
-        <div class="h-box" style="padding:8px 0;font-size:10px;flex:0.9;" onclick="openKharchHist()">💰 Kharch</div>
+    <div class="top-hist">
+        <div class="h-box" onclick="openSamanHist()">📦 Saman History</div>
+        <div class="h-box" onclick="openKharchHist()">💰 Kharch History</div>
     </div>
     <div class="card" style="margin:0 8px 6px;">
         <div class="in-row" style="margin-bottom:7px;">
@@ -173,7 +170,7 @@
 <!-- CALC -->
 <div id="calcPage" class="full-page">
     <div class="p-head">
-        <span class="back" onclick="showPage('listPage');renderFinalList();">BACK</span>
+        <span class="back" onclick="calcBack()">BACK</span>
         <span>💰 Bill Calc</span>
         <span></span>
     </div>
@@ -181,7 +178,7 @@
     <div id="cSum" class="sum-box">BILL TOTAL: ₹0</div>
 </div>
 
-<!-- LIST VIEW -->
+<!-- LIST -->
 <div id="listPage" class="full-page">
     <div class="p-head">
         <span class="back" onclick="closePage()">BACK</span>
@@ -201,19 +198,18 @@
 </div>
 
 <script>
-// ====== FIREBASE CONFIGURATION ======
+// ====== FIREBASE ======
 const firebaseConfig={databaseURL:"https://grocerry-cc1a9-default-rtdb.asia-southeast1.firebasedatabase.app/"};
 firebase.initializeApp(firebaseConfig);
 const DB=firebase.database().ref('grocery/3');
 
-// ====== APPLICATION STATE ======
+// ====== STATE ======
 let items=[],expense=[],shopping=[];
 let activeF='All',tCalc=[],listLang='hi';
 let curKharchDate='',curSamanDate='';
 const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-// ====== INITIAL DATA LOAD ======
-DB.off();
+// ====== LOAD — DB.get() ek baar ======
 DB.get().then(snap=>{
     const d=snap.val()||{};
     items    = toArr(d.items);
@@ -223,19 +219,14 @@ DB.get().then(snap=>{
     document.getElementById('loadingScreen').style.display='none';
     document.getElementById('mainView').style.display='flex';
     renderMaster();
-    renderMonthlyTotal();
-}).catch(e=>{
-    document.getElementById('loadingScreen').innerHTML='<h2>Error</h2><p>Reload karo</p>';
-    console.error(e);
+}).catch(()=>{
+    document.getElementById('loadingScreen').innerHTML='<h2>❌ Error</h2><p>Reload karo</p>';
 });
 
 function toArr(x){return Array.isArray(x)?x:Object.values(x||{});}
+function save(){DB.set({items,history:{expense,shopping}});}
 
-function save(){
-    DB.set({items, history:{expense, shopping}}).catch(e=>console.error('Save error:',e));
-}
-
-// ====== NAVIGATION ======
+// ====== NAV ======
 function showPage(id){
     document.querySelectorAll('.full-page').forEach(p=>p.style.display='none');
     document.getElementById('mainView').style.display='none';
@@ -249,11 +240,12 @@ window.onpopstate=()=>{
     renderMaster();
 };
 
-// ====== MASTER LIST RENDER & OPERATIONS ======
+// ====== MASTER LIST — selected upar aayenge ======
 function renderMaster(){
     let cont=document.getElementById('masterList'); if(!cont) return;
     let q=document.getElementById('itemName').value.toLowerCase();
     let all=items.filter(it=>(activeF==='All'||it.cat===activeF)&&it.name.toLowerCase().includes(q));
+    // Selected pehle, phir unselected
     let selected=all.filter(it=>it.sel);
     let unselected=all.filter(it=>!it.sel);
     let filtered=[...selected,...unselected];
@@ -280,7 +272,6 @@ function renderMaster(){
             <button class="btn del-btn" onclick="delItem(${i})">✕</button>
         </div>`;
     }).join('');
-    renderMonthlyTotal();
 }
 function toggleI(i){items[i].sel=!items[i].sel;save();renderMaster();}
 function addItem(){
@@ -297,23 +288,26 @@ function setFilter(f){
 }
 function unselectAll(){if(confirm("Sab clear?")){items.forEach(it=>it.sel=false);save();renderMaster();}}
 
-// ====== DAILY KHARCH OPERATIONS ======
+// ====== DAILY KHARCH — aaj ki date ka record seedha edit mein kholo ======
 function openDailyKharch(){
     curKharchDate=new Date().toLocaleDateString('en-GB');
+    // Record banao agar nahi hai — items baad mein add honge
     if(!expense.find(h=>h.date===curKharchDate)){
         expense.unshift({date:curKharchDate,items:[]});
+        // Empty record abhi save NAHI karo — pehla item add hone par save hoga
     }
-    showPage('kharchEditPage');
     renderKharchEdit();
+    showPage('kharchEditPage');
 }
 
-// ====== KHARCH HISTORY MANAGEMENT ======
+// ====== KHARCH HISTORY ======
 function openKharchHist(){
     renderKharchHist();
     showPage('kharchHistPage');
 }
 function renderKharchHist(){
     let area=document.getElementById('kharchHistArea'); area.innerHTML='';
+    // Sirf woh records jo items wale hain
     let arr=expense.filter(h=>h.items&&h.items.length>0);
     let sorted=[...arr].sort((a,b)=>dateDiff(b.date,a.date));
     if(!sorted.length){area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Koi kharch nahi hai.</p>"; return;}
@@ -346,7 +340,7 @@ function renderKharchHist(){
             <div id="kd_${h.date.replace(/\//g,'_')}" style="display:none;">${itemsHTML_k}</div>
         </div>`;
     });
-    if(curM) area.innerHTML+=`<div class="month-header"><span style="color:#0984e3;">${curM}</span> <span style="color:#2d3436;">— Total: </span><span style="color:#d63031;">₹${mTot.toFixed(2)}</span></div>`+html;
+    if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
 }
 function openKharchEdit(date){
     curKharchDate=date;
@@ -354,16 +348,18 @@ function openKharchEdit(date){
     showPage('kharchEditPage');
 }
 function renderKharchEdit(){
+    // Date label update — DD/MM/YYYY format mein dikhao
     let dlabel=document.getElementById('kharchEditDate');
     if(dlabel) dlabel.innerText='📅 '+curKharchDate;
+    // Calendar input ko bhi sync karo (YYYY-MM-DD format chahiye)
     let dp=document.getElementById('kharchDatePicker');
     if(dp && curKharchDate){
         let p=curKharchDate.split('/');
         if(p.length===3) dp.value=`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
     }
-    let na=document.getElementById('kAddName'); if(na) na.value='';
-    let qa=document.getElementById('kAddQty');  if(qa) qa.value='';
-    let pa=document.getElementById('kAddPrice'); if(pa) pa.value='';
+    document.getElementById('kAddName').value='';
+    document.getElementById('kAddQty').value='';
+    document.getElementById('kAddPrice').value='';
     let rec=expense.find(h=>h.date===curKharchDate);
     let area=document.getElementById('kEditList');
     if(!rec||!rec.items.length){
@@ -408,22 +404,30 @@ function renderKharchEdit(){
     document.getElementById('kEditSum').innerText=`TOTAL: ₹${t.toFixed(2)}`;
 }
 
+// ADD ITEM — list mein turant dikhega, Firebase mein save
 function kAddItem(){
     let n=document.getElementById('kAddName').value.trim();
     let q=parseFloat(document.getElementById('kAddQty').value)||0;
     let p=parseFloat(document.getElementById('kAddPrice').value)||0;
     if(!n){alert("Naam zaroor bharein!"); return;}
-    if(!curKharchDate) curKharchDate=new Date().toLocaleDateString('en-GB');
+
+    // Record dhundho — zaroor hoga kyunki openDailyKharch mein bana diya
     let rec=expense.find(h=>h.date===curKharchDate);
     if(!rec){rec={date:curKharchDate,items:[]};expense.unshift(rec);}
+
+    // Same naam → JODO, naya → push
     let ex=rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
     if(ex){ex.qty=(parseFloat(ex.qty)||0)+q; ex.price=(parseFloat(ex.price)||0)+p;}
-    else   rec.items.push({name:n,qty:q,price:p,done:false,unit:'Kg'});
+    else   rec.items.push({name:n,qty:q,price:p,done:false});
+
+    // Fields clear
     document.getElementById('kAddName').value='';
     document.getElementById('kAddQty').value='';
     document.getElementById('kAddPrice').value='';
+
+    // Render turant
     renderKharchEdit();
-    renderMonthlyTotal();
+    // Firebase save
     save();
 }
 function kField(i,f,v){
@@ -435,8 +439,6 @@ function kField(i,f,v){
     renderKharchEdit();
     save();
 }
-function kharchHistDateGo(val){ if(!val)return; let p=val.split('-'); openKharchEdit(`${p[2]}/${p[1]}/${p[0]}`); }
-function kharchDateChanged(val){ if(!val)return; let p=val.split('-'); curKharchDate=`${p[2]}/${p[1]}/${p[0]}`; renderKharchEdit(); }
 function kLock(i){
     let rec=expense.find(h=>h.date===curKharchDate); if(!rec) return;
     rec.items[i].done=!rec.items[i].done; renderKharchEdit(); save();
@@ -451,7 +453,7 @@ function delKharchRec(date){
     if(confirm("Poora din hataein?")){expense=expense.filter(h=>h.date!==date);save();renderKharchHist();}
 }
 
-// ====== SAMAN HISTORY MANAGEMENT ======
+// ====== SAMAN HISTORY ======
 function openSamanHist(){
     renderSamanHist();
     showPage('samanHistPage');
@@ -490,7 +492,7 @@ function renderSamanHist(){
             <div id="sd_${h.date.replace(/\//g,'_')}" style="display:none;">${itemsHTML_s}</div>
         </div>`;
     });
-    if(curM) area.innerHTML+=`<div class="month-header"><span style="color:#0984e3;">${curM}</span> <span style="color:#2d3436;">— Total: </span><span style="color:#d63031;">₹${mTot.toFixed(2)}</span></div>`+html;
+    if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
 }
 function openSamanEdit(date){
     curSamanDate=date;
@@ -519,9 +521,32 @@ function renderSamanEdit(){
         `<div style="background:white;margin-bottom:3px;border-radius:6px;border-bottom:1px solid #eee;padding:8px 6px;">
             <div style="display:grid;grid-template-columns:18px 1fr 76px 36px 36px;gap:4px;align-items:center;margin-bottom:4px;">
                 <span style="color:#636e72;font-size:11px;">${i+1}.</span>
-                <input type="text" value="${it.name}" onchange="sField(${i},'name',this.value)" style="font-size:13px;min-width:0;height:36px;padding:5px;">
-                <input type="number" value="${it.price||''}" onchange="sField(${i},'price',this.value)" class="p-box" style="height:36px;" inputmode="decimal">
+                <input type="text" ${it.done?'disabled':''} value="${it.name}"
+                    onchange="sField(${i},'name',this.value)" style="font-size:13px;min-width:0;height:36px;padding:5px;">
+                <input type="number" ${it.done?'disabled':''} value="${it.price||''}"
+                    onchange="sField(${i},'price',this.value)" class="p-box" style="height:36px;" inputmode="decimal">
+                <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="sLock(${i})" style="height:36px;">${it.done?'✓':'🔒'}</button>
                 <button class="btn del-btn" onclick="sDel(${i})" style="height:36px;">✕</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;align-items:center;">
+                <span style="font-size:12px;color:#0984e3;font-weight:700;padding-left:22px;">${fmtQtyHi(it.qty,it.unit)}</span>
+                <div style="display:flex;gap:3px;align-items:center;">
+                    <input type="number" ${it.done?'disabled':''} value="${it.qty||''}"
+                        onchange="sField(${i},'qty',this.value)" style="width:55px;height:32px;font-size:12px;" inputmode="decimal">
+                    <select ${it.done?'disabled':''} onchange="sField(${i},'unit',this.value)" style="height:32px;font-size:11px;background:#f1f2f6;border:none;border-radius:6px;padding:0 2px;flex:1;">
+                        <option value="Kg"    ${it.unit=='Kg'    ?'selected':''}>Kg</option>
+                        <option value="Ltr"   ${it.unit=='Ltr'   ?'selected':''}>Ltr</option>
+                        <option value="Pc"    ${it.unit=='Pc'    ?'selected':''}>Pc</option>
+                        <option value="Pkt"   ${it.unit=='Pkt'   ?'selected':''}>Pkt</option>
+                        <option value="Open"  ${it.unit=='Open'  ?'selected':''}>Open</option>
+                        <option value="Rs"    ${it.unit=='Rs'    ?'selected':''}>Rs</option>
+                        <option value="Send"  ${it.unit=='Send'  ?'selected':''}>Send</option>
+                        <option value="Plate" ${it.unit=='Plate' ?'selected':''}>Plate</option>
+                        <option value="Form"  ${it.unit=='Form'  ?'selected':''}>Form</option>
+                        <option value="Cup"   ${it.unit=='Cup'   ?'selected':''}>Cup</option>
+                        <option value="Glass" ${it.unit=='Glass' ?'selected':''}>Glass</option>
+                    </select>
+                </div>
             </div>
         </div>`
     ).join('');
@@ -533,86 +558,300 @@ function sAddItem(){
     let q=parseFloat(document.getElementById('sAddQty').value)||0;
     let p=parseFloat(document.getElementById('sAddPrice').value)||0;
     if(!n){alert("Naam zaroor bharein!"); return;}
-    if(!curSamanDate) curSamanDate=new Date().toLocaleDateString('en-GB');
     let rec=shopping.find(h=>h.date===curSamanDate);
     if(!rec){rec={date:curSamanDate,items:[]};shopping.unshift(rec);}
-    rec.items.push({name:n,qty:q,price:p,unit:'Kg'});
-    renderSamanEdit();
-    save();
+    let ex=rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
+    if(ex){ex.qty=(parseFloat(ex.qty)||0)+q; ex.price=(parseFloat(ex.price)||0)+p;}
+    else   rec.items.push({name:n,qty:q,price:p,done:false});
+    document.getElementById('sAddName').value='';
+    document.getElementById('sAddQty').value='';
+    document.getElementById('sAddPrice').value='';
+    renderSamanEdit(); save();
 }
 function sField(i,f,v){
     let rec=shopping.find(h=>h.date===curSamanDate); if(!rec) return;
     if(f==='name'||f==='unit') rec.items[i][f]=v;
     else rec.items[i][f]=parseFloat(v)||0;
-    renderSamanEdit(); save();
+    let t=rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
+    document.getElementById('sEditSum').innerText=`TOTAL: ₹${t.toFixed(2)}`;
+    renderSamanEdit();
+    save();
+}
+function sLock(i){
+    let rec=shopping.find(h=>h.date===curSamanDate); if(!rec) return;
+    rec.items[i].done=!rec.items[i].done; renderSamanEdit(); save();
 }
 function sDel(i){
-    let rec=shopping.find(h=>h.date===curSamanDate);
-    if(rec){rec.items.splice(i,1); renderSamanEdit(); save();}
+    if(confirm("Delete?")){
+        let rec=shopping.find(h=>h.date===curSamanDate);
+        if(rec){rec.items.splice(i,1); renderSamanEdit(); save();}
+    }
 }
 function delSamanRec(date){
-    if(confirm("Delete record?")){shopping=shopping.filter(h=>h.date!==date);save();renderSamanHist();}
+    if(confirm("Poora din hataein?")){shopping=shopping.filter(h=>h.date!==date);save();renderSamanHist();}
 }
-function samanHistDateGo(val){ if(!val)return; let p=val.split('-'); openSamanEdit(`${p[2]}/${p[1]}/${p[0]}`); }
-function samanDateChanged(val){ if(!val)return; let p=val.split('-'); curSamanDate=`${p[2]}/${p[1]}/${p[0]}`; renderSamanEdit(); }
 
-// ====== DATE & CALCULATION UTILITIES ======
-function toggleDrop(id){ let el=document.getElementById(id); el.style.display=el.style.display==='none'?'block':'none'; }
-function dateDiff(a,b){ let p1=a.split('/'),p2=b.split('/'); return new Date(p1[2],p1[1]-1,p1[0])-new Date(p2[2],p2[1]-1,p2[0]); }
-function dateToMonth(d){ let p=d.split('/'); return months[parseInt(p[1])-1]+" "+p[2]; }
+// ====== HELPERS ======
+function toggleDrop(id){
+    let el=document.getElementById(id);
+    if(!el) return;
+    el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
 
-function fmtQtyHi(q,u){
-    let n=parseFloat(q)||0; if(!n) return '—';
-    if(u==='Kg'||u==='Ltr'){
-        if(n===0.5) return u==='Kg'?'आधा किलो':'आधा लीटर';
-        if(n===0.25) return '250 ग्राम';
-        if(n===0.75) return '750 ग्राम';
+// Calendar se date select karna — YYYY-MM-DD aata hai, DD/MM/YYYY mein convert karo
+function ymdToDmy(ymd){
+    if(!ymd) return '';
+    let p=ymd.split('-');
+    return `${p[2]}/${p[1]}/${p[0]}`;
+}
+
+// Kharch Edit — date badlo
+function kharchDateChanged(ymd){
+    let newDate=ymdToDmy(ymd);
+    if(!newDate) return;
+    curKharchDate=newDate;
+    // Record nahi hai to bana do
+    if(!expense.find(h=>h.date===curKharchDate)){
+        expense.unshift({date:curKharchDate,items:[]});
     }
-    return n+' '+u;
+    renderKharchEdit();
 }
 
-function renderMonthlyTotal(){
-    let cm=months[new Date().getMonth()]+" "+new Date().getFullYear();
-    let total=expense.filter(h=>dateToMonth(h.date)===cm).reduce((sum,h)=>sum+h.items.reduce((s,i)=>s+(parseFloat(i.price)||0),0),0);
-    let mBox=document.getElementById('monthlyList');
-    if(mBox) mBox.innerHTML=`<span style="font-size:11px;color:#2c3e50;font-weight:bold;">${cm}: ₹${total.toFixed(2)}</span>`;
+// Saman Edit — date badlo
+function samanDateChanged(ymd){
+    let newDate=ymdToDmy(ymd);
+    if(!newDate) return;
+    curSamanDate=newDate;
+    if(!shopping.find(h=>h.date===curSamanDate)){
+        shopping.unshift({date:curSamanDate,items:[]});
+    }
+    renderSamanEdit();
 }
-function toggleMonthDrop(){}
 
-// ====== FINAL LIST GENERATION & BILL CALCULATION ======
+// Kharch History — date select karo, us date ka expand karo
+function kharchHistDateGo(ymd){
+    let date=ymdToDmy(ymd);
+    if(!date) return;
+    // Pehle check karo record hai ya nahi
+    let rec=expense.find(h=>h.date===date);
+    if(rec && rec.items && rec.items.length>0){
+        // History page mein scroll karke us date ka dropdown kholo
+        let id='kd_'+date.replace(/\//g,'_');
+        let el=document.getElementById(id);
+        if(el){
+            el.style.display='block';
+            setTimeout(()=>{ el.scrollIntoView({behavior:'smooth',block:'start'}); },100);
+        } else {
+            // List mein nahi dikh raha — seedha edit kholo
+            curKharchDate=date;
+            renderKharchEdit();
+            showPage('kharchEditPage');
+        }
+    } else {
+        // Koi record nahi — seedha us date ka edit kholo
+        curKharchDate=date;
+        if(!expense.find(h=>h.date===date)){
+            expense.unshift({date:date,items:[]});
+        }
+        renderKharchEdit();
+        showPage('kharchEditPage');
+    }
+}
+
+// Saman History — date select karo
+function samanHistDateGo(ymd){
+    let date=ymdToDmy(ymd);
+    if(!date) return;
+    let rec=shopping.find(h=>h.date===date);
+    if(rec && rec.items && rec.items.length>0){
+        let id='sd_'+date.replace(/\//g,'_');
+        let el=document.getElementById(id);
+        if(el){
+            el.style.display='block';
+            setTimeout(()=>{ el.scrollIntoView({behavior:'smooth',block:'start'}); },100);
+        } else {
+            curSamanDate=date;
+            renderSamanEdit();
+            showPage('samanEditPage');
+        }
+    } else {
+        curSamanDate=date;
+        if(!shopping.find(h=>h.date===date)){
+            shopping.unshift({date:date,items:[]});
+        }
+        renderSamanEdit();
+        showPage('samanEditPage');
+    }
+}
+function dateDiff(a,b){
+    let da=a.split('/'),db=b.split('/');
+    return new Date(da[2],da[1]-1,da[0])-new Date(db[2],db[1]-1,db[0]);
+}
+function dateToMonth(date){
+    let p=date.split('/');
+    return months[parseInt(p[1])-1]+' '+p[2];
+}
+// Hindi quantity display — edit page aur calc mein use hoga
+function fmtQtyHi(qty,unit){
+    if(unit==='Open') return 'खुला';
+    if(unit==='Send') return 'Send';
+    let q=parseFloat(qty);
+    if(isNaN(q)||qty===''||qty==null) return '';
+    let h5=(Math.abs(q-0.5)<0.001),g2=(Math.abs(q-0.2)<0.001);
+    let g25=(Math.abs(q-0.25)<0.001),g1=(Math.abs(q-0.1)<0.001),g75=(Math.abs(q-0.75)<0.001);
+    if(unit==='Kg'){if(h5)return 'आधा किलो';if(g2)return '200 ग्राम';if(g25)return '250 ग्राम';if(g1)return '100 ग्राम';if(g75)return '750 ग्राम';return `${q} किलो`;}
+    if(unit==='Ltr'){if(h5)return 'आधा लीटर';if(g2)return '200 ML';if(g25)return '250 ML';if(g1)return '100 ML';if(g75)return '750 ML';return `${q} लीटर`;}
+    if(unit==='Pc')    return `${q} पीस`;
+    if(unit==='Rs')    return `₹${q}`;
+    if(unit==='Pkt')   return `${q} पैकेट`;
+    if(unit==='Open')  return `खुला`;
+    if(unit==='Send')  return `Send`;
+    if(unit==='Plate') return `${q} प्लेट`;
+    if(unit==='Form')  return `${q} फॉर्म`;
+    if(unit==='Cup')   return `${q} कप`;
+    if(unit==='Glass') return `${q} ग्लास`;
+    return `${qty} ${unit}`;
+}
+
+// ====== LANGUAGE ======
+function setLang(lang){
+    listLang=lang;
+    document.getElementById('btnHi').classList.toggle('active',lang==='hi');
+    document.getElementById('btnEn').classList.toggle('active',lang==='en');
+    renderFinalList();
+}
+function fmtQty(qty,unit,lang){
+    // Open aur Send ke liye qty ki zaroorat nahi
+    if(unit==='Open') return lang==='hi' ? 'खुला' : 'Open';
+    if(unit==='Send') return 'Send';
+    let q=parseFloat(qty);
+    if(isNaN(q)||qty===''||qty==null) return '';
+    let h5=(Math.abs(q-0.5)<0.001),g2=(Math.abs(q-0.2)<0.001);
+    let g25=(Math.abs(q-0.25)<0.001),g1=(Math.abs(q-0.1)<0.001),g75=(Math.abs(q-0.75)<0.001);
+    if(lang==='en'){
+        if(unit==='Kg'){if(h5)return 'Half Kg';if(g2)return '200 Gram';if(g25)return '250 Gram';if(g1)return '100 Gram';if(g75)return '750 Gram';return `${q} Kg`;}
+        if(unit==='Ltr'){if(h5)return 'Half Litre';if(g2)return '200 ML';if(g25)return '250 ML';if(g1)return '100 ML';if(g75)return '750 ML';return `${q} Litre`;}
+        if(unit==='Pc')    return `${q} Pc`;
+        if(unit==='Rs')    return `${q} Rs`;
+        if(unit==='Pkt')   return `${q} Pkt`;
+        if(unit==='Open')  return `Open`;
+        if(unit==='Send')  return `Send`;
+        if(unit==='Plate') return `${q} Plate`;
+        if(unit==='Form')  return `${q} Form`;
+        if(unit==='Cup')   return `${q} Cup`;
+        if(unit==='Glass') return `${q} Glass`;
+        return `${q} ${unit}`;
+    }
+    if(unit==='Kg'){if(h5)return 'आधा किलो';if(g2)return '200 ग्राम';if(g25)return '250 ग्राम';if(g1)return '100 ग्राम';if(g75)return '750 ग्राम';return `${q} किलो`;}
+    if(unit==='Ltr'){if(h5)return 'आधा लीटर';if(g2)return '200 ML';if(g25)return '250 ML';if(g1)return '100 ML';if(g75)return '750 ML';return `${q} लीटर`;}
+    if(unit==='Pc')    return `${q} पीस`;
+    if(unit==='Rs')    return `${q} रुपये`;
+    if(unit==='Pkt')   return `${q} पैकेट`;
+    if(unit==='Open')  return `खुला`;
+    if(unit==='Send')  return `Send`;
+    if(unit==='Plate') return `${q} प्लेट`;
+    if(unit==='Form')  return `${q} फॉर्म`;
+    if(unit==='Cup')   return `${q} कप`;
+    if(unit==='Glass') return `${q} ग्लास`;
+    return `${qty} ${unit}`;
+}
+// English fmtQty extra units
+
+function catLabel(c,lang){
+    if(lang==='hi'){if(c==='SABJI')return 'सब्जी';if(c==='BODY')return 'शरीर';if(c==='OTHER')return 'अन्य';return 'GROC';}
+    return c;
+}
+
+// ====== FINAL LIST ======
+let lastSelItems=[];
 function showFinalList(){
-    let sel=items.filter(i=>i.sel);
-    if(!sel.length){alert("Koi item select nahi hai!"); return;}
-    showPage('listPage');
-    let out=document.getElementById('fOut');
-    out.innerHTML=`<h3 style="text-align:center;margin-bottom:10px;">${listLang==='hi'?'सामान सूची':'Shopping List'}</h3>`;
-    out.innerHTML+=sel.map((it,i)=>`<div style="padding:6px 0;border-bottom:1px solid #eee;font-size:14px;"><b>${i+1}. ${it.name}</b> — ${it.qty||''} ${it.unit}</div>`).join('');
+    lastSelItems=items.filter(it=>it.sel);
+    if(!lastSelItems.length){alert("Pehle item choose karo!"); return;}
+    renderFinalList(); showPage('listPage');
 }
-function setLang(l){ listLang=l; document.getElementById('btnHi').classList.toggle('active',l==='hi'); document.getElementById('btnEn').classList.toggle('active',l==='en'); showFinalList(); }
-function takeShot(){
-    html2canvas(document.getElementById('shotArea')).then(canvas=>{
-        let link=document.createElement('a'); link.download='GroceryList.png'; link.href=canvas.toDataURL(); link.click();
+function renderFinalList(){
+    let isHi=(listLang==='hi');
+    document.getElementById('listTitle').innerText=isHi?'सामान सूची':'Shopping List';
+    let out=document.getElementById('fOut'); if(!out) return;
+    let col1=isHi?'सामान':'ITEM',col2=isHi?'मात्रा':'QTY',col3=isHi?'कीमत':'RATE';
+    out.innerHTML=`<h2 style="text-align:center;color:#0984e3;border-bottom:3px solid #0984e3;padding-bottom:10px;margin-bottom:15px;">${isHi?'🛒 सामान सूची':'🛒 Shopping List'}</h2>`;
+    ['GROCERY','SABJI','BODY','OTHER'].forEach(c=>{
+        let f=lastSelItems.filter(it=>it.cat===c); if(!f.length) return;
+        out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:5px 12px;border-radius:4px;font-size:12px;margin:14px 0 7px;display:inline-block;">${catLabel(c,listLang)}</div>`;
+        out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;font-size:11px;font-weight:900;color:#636e72;padding:5px;border-bottom:2px solid #dfe6e9;"><span>${col1}</span><span style="text-align:center;">${col2}</span><span style="text-align:center;">${col3}</span></div>`;
+        f.forEach((it,j)=>{
+            out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;padding:11px 5px;border-bottom:1px dashed #ccc;font-weight:bold;align-items:center;">
+                <span style="font-size:13px;">${j+1}. ${it.name}</span>
+                <span style="text-align:center;color:#0984e3;font-size:13px;">${fmtQty(it.qty,it.unit,listLang)}</span>
+                <span style="text-align:center;color:#e17055;font-size:13px;">₹____</span>
+            </div>`;
+        });
     });
 }
+
+// ====== CALC — price dalte hi auto save, confirm button bhi ======
 function openCalc(){
-    tCalc=items.filter(i=>i.sel).map(i=>({name:i.name,qty:i.qty,unit:i.unit,price:''}));
-    showPage('calcPage');
-    renderCalc();
+    tCalc=items.filter(it=>it.sel).map(it=>({name:it.name,qty:parseFloat(it.qty)||0,unit:it.unit,price:0,done:false}));
+    renderC(); showPage('calcPage');
 }
-function renderCalc(){
-    let area=document.getElementById('cList');
-    if(!tCalc.length){ area.innerHTML="<p style='padding:20px;text-align:center;'>List khali hai.</p>"; return; }
-    area.innerHTML=tCalc.map((it,i)=>`
-        <div class="calc-row">
-            <span style="font-size:13px;"><b>${it.name}</b> (${it.qty} ${it.unit})</span>
-            <input type="number" placeholder="Price" value="${it.price}" onchange="tCalc[${i}].price=this.value;updateCalcSum();" style="width:70px;" inputmode="decimal">
-        </div>
-    `).join('');
-    updateCalcSum();
+function renderC(){
+    document.getElementById('cList').innerHTML=tCalc.map((it,i)=>{
+        // Rs unit ho to sirf price box dikhao, qty nahi
+        let qtyDisplay = it.unit==='Rs'
+            ? `<span style="color:#e17055;font-size:11px;font-weight:800;">₹ amt</span>`
+            : `<span style="color:#636e72;font-size:12px;">${fmtQtyHi(it.qty,it.unit)}</span>`;
+        return `<div class="calc-row" style="grid-template-columns:1fr ${it.unit==='Rs'?'60px':'80px'} 76px 40px;">
+            <b style="font-size:13px;">${it.name}</b>
+            ${qtyDisplay}
+            <input type="number" ${it.done?'disabled':''} placeholder="₹"
+                value="${it.price>0?it.price:''}"
+                onchange="calcPrice(${i},this.value)" class="p-box" inputmode="decimal">
+            <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="calcLock(${i})">${it.done?'✓':'🔒'}</button>
+        </div>`;
+    }).join('');
+    renderCSum();
 }
-function updateCalcSum(){
+// Price dalte hi auto save shopping history mein
+function calcPrice(i,v){
+    tCalc[i].price=parseFloat(v)||0;
+    renderCSum();
+    autoSaveCalc(); // auto save
+}
+function calcLock(i){tCalc[i].done=!tCalc[i].done; renderC(); autoSaveCalc();}
+
+function autoSaveCalc(){
+    let filled=tCalc.filter(it=>it.price>0); if(!filled.length) return;
+    let d=new Date().toLocaleDateString('en-GB');
+    let rec=shopping.find(h=>h.date===d);
+    if(!rec){rec={date:d,items:[]};shopping.unshift(rec);}
+    // Pehle us date ke tCalc items hata do, phir fresh add karo (duplicate na bane)
+    rec.items=rec.items.filter(e=>!tCalc.find(t=>t.name.toLowerCase()===e.name.toLowerCase()));
+    filled.forEach(ni=>{rec.items.push({name:ni.name,qty:ni.qty,unit:ni.unit,price:ni.price,done:ni.done});});
+    save();
+}
+function renderCSum(){
     let t=tCalc.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
     document.getElementById('cSum').innerText=`BILL TOTAL: ₹${t.toFixed(2)}`;
+}
+function takeShot(){
+    let el=document.getElementById('shotArea');
+    html2canvas(el,{
+        scale:2,
+        useCORS:true,
+        backgroundColor:'#ffffff',
+        logging:false,
+        width:el.offsetWidth,
+        height:el.offsetHeight
+    }).then(canvas=>{
+        let a=document.createElement('a');
+        a.download='SamanList.png';
+        a.href=canvas.toDataURL('image/png');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }).catch(err=>{
+        alert('Image save nahi ho paya. Browser permissions check karo.');
+    });
 }
 </script>
 </body>
