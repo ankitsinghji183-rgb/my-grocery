@@ -212,23 +212,35 @@ let activeF='All',tCalc=[],listLang='hi';
 let curKharchDate='',curSamanDate='';
 const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-// ====== LOAD — DB.get() ek baar ======
-DB.get().then(snap=>{
+// ====== LOAD — DB.on with saving lock ======
+let saving=false;
+let appReady=false;
+
+DB.on('value', snap=>{
+    if(saving) return; // hum save kar rahe hain — Firebase update ignore karo
     const d=snap.val()||{};
     items    = toArr(d.items);
     const h  = d.history||{};
     expense  = toArr(h.expense);
     shopping = toArr(h.shopping);
-    document.getElementById('loadingScreen').style.display='none';
-    document.getElementById('mainView').style.display='flex';
-    renderMaster();
-    renderMonthlyTotal();
-}).catch(()=>{
-    document.getElementById('loadingScreen').innerHTML='<h2>❌ Error</h2><p>Reload karo</p>';
+
+    if(!appReady){
+        appReady=true;
+        document.getElementById('loadingScreen').style.display='none';
+        document.getElementById('mainView').style.display='flex';
+        renderMaster();
+        renderMonthlyTotal();
+    }
 });
 
 function toArr(x){return Array.isArray(x)?x:Object.values(x||{});}
-function save(){DB.set({items,history:{expense,shopping}});}
+
+function save(){
+    saving=true;
+    DB.set({items,history:{expense,shopping}}).then(()=>{
+        setTimeout(()=>{ saving=false; },3000);
+    }).catch(()=>{ saving=false; });
+}
 
 // ====== NAV ======
 function showPage(id){
