@@ -296,13 +296,11 @@ function unselectAll(){if(confirm("Sab clear?")){items.forEach(it=>it.sel=false)
 // ====== DAILY KHARCH — aaj ki date ka record seedha edit mein kholo ======
 function openDailyKharch(){
     curKharchDate=new Date().toLocaleDateString('en-GB');
-    // Record banao agar nahi hai — items baad mein add honge
     if(!expense.find(h=>h.date===curKharchDate)){
         expense.unshift({date:curKharchDate,items:[]});
-        // Empty record abhi save NAHI karo — pehla item add hone par save hoga
     }
-    renderKharchEdit();
-    showPage('kharchEditPage');
+    showPage('kharchEditPage');   // pehle page open karo
+    renderKharchEdit();           // phir render karo
 }
 
 // ====== KHARCH HISTORY ======
