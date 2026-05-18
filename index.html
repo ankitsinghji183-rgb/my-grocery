@@ -36,10 +36,10 @@
         .hist-row{display:grid;grid-template-columns:1fr 82px 40px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:3px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
         .sel-bg{background:#fff9db!important;border-left:4px solid #fcc419;}
         .sum-box{padding:12px 15px;background:#e3f2fd;font-weight:900;text-align:right;border-top:3px solid #0984e3;font-size:16px;color:#0984e3;flex-shrink:0;}
-        .b-nav{width:100%;background:white;padding:8px 10px;border-top:1px solid #dfe6e9;display:flex;gap:8px;flex-shrink:0;}
+        .b-nav{width:100%;background:white;padding:8px 10px;border-top:1px solid #dfe6e9;display:flex;gap:8px;flex-shrink:0;position:relative;z-index:1001;}
         .top-hist{display:flex;gap:8px;padding:8px 10px;flex-shrink:0;}
         .h-box{flex:1;background:#f8f9fa;border:1px solid #dfe6e9;padding:12px 0;text-align:center;border-radius:12px;font-weight:800;font-size:11px;color:#0984e3;cursor:pointer;}
-        .month-header{background:#dfe6e9;padding:8px 12px;font-weight:800;font-size:12px;border-radius:6px;margin-bottom:3px;}
+        .month-header{background:#f8f9fa;padding:8px 12px;font-weight:800;font-size:12px;border-radius:6px;margin-bottom:3px;border-left:4px solid #0984e3;}
         .add-row{background:#e8f5e9;padding:10px 8px;border-radius:8px;border:1px dashed #2ecc71;flex-shrink:0;margin-bottom:0;}
         .add-row-title{font-size:11px;font-weight:800;color:#27ae60;margin-bottom:6px;}
         .lang-btn{padding:5px 12px;border:2px solid white;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;background:transparent;color:white;height:34px;}
@@ -52,9 +52,12 @@
 
 <!-- MAIN -->
 <div id="mainView" style="display:none;">
-    <div class="top-hist">
-        <div class="h-box" onclick="openSamanHist()">📦 Saman History</div>
-        <div class="h-box" onclick="openKharchHist()">💰 Kharch History</div>
+    <div style="display:flex;gap:6px;padding:6px 8px;flex-shrink:0;align-items:stretch;">
+        <div id="monthlyBox" onclick="toggleMonthDrop()" style="background:white;border-radius:10px;padding:6px 8px;box-shadow:0 2px 6px rgba(0,0,0,0.06);border:1px solid #e1e8ed;display:flex;align-items:center;flex:1.2;cursor:pointer;">
+            <div id="monthlyList" style="display:flex;flex-wrap:wrap;gap:3px;pointer-events:none;"></div>
+        </div>
+        <div class="h-box" style="padding:8px 0;font-size:10px;flex:0.9;" onclick="openSamanHist()">📦 Saman</div>
+        <div class="h-box" style="padding:8px 0;font-size:10px;flex:0.9;" onclick="openKharchHist()">💰 Kharch</div>
     </div>
     <div class="card" style="margin:0 8px 6px;">
         <div class="in-row" style="margin-bottom:7px;">
@@ -170,7 +173,7 @@
 <!-- CALC -->
 <div id="calcPage" class="full-page">
     <div class="p-head">
-        <span class="back" onclick="calcBack()">BACK</span>
+        <span class="back" onclick="showPage('listPage');renderFinalList();">BACK</span>
         <span>💰 Bill Calc</span>
         <span></span>
     </div>
@@ -209,7 +212,10 @@ let activeF='All',tCalc=[],listLang='hi';
 let curKharchDate='',curSamanDate='';
 const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-// ====== LOAD — DB.get() ek baar ======
+// ====== LOAD — sirf ek baar, koi listener nahi ======
+// DB.off() — koi bhi purana listener band karo
+DB.off();
+
 DB.get().then(snap=>{
     const d=snap.val()||{};
     items    = toArr(d.items);
@@ -219,12 +225,18 @@ DB.get().then(snap=>{
     document.getElementById('loadingScreen').style.display='none';
     document.getElementById('mainView').style.display='flex';
     renderMaster();
-}).catch(()=>{
-    document.getElementById('loadingScreen').innerHTML='<h2>❌ Error</h2><p>Reload karo</p>';
+    renderMonthlyTotal();
+}).catch(e=>{
+    document.getElementById('loadingScreen').innerHTML='<h2>Error</h2><p>Reload karo</p>';
+    console.error(e);
 });
 
 function toArr(x){return Array.isArray(x)?x:Object.values(x||{});}
-function save(){DB.set({items,history:{expense,shopping}});}
+
+// Save — sirf push, koi listener trigger nahi hoga
+function save(){
+    DB.set({items, history:{expense, shopping}}).catch(e=>console.error('Save error:',e));
+}
 
 // ====== NAV ======
 function showPage(id){
@@ -272,6 +284,7 @@ function renderMaster(){
             <button class="btn del-btn" onclick="delItem(${i})">✕</button>
         </div>`;
     }).join('');
+    renderMonthlyTotal();
 }
 function toggleI(i){items[i].sel=!items[i].sel;save();renderMaster();}
 function addItem(){
@@ -291,13 +304,11 @@ function unselectAll(){if(confirm("Sab clear?")){items.forEach(it=>it.sel=false)
 // ====== DAILY KHARCH — aaj ki date ka record seedha edit mein kholo ======
 function openDailyKharch(){
     curKharchDate=new Date().toLocaleDateString('en-GB');
-    // Record banao agar nahi hai — items baad mein add honge
     if(!expense.find(h=>h.date===curKharchDate)){
         expense.unshift({date:curKharchDate,items:[]});
-        // Empty record abhi save NAHI karo — pehla item add hone par save hoga
     }
-    renderKharchEdit();
-    showPage('kharchEditPage');
+    showPage('kharchEditPage');   // pehle page open karo
+    renderKharchEdit();           // phir render karo
 }
 
 // ====== KHARCH HISTORY ======
@@ -340,7 +351,7 @@ function renderKharchHist(){
             <div id="kd_${h.date.replace(/\//g,'_')}" style="display:none;">${itemsHTML_k}</div>
         </div>`;
     });
-    if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
+    if(curM) area.innerHTML+=`<div class="month-header"><span style="color:#0984e3;">${curM}</span> <span style="color:#2d3436;">— Total: </span><span style="color:#d63031;">₹${mTot.toFixed(2)}</span></div>`+html;
 }
 function openKharchEdit(date){
     curKharchDate=date;
@@ -357,9 +368,9 @@ function renderKharchEdit(){
         let p=curKharchDate.split('/');
         if(p.length===3) dp.value=`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
     }
-    document.getElementById('kAddName').value='';
-    document.getElementById('kAddQty').value='';
-    document.getElementById('kAddPrice').value='';
+    let na=document.getElementById('kAddName'); if(na) na.value='';
+    let qa=document.getElementById('kAddQty');  if(qa) qa.value='';
+    let pa=document.getElementById('kAddPrice'); if(pa) pa.value='';
     let rec=expense.find(h=>h.date===curKharchDate);
     let area=document.getElementById('kEditList');
     if(!rec||!rec.items.length){
@@ -411,7 +422,10 @@ function kAddItem(){
     let p=parseFloat(document.getElementById('kAddPrice').value)||0;
     if(!n){alert("Naam zaroor bharein!"); return;}
 
-    // Record dhundho — zaroor hoga kyunki openDailyKharch mein bana diya
+    // curKharchDate ensure karo
+    if(!curKharchDate) curKharchDate=new Date().toLocaleDateString('en-GB');
+
+    // Record dhundho ya banao
     let rec=expense.find(h=>h.date===curKharchDate);
     if(!rec){rec={date:curKharchDate,items:[]};expense.unshift(rec);}
 
@@ -425,8 +439,9 @@ function kAddItem(){
     document.getElementById('kAddQty').value='';
     document.getElementById('kAddPrice').value='';
 
-    // Render turant
+    // List update
     renderKharchEdit();
+    renderMonthlyTotal();
     // Firebase save
     save();
 }
@@ -492,7 +507,7 @@ function renderSamanHist(){
             <div id="sd_${h.date.replace(/\//g,'_')}" style="display:none;">${itemsHTML_s}</div>
         </div>`;
     });
-    if(curM) area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html;
+    if(curM) area.innerHTML+=`<div class="month-header"><span style="color:#0984e3;">${curM}</span> <span style="color:#2d3436;">— Total: </span><span style="color:#d63031;">₹${mTot.toFixed(2)}</span></div>`+html;
 }
 function openSamanEdit(date){
     curSamanDate=date;
@@ -590,6 +605,151 @@ function sDel(i){
 function delSamanRec(date){
     if(confirm("Poora din hataein?")){shopping=shopping.filter(h=>h.date!==date);save();renderSamanHist();}
 }
+
+// ====== MONTHLY TOTAL ======
+function renderMonthlyTotal(){
+    let box=document.getElementById('monthlyList'); if(!box) return;
+    // Expense aur shopping dono ko month wise jodo
+    let monthMap={};
+
+    // Expense (kharch)
+    expense.forEach(h=>{
+        if(!h.items||!h.items.length) return;
+        let p=h.date.split('/');
+        let key=months[parseInt(p[1])-1]+' '+p[2]; // "May 2026"
+        let short=months[parseInt(p[1])-1]; // "May"
+        let yr=p[2];
+        let mk=short+'_'+yr;
+        if(!monthMap[mk]) monthMap[mk]={short,yr,exp:0,shop:0};
+        monthMap[mk].exp += h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
+    });
+
+    // Shopping (saman)
+    shopping.forEach(h=>{
+        if(!h.items||!h.items.length) return;
+        let p=h.date.split('/');
+        let short=months[parseInt(p[1])-1];
+        let yr=p[2];
+        let mk=short+'_'+yr;
+        if(!monthMap[mk]) monthMap[mk]={short,yr,exp:0,shop:0};
+        monthMap[mk].shop += h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
+    });
+
+    let keys=Object.keys(monthMap).sort((a,b)=>{
+        let ma=monthMap[a], mb=monthMap[b];
+        let da=new Date(`${ma.yr}-${(months.indexOf(ma.short)+1).toString().padStart(2,'0')}-01`);
+        let db=new Date(`${mb.yr}-${(months.indexOf(mb.short)+1).toString().padStart(2,'0')}-01`);
+        return db-da;
+    });
+
+    if(!keys.length){
+        box.innerHTML="<span style='font-size:11px;color:#b2bec3;'>Koi data nahi</span>";
+        return;
+    }
+
+    // Current month
+    let now=new Date();
+    let curShort=months[now.getMonth()];
+    let curYr=now.getFullYear().toString();
+    let curKey=curShort+'_'+curYr;
+    let cm=monthMap[curKey];
+    let curTotal=cm?(cm.exp+cm.shop):0;
+
+    // Last 6 months list (current included)
+    let last6=[];
+    for(let i=0;i<6;i++){
+        let d=new Date(now.getFullYear(),now.getMonth()-i,1);
+        let sh=months[d.getMonth()];
+        let yr=d.getFullYear().toString();
+        let mk=sh+'_'+yr;
+        let mt=monthMap[mk]?(monthMap[mk].exp+monthMap[mk].shop):0;
+        last6.push({sh,yr,total:mt});
+    }
+
+    let dropHTML=last6.slice(1).map(m=>
+        `<div style="padding:5px 10px;font-size:12px;border-top:1px solid #f1f2f6;display:flex;justify-content:space-between;gap:12px;">
+            <span style="font-weight:700;color:#0984e3;">${m.sh} <span style="color:#636e72;">${m.yr}</span></span>
+            <span style="color:#d63031;font-weight:800;">₹${Math.round(m.total)}</span>
+        </div>`
+    ).join('');
+
+    box.innerHTML=`
+        <div onclick="toggleMonthDrop()" style="font-size:12px;white-space:nowrap;cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <span style="font-weight:900;color:#0984e3;">${curShort}</span>
+            <span style="color:#636e72;">-</span>
+            <span style="color:#d63031;font-weight:800;">₹${Math.round(curTotal)}</span>
+        </div>
+        <div id="monthDrop" style="display:none;position:absolute;top:100%;left:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:1000;min-width:160px;overflow:hidden;">
+            ${dropHTML}
+
+        </div>`;
+    let mb=document.getElementById('monthlyBox');
+    if(mb){ mb.style.position='relative'; mb.style.setProperty('overflow','visible'); }
+}
+
+// ====== MONTH DROPDOWN ======
+function toggleMonthDrop(){
+    let d=document.getElementById('monthDrop');
+    if(!d) return;
+    d.style.display=d.style.display==='none'?'block':'none';
+    // Close on outside click
+    if(d.style.display==='block'){
+        setTimeout(()=>{
+            document.addEventListener('click',function closeDrop(e){
+                if(!d.contains(e.target)){ d.style.display='none'; document.removeEventListener('click',closeDrop); }
+            });
+        },10);
+    }
+}
+
+function openMonthPicker(){
+    // Close dropdown
+    let dd=document.getElementById('monthDrop');
+    if(dd) dd.style.display='none';
+
+    // Hidden input se native month picker kholo
+    let inp=document.getElementById('monthPickerInput');
+    if(!inp){
+        inp=document.createElement('input');
+        inp.type='month';
+        inp.id='monthPickerInput';
+        inp.style.cssText='position:fixed;opacity:0;pointer-events:none;top:50%;left:50%;width:1px;height:1px;';
+        inp.addEventListener('change',function(){
+            if(!this.value) return;
+            let parts=this.value.split('-'); // YYYY-MM
+            let yr=parts[0];
+            let mi=parseInt(parts[1])-1;
+            let sh=months[mi];
+            // Calculate total
+            let allMap={};
+            expense.forEach(h=>{
+                if(!h.items||!h.items.length) return;
+                let p=h.date.split('/');
+                let s=months[parseInt(p[1])-1],y=p[2];
+                let k=s+'_'+y; if(!allMap[k]) allMap[k]=0;
+                allMap[k]+=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
+            });
+            shopping.forEach(h=>{
+                if(!h.items||!h.items.length) return;
+                let p=h.date.split('/');
+                let s=months[parseInt(p[1])-1],y=p[2];
+                let k=s+'_'+y; if(!allMap[k]) allMap[k]=0;
+                allMap[k]+=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
+            });
+            let mk=sh+'_'+yr;
+            let t=allMap[mk]||0;
+            alert(`${sh} ${yr} — Total: ₹${Math.round(t)}`);
+        });
+        document.body.appendChild(inp);
+    }
+    // Set current month as default
+    let now=new Date();
+    inp.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    // Open picker
+    try{ inp.showPicker(); } catch(e){ inp.click(); }
+}
+
+// applyMonthPicker removed — handled in input event
 
 // ====== HELPERS ======
 function toggleDrop(id){
