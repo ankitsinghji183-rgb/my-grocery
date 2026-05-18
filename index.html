@@ -369,6 +369,45 @@ function renderKharchEdit(){
     let na=document.getElementById('kAddName');if(na)na.value='';
     let qa=document.getElementById('kAddQty');if(qa)qa.value='';
     let pa=document.getElementById('kAddPrice');if(pa)pa.value='';
+    renderKharchEditList();
+}
+
+function kAddItem(){
+    let n=document.getElementById('kAddName').value.trim();
+    let q=parseFloat(document.getElementById('kAddQty').value)||0;
+    let p=parseFloat(document.getElementById('kAddPrice').value)||0;
+    if(!n){alert("Naam zaroor bharein!");return;}
+    if(!curKharchDate) curKharchDate=new Date().toLocaleDateString('en-GB');
+
+    // Record dhundho — exact date match
+    let rec=expense.find(h=>h.date===curKharchDate);
+    if(!rec){
+        rec={date:curKharchDate,items:[]};
+        expense.unshift(rec);
+    }
+
+    // Same naam → JODO, naya → push
+    let ex=rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
+    if(ex){
+        ex.qty=(parseFloat(ex.qty)||0)+q;
+        ex.price=(parseFloat(ex.price)||0)+p;
+    } else {
+        rec.items.push({name:n,qty:q,price:p,done:false});
+    }
+
+    // Fields clear
+    document.getElementById('kAddName').value='';
+    document.getElementById('kAddQty').value='';
+    document.getElementById('kAddPrice').value='';
+
+    // List render karo — direct DOM update
+    renderKharchEditList();
+    renderMonthlyTotal();
+    save();
+}
+
+// renderKharchEdit se alag — sirf list update karo, inputs clear nahi karo
+function renderKharchEditList(){
     let rec=expense.find(h=>h.date===curKharchDate);
     let area=document.getElementById('kEditList');
     if(!area) return;
@@ -410,25 +449,6 @@ function renderKharchEdit(){
     let t=rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
     let ks=document.getElementById('kEditSum');if(ks)ks.innerText=`TOTAL: ₹${t.toFixed(2)}`;
 }
-
-function kAddItem(){
-    let n=document.getElementById('kAddName').value.trim();
-    let q=parseFloat(document.getElementById('kAddQty').value)||0;
-    let p=parseFloat(document.getElementById('kAddPrice').value)||0;
-    if(!n){alert("Naam zaroor bharein!");return;}
-    if(!curKharchDate) curKharchDate=new Date().toLocaleDateString('en-GB');
-    let rec=expense.find(h=>h.date===curKharchDate);
-    if(!rec){rec={date:curKharchDate,items:[]};expense.unshift(rec);}
-    let ex=rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
-    if(ex){ex.qty=(parseFloat(ex.qty)||0)+q;ex.price=(parseFloat(ex.price)||0)+p;}
-    else rec.items.push({name:n,qty:q,price:p,done:false});
-    document.getElementById('kAddName').value='';
-    document.getElementById('kAddQty').value='';
-    document.getElementById('kAddPrice').value='';
-    renderKharchEdit();
-    renderMonthlyTotal();
-    save();
-}
 function kField(i,f,v){
     let rec=expense.find(h=>h.date===curKharchDate);if(!rec)return;
     if(f==='name'||f==='unit')rec.items[i][f]=v;
@@ -439,12 +459,12 @@ function kField(i,f,v){
 }
 function kLock(i){
     let rec=expense.find(h=>h.date===curKharchDate);if(!rec)return;
-    rec.items[i].done=!rec.items[i].done;renderKharchEdit();save();
+    rec.items[i].done=!rec.items[i].done;renderKharchEditList();save();
 }
 function kDel(i){
     if(confirm("Delete?")){
         let rec=expense.find(h=>h.date===curKharchDate);
-        if(rec){rec.items.splice(i,1);renderKharchEdit();save();}
+        if(rec){rec.items.splice(i,1);renderKharchEditList();save();}
     }
 }
 function delKharchRec(date){
