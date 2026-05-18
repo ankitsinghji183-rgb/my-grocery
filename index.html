@@ -31,13 +31,11 @@
         .ok-btn{background:#2ecc71!important;min-width:36px;width:36px;}
         .lock-btn{background:#fdcb6e!important;color:#2d3436;min-width:36px;width:36px;}
         .item-row{display:grid;grid-template-columns:1fr 50px 58px 26px 36px;gap:5px;align-items:center;padding:10px 7px;border-bottom:1px solid #f1f2f6;background:white;margin-bottom:3px;border-radius:8px;}
-        .edit-grid{display:grid;grid-template-columns:20px 1fr 50px 76px 36px 36px;gap:4px;align-items:center;padding:9px 6px;background:white;margin-bottom:3px;border-radius:6px;border-bottom:1px solid #eee;}
         .calc-row{display:grid;grid-template-columns:1fr 62px 76px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:3px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
         .hist-row{display:grid;grid-template-columns:1fr 82px 40px 40px;gap:5px;align-items:center;padding:10px 7px;background:white;margin-bottom:3px;border-radius:8px;border-bottom:1px solid #f1f2f6;}
         .sel-bg{background:#fff9db!important;border-left:4px solid #fcc419;}
         .sum-box{padding:12px 15px;background:#e3f2fd;font-weight:900;text-align:right;border-top:3px solid #0984e3;font-size:16px;color:#0984e3;flex-shrink:0;}
-        .b-nav{width:100%;background:white;padding:8px 10px;border-top:1px solid #dfe6e9;display:flex;gap:8px;flex-shrink:0;position:relative;z-index:1001;}
-        .top-hist{display:flex;gap:8px;padding:8px 10px;flex-shrink:0;}
+        .b-nav{width:100%;background:white;padding:8px 10px;border-top:1px solid #dfe6e9;display:flex;gap:8px;flex-shrink:0;position:relative;z-index:10;}
         .h-box{flex:1;background:#f8f9fa;border:1px solid #dfe6e9;padding:12px 0;text-align:center;border-radius:12px;font-weight:800;font-size:11px;color:#0984e3;cursor:pointer;}
         .month-header{background:#f8f9fa;padding:8px 12px;font-weight:800;font-size:12px;border-radius:6px;margin-bottom:3px;border-left:4px solid #0984e3;}
         .add-row{background:#e8f5e9;padding:10px 8px;border-radius:8px;border:1px dashed #2ecc71;flex-shrink:0;margin-bottom:0;}
@@ -53,7 +51,7 @@
 <!-- MAIN -->
 <div id="mainView" style="display:none;">
     <div style="display:flex;gap:6px;padding:6px 8px;flex-shrink:0;align-items:stretch;">
-        <div id="monthlyBox" onclick="toggleMonthDrop()" style="background:white;border-radius:10px;padding:6px 8px;box-shadow:0 2px 6px rgba(0,0,0,0.06);border:1px solid #e1e8ed;display:flex;align-items:center;flex:1.2;cursor:pointer;">
+        <div id="monthlyBox" onclick="toggleMonthDrop()" style="background:white;border-radius:10px;padding:6px 8px;box-shadow:0 2px 6px rgba(0,0,0,0.06);border:1px solid #e1e8ed;display:flex;align-items:center;flex:1.2;cursor:pointer;position:relative;overflow:visible;">
             <div id="monthlyList" style="display:flex;flex-wrap:wrap;gap:3px;pointer-events:none;"></div>
         </div>
         <div class="h-box" style="padding:8px 0;font-size:10px;flex:0.9;" onclick="openSamanHist()">📦 Saman</div>
@@ -92,11 +90,8 @@
         <span class="back" onclick="closePage()">BACK</span>
         <span>💰 Kharch History</span>
         <span style="position:relative;">
-            <span onclick="document.getElementById('kharchHistDatePicker').showPicker?document.getElementById('kharchHistDatePicker').showPicker():document.getElementById('kharchHistDatePicker').click()"
-                style="font-size:12px;background:rgba(255,255,255,0.25);padding:4px 8px;border-radius:6px;cursor:pointer;">📅 Date</span>
-            <input type="date" id="kharchHistDatePicker"
-                style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:0;"
-                onchange="kharchHistDateGo(this.value)">
+            <span onclick="triggerPicker('kharchHistDatePicker')" style="font-size:12px;background:rgba(255,255,255,0.25);padding:4px 8px;border-radius:6px;cursor:pointer;">📅 Date</span>
+            <input type="date" id="kharchHistDatePicker" style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:0;" onchange="kharchHistDateGo(this.value)">
         </span>
     </div>
     <div class="scroll" id="kharchHistArea"></div>
@@ -108,11 +103,8 @@
         <span class="back" onclick="closePage()">BACK</span>
         <span>📦 Saman History</span>
         <span style="position:relative;">
-            <span onclick="document.getElementById('samanHistDatePicker').showPicker?document.getElementById('samanHistDatePicker').showPicker():document.getElementById('samanHistDatePicker').click()"
-                style="font-size:12px;background:rgba(255,255,255,0.25);padding:4px 8px;border-radius:6px;cursor:pointer;">📅 Date</span>
-            <input type="date" id="samanHistDatePicker"
-                style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:0;"
-                onchange="samanHistDateGo(this.value)">
+            <span onclick="triggerPicker('samanHistDatePicker')" style="font-size:12px;background:rgba(255,255,255,0.25);padding:4px 8px;border-radius:6px;cursor:pointer;">📅 Date</span>
+            <input type="date" id="samanHistDatePicker" style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:0;" onchange="samanHistDateGo(this.value)">
         </span>
     </div>
     <div class="scroll" id="samanHistArea"></div>
@@ -124,11 +116,8 @@
         <span class="back" onclick="closePage()">BACK</span>
         <span>💰 Kharch</span>
         <span style="position:relative;">
-            <span id="kharchEditDate" onclick="document.getElementById('kharchDatePicker').showPicker?document.getElementById('kharchDatePicker').showPicker():document.getElementById('kharchDatePicker').click()"
-                style="font-size:13px;background:rgba(255,255,255,0.25);padding:4px 10px;border-radius:6px;cursor:pointer;">📅 --/--/----</span>
-            <input type="date" id="kharchDatePicker"
-                style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:0;"
-                onchange="kharchDateChanged(this.value)">
+            <span id="kharchEditDate" onclick="triggerPicker('kharchDatePicker')" style="font-size:13px;background:rgba(255,255,255,0.25);padding:4px 10px;border-radius:6px;cursor:pointer;">📅 --/--/----</span>
+            <input type="date" id="kharchDatePicker" style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:0;" onchange="kharchDateChanged(this.value)">
         </span>
     </div>
     <div class="add-row" style="margin:8px;">
@@ -150,11 +139,8 @@
         <span class="back" onclick="closePage()">BACK</span>
         <span>📦 Saman Edit</span>
         <span style="position:relative;">
-            <span id="samanEditDate" onclick="document.getElementById('samanDatePicker').showPicker?document.getElementById('samanDatePicker').showPicker():document.getElementById('samanDatePicker').click()"
-                style="font-size:13px;background:rgba(255,255,255,0.25);padding:4px 10px;border-radius:6px;cursor:pointer;">📅 --/--/----</span>
-            <input type="date" id="samanDatePicker"
-                style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:0;"
-                onchange="samanDateChanged(this.value)">
+            <span id="samanEditDate" onclick="triggerPicker('samanDatePicker')" style="font-size:13px;background:rgba(255,255,255,0.25);padding:4px 10px;border-radius:6px;cursor:pointer;">📅 --/--/----</span>
+            <input type="date" id="samanDatePicker" style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:0;" onchange="samanDateChanged(this.value)">
         </span>
     </div>
     <div class="add-row" style="margin:8px;">
@@ -212,10 +198,9 @@ let activeF='All',tCalc=[],listLang='hi';
 let curKharchDate='',curSamanDate='';
 const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-// ====== LOAD — sirf ek baar, koi listener nahi ======
+// ====== FIREBASE LOAD — DB.get() ONLY, no listener ======
 // DB.off() — koi bhi purana listener band karo
 DB.off();
-
 DB.get().then(snap=>{
     const d=snap.val()||{};
     items    = toArr(d.items);
@@ -233,9 +218,34 @@ DB.get().then(snap=>{
 
 function toArr(x){return Array.isArray(x)?x:Object.values(x||{});}
 
-// Save — sirf push, koi listener trigger nahi hoga
+// ====== SAVE — simple set, koi callback nahi ======
 function save(){
-    DB.set({items, history:{expense, shopping}}).catch(e=>console.error('Save error:',e));
+    DB.set({items, history:{expense, shopping}});
+}
+
+// ====== HELPERS ======
+function triggerPicker(id){
+    let el=document.getElementById(id);
+    if(!el) return;
+    try{ el.showPicker(); }catch(e){ el.click(); }
+}
+function ymdToDmy(ymd){
+    if(!ymd) return '';
+    let p=ymd.split('-');
+    return `${p[2]}/${p[1]}/${p[0]}`;
+}
+function dateDiff(a,b){
+    let da=a.split('/'),db=b.split('/');
+    return new Date(da[2],da[1]-1,da[0])-new Date(db[2],db[1]-1,db[0]);
+}
+function dateToMonth(date){
+    let p=date.split('/');
+    return months[parseInt(p[1])-1]+' '+p[2];
+}
+function toggleDrop(id){
+    let el=document.getElementById(id);
+    if(!el) return;
+    el.style.display=el.style.display==='none'?'block':'none';
 }
 
 // ====== NAV ======
@@ -252,33 +262,30 @@ window.onpopstate=()=>{
     renderMaster();
 };
 
-// ====== MASTER LIST — selected upar aayenge ======
+// ====== MASTER LIST ======
 function renderMaster(){
     let cont=document.getElementById('masterList'); if(!cont) return;
     let q=document.getElementById('itemName').value.toLowerCase();
     let all=items.filter(it=>(activeF==='All'||it.cat===activeF)&&it.name.toLowerCase().includes(q));
-    // Selected pehle, phir unselected
-    let selected=all.filter(it=>it.sel);
-    let unselected=all.filter(it=>!it.sel);
-    let filtered=[...selected,...unselected];
+    let filtered=[...all.filter(it=>it.sel),...all.filter(it=>!it.sel)];
     let n=0;
     cont.innerHTML=filtered.map(it=>{
         let i=items.indexOf(it);
         return `<div class="item-row ${it.sel?'sel-bg':''}">
             <span onclick="toggleI(${i})" style="cursor:pointer;font-size:13px;"><b>${++n}. ${it.name}</b></span>
-            ${(it.unit==='Open'||it.unit==='Send') ? '<span class="u-box" style="font-size:11px;color:#aaa;text-align:center;">—</span>' : `<input type="number" value="${it.qty||''}" onchange="items[${i}].qty=this.value;save();" class="u-box" inputmode="decimal">`}
+            ${(it.unit==='Open'||it.unit==='Send')?'<span class="u-box" style="font-size:11px;color:#aaa;text-align:center;">—</span>':`<input type="number" value="${it.qty||''}" onchange="items[${i}].qty=this.value;save();" class="u-box" inputmode="decimal">`}
             <select onchange="items[${i}].unit=this.value;save();renderMaster();" class="unit-sel">
-                <option value="Kg"    ${it.unit=='Kg'    ?'selected':''}>Kg</option>
-                <option value="Ltr"   ${it.unit=='Ltr'   ?'selected':''}>Ltr</option>
-                <option value="Pc"    ${it.unit=='Pc'    ?'selected':''}>Pc</option>
-                <option value="Pkt"   ${it.unit=='Pkt'   ?'selected':''}>Pkt</option>
-                <option value="Open"  ${it.unit=='Open'  ?'selected':''}>Open</option>
-                <option value="Rs"    ${it.unit=='Rs'    ?'selected':''}>Rs</option>
-                <option value="Send"  ${it.unit=='Send'  ?'selected':''}>Send</option>
-                <option value="Plate" ${it.unit=='Plate' ?'selected':''}>Plate</option>
-                <option value="Form"  ${it.unit=='Form'  ?'selected':''}>Form</option>
-                <option value="Cup"   ${it.unit=='Cup'   ?'selected':''}>Cup</option>
-                <option value="Glass" ${it.unit=='Glass' ?'selected':''}>Glass</option>
+                <option value="Kg"    ${it.unit=='Kg'   ?'selected':''}>Kg</option>
+                <option value="Ltr"   ${it.unit=='Ltr'  ?'selected':''}>Ltr</option>
+                <option value="Pc"    ${it.unit=='Pc'   ?'selected':''}>Pc</option>
+                <option value="Pkt"   ${it.unit=='Pkt'  ?'selected':''}>Pkt</option>
+                <option value="Open"  ${it.unit=='Open' ?'selected':''}>Open</option>
+                <option value="Rs"    ${it.unit=='Rs'   ?'selected':''}>Rs</option>
+                <option value="Send"  ${it.unit=='Send' ?'selected':''}>Send</option>
+                <option value="Plate" ${it.unit=='Plate'?'selected':''}>Plate</option>
+                <option value="Form"  ${it.unit=='Form' ?'selected':''}>Form</option>
+                <option value="Cup"   ${it.unit=='Cup'  ?'selected':''}>Cup</option>
+                <option value="Glass" ${it.unit=='Glass'?'selected':''}>Glass</option>
             </select>
             <input type="checkbox" ${it.sel?'checked':''} onclick="toggleI(${i})" style="width:22px;height:22px;">
             <button class="btn del-btn" onclick="delItem(${i})">✕</button>
@@ -301,34 +308,33 @@ function setFilter(f){
 }
 function unselectAll(){if(confirm("Sab clear?")){items.forEach(it=>it.sel=false);save();renderMaster();}}
 
-// ====== DAILY KHARCH — aaj ki date ka record seedha edit mein kholo ======
+// ====== DAILY KHARCH ======
 function openDailyKharch(){
     curKharchDate=new Date().toLocaleDateString('en-GB');
     if(!expense.find(h=>h.date===curKharchDate)){
         expense.unshift({date:curKharchDate,items:[]});
     }
-    showPage('kharchEditPage');   // pehle page open karo
-    renderKharchEdit();           // phir render karo
+    showPage('kharchEditPage');
+    renderKharchEdit();
 }
 
 // ====== KHARCH HISTORY ======
-function openKharchHist(){
-    renderKharchHist();
-    showPage('kharchHistPage');
-}
+function openKharchHist(){showPage('kharchHistPage');renderKharchHist();}
 function renderKharchHist(){
     let area=document.getElementById('kharchHistArea'); area.innerHTML='';
-    // Sirf woh records jo items wale hain
     let arr=expense.filter(h=>h.items&&h.items.length>0);
     let sorted=[...arr].sort((a,b)=>dateDiff(b.date,a.date));
-    if(!sorted.length){area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Koi kharch nahi hai.</p>"; return;}
+    if(!sorted.length){area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Koi kharch nahi hai.</p>";return;}
     let curM='',html='',mTot=0;
     sorted.forEach(h=>{
         let m=dateToMonth(h.date);
         let dTot=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-        if(curM!==m&&curM!==''){area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html; html=''; mTot=0;}
-        curM=m; mTot+=dTot;
-        let itemsHTML_k = h.items.map((it,ii)=>{
+        if(curM!==m&&curM!==''){
+            area.innerHTML+=`<div class="month-header"><span style="color:#0984e3;">${curM}</span> <span style="color:#2d3436;">— Total: </span><span style="color:#d63031;">₹${mTot.toFixed(2)}</span></div>`+html;
+            html='';mTot=0;
+        }
+        curM=m;mTot+=dTot;
+        let iHTML=h.items.map((it,ii)=>{
             let qStr=fmtQtyHi(it.qty,it.unit);
             let pStr=it.price>0?`₹${parseFloat(it.price).toFixed(2)}`:'—';
             return `<div style="display:grid;grid-template-columns:22px 1fr 80px 70px;gap:4px;padding:6px 8px;border-bottom:1px solid #f5f5f5;font-size:12px;align-items:center;">
@@ -337,7 +343,7 @@ function renderKharchHist(){
                 <span style="color:#0984e3;text-align:center;">${qStr}</span>
                 <span style="color:#e17055;text-align:right;font-weight:700;">${pStr}</span>
             </div>`;
-        }).join('') + `<div style="display:grid;grid-template-columns:1fr 70px;padding:7px 8px;background:#e3f2fd;font-weight:900;font-size:13px;">
+        }).join('')+`<div style="display:grid;grid-template-columns:1fr 70px;padding:7px 8px;background:#e3f2fd;font-weight:900;font-size:13px;">
             <span style="color:#636e72;">TOTAL</span>
             <span style="color:#0984e3;text-align:right;">₹${dTot.toFixed(2)}</span>
         </div>`;
@@ -348,143 +354,141 @@ function renderKharchHist(){
                 <button class="btn ok-btn" style="font-size:10px;" onclick="event.stopPropagation();openKharchEdit('${h.date}')">EDIT</button>
                 <button class="btn del-btn" onclick="event.stopPropagation();delKharchRec('${h.date}')">✕</button>
             </div>
-            <div id="kd_${h.date.replace(/\//g,'_')}" style="display:none;">${itemsHTML_k}</div>
+            <div id="kd_${h.date.replace(/\//g,'_')}" style="display:none;">${iHTML}</div>
         </div>`;
     });
     if(curM) area.innerHTML+=`<div class="month-header"><span style="color:#0984e3;">${curM}</span> <span style="color:#2d3436;">— Total: </span><span style="color:#d63031;">₹${mTot.toFixed(2)}</span></div>`+html;
 }
-function openKharchEdit(date){
-    curKharchDate=date;
-    renderKharchEdit();
-    showPage('kharchEditPage');
-}
+function openKharchEdit(date){curKharchDate=date;showPage('kharchEditPage');renderKharchEdit();}
+
 function renderKharchEdit(){
-    // Date label update — DD/MM/YYYY format mein dikhao
     let dlabel=document.getElementById('kharchEditDate');
     if(dlabel) dlabel.innerText='📅 '+curKharchDate;
-    // Calendar input ko bhi sync karo (YYYY-MM-DD format chahiye)
     let dp=document.getElementById('kharchDatePicker');
-    if(dp && curKharchDate){
-        let p=curKharchDate.split('/');
-        if(p.length===3) dp.value=`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
-    }
-    let na=document.getElementById('kAddName'); if(na) na.value='';
-    let qa=document.getElementById('kAddQty');  if(qa) qa.value='';
-    let pa=document.getElementById('kAddPrice'); if(pa) pa.value='';
+    if(dp&&curKharchDate){let p=curKharchDate.split('/');if(p.length===3)dp.value=`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;}
+    let na=document.getElementById('kAddName');if(na)na.value='';
+    let qa=document.getElementById('kAddQty');if(qa)qa.value='';
+    let pa=document.getElementById('kAddPrice');if(pa)pa.value='';
     let rec=expense.find(h=>h.date===curKharchDate);
     let area=document.getElementById('kEditList');
+    if(!area) return;
     if(!rec||!rec.items.length){
         area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Koi item nahi. Upar se add karo.</p>";
-        document.getElementById('kEditSum').innerText='TOTAL: ₹0';
+        let ks=document.getElementById('kEditSum');if(ks)ks.innerText='TOTAL: ₹0';
         return;
     }
     area.innerHTML=rec.items.map((it,i)=>
         `<div style="background:white;margin-bottom:3px;border-radius:6px;border-bottom:1px solid #eee;padding:8px 6px;">
             <div style="display:grid;grid-template-columns:18px 1fr 76px 36px 36px;gap:4px;align-items:center;margin-bottom:4px;">
                 <span style="color:#636e72;font-size:11px;">${i+1}.</span>
-                <input type="text" ${it.done?'disabled':''} value="${it.name}"
-                    onchange="kField(${i},'name',this.value)" style="font-size:13px;min-width:0;height:36px;padding:5px;">
-                <input type="number" ${it.done?'disabled':''} value="${it.price||''}"
-                    onchange="kField(${i},'price',this.value)" class="p-box" style="height:36px;" inputmode="decimal">
+                <input type="text" ${it.done?'disabled':''} value="${it.name}" onchange="kField(${i},'name',this.value)" style="font-size:13px;min-width:0;height:36px;padding:5px;">
+                <input type="number" ${it.done?'disabled':''} value="${it.price||''}" onchange="kField(${i},'price',this.value)" class="p-box" style="height:36px;" inputmode="decimal">
                 <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="kLock(${i})" style="height:36px;">${it.done?'✓':'🔒'}</button>
                 <button class="btn del-btn" onclick="kDel(${i})" style="height:36px;">✕</button>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;align-items:center;">
                 <span style="font-size:12px;color:#0984e3;font-weight:700;padding-left:22px;">${fmtQtyHi(it.qty,it.unit)}</span>
                 <div style="display:flex;gap:3px;align-items:center;">
-                    <input type="number" ${it.done?'disabled':''} value="${it.qty||''}"
-                        onchange="kField(${i},'qty',this.value)" style="width:55px;height:32px;font-size:12px;" inputmode="decimal">
+                    <input type="number" ${it.done?'disabled':''} value="${it.qty||''}" onchange="kField(${i},'qty',this.value)" style="width:55px;height:32px;font-size:12px;" inputmode="decimal">
                     <select ${it.done?'disabled':''} onchange="kField(${i},'unit',this.value)" style="height:32px;font-size:11px;background:#f1f2f6;border:none;border-radius:6px;padding:0 2px;flex:1;">
-                        <option value="Kg"    ${it.unit=='Kg'    ?'selected':''}>Kg</option>
-                        <option value="Ltr"   ${it.unit=='Ltr'   ?'selected':''}>Ltr</option>
-                        <option value="Pc"    ${it.unit=='Pc'    ?'selected':''}>Pc</option>
-                        <option value="Pkt"   ${it.unit=='Pkt'   ?'selected':''}>Pkt</option>
-                        <option value="Open"  ${it.unit=='Open'  ?'selected':''}>Open</option>
-                        <option value="Rs"    ${it.unit=='Rs'    ?'selected':''}>Rs</option>
-                        <option value="Send"  ${it.unit=='Send'  ?'selected':''}>Send</option>
-                        <option value="Plate" ${it.unit=='Plate' ?'selected':''}>Plate</option>
-                        <option value="Form"  ${it.unit=='Form'  ?'selected':''}>Form</option>
-                        <option value="Cup"   ${it.unit=='Cup'   ?'selected':''}>Cup</option>
-                        <option value="Glass" ${it.unit=='Glass' ?'selected':''}>Glass</option>
+                        <option value="Kg"    ${it.unit=='Kg'   ?'selected':''}>Kg</option>
+                        <option value="Ltr"   ${it.unit=='Ltr'  ?'selected':''}>Ltr</option>
+                        <option value="Pc"    ${it.unit=='Pc'   ?'selected':''}>Pc</option>
+                        <option value="Pkt"   ${it.unit=='Pkt'  ?'selected':''}>Pkt</option>
+                        <option value="Open"  ${it.unit=='Open' ?'selected':''}>Open</option>
+                        <option value="Rs"    ${it.unit=='Rs'   ?'selected':''}>Rs</option>
+                        <option value="Send"  ${it.unit=='Send' ?'selected':''}>Send</option>
+                        <option value="Plate" ${it.unit=='Plate'?'selected':''}>Plate</option>
+                        <option value="Form"  ${it.unit=='Form' ?'selected':''}>Form</option>
+                        <option value="Cup"   ${it.unit=='Cup'  ?'selected':''}>Cup</option>
+                        <option value="Glass" ${it.unit=='Glass'?'selected':''}>Glass</option>
                     </select>
                 </div>
             </div>
         </div>`
     ).join('');
     let t=rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-    document.getElementById('kEditSum').innerText=`TOTAL: ₹${t.toFixed(2)}`;
+    let ks=document.getElementById('kEditSum');if(ks)ks.innerText=`TOTAL: ₹${t.toFixed(2)}`;
 }
 
-// ADD ITEM — list mein turant dikhega, Firebase mein save
 function kAddItem(){
     let n=document.getElementById('kAddName').value.trim();
     let q=parseFloat(document.getElementById('kAddQty').value)||0;
     let p=parseFloat(document.getElementById('kAddPrice').value)||0;
-    if(!n){alert("Naam zaroor bharein!"); return;}
-
-    // curKharchDate ensure karo
+    if(!n){alert("Naam zaroor bharein!");return;}
     if(!curKharchDate) curKharchDate=new Date().toLocaleDateString('en-GB');
-
-    // Record dhundho ya banao
     let rec=expense.find(h=>h.date===curKharchDate);
     if(!rec){rec={date:curKharchDate,items:[]};expense.unshift(rec);}
-
-    // Same naam → JODO, naya → push
     let ex=rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
-    if(ex){ex.qty=(parseFloat(ex.qty)||0)+q; ex.price=(parseFloat(ex.price)||0)+p;}
-    else   rec.items.push({name:n,qty:q,price:p,done:false});
-
-    // Fields clear
+    if(ex){ex.qty=(parseFloat(ex.qty)||0)+q;ex.price=(parseFloat(ex.price)||0)+p;}
+    else rec.items.push({name:n,qty:q,price:p,done:false});
     document.getElementById('kAddName').value='';
     document.getElementById('kAddQty').value='';
     document.getElementById('kAddPrice').value='';
-
-    // List update
     renderKharchEdit();
     renderMonthlyTotal();
-    // Firebase save
     save();
 }
 function kField(i,f,v){
-    let rec=expense.find(h=>h.date===curKharchDate); if(!rec) return;
-    if(f==='name'||f==='unit') rec.items[i][f]=v;
+    let rec=expense.find(h=>h.date===curKharchDate);if(!rec)return;
+    if(f==='name'||f==='unit')rec.items[i][f]=v;
     else rec.items[i][f]=parseFloat(v)||0;
     let t=rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-    document.getElementById('kEditSum').innerText=`TOTAL: ₹${t.toFixed(2)}`;
-    renderKharchEdit();
+    let ks=document.getElementById('kEditSum');if(ks)ks.innerText=`TOTAL: ₹${t.toFixed(2)}`;
     save();
 }
 function kLock(i){
-    let rec=expense.find(h=>h.date===curKharchDate); if(!rec) return;
-    rec.items[i].done=!rec.items[i].done; renderKharchEdit(); save();
+    let rec=expense.find(h=>h.date===curKharchDate);if(!rec)return;
+    rec.items[i].done=!rec.items[i].done;renderKharchEdit();save();
 }
 function kDel(i){
     if(confirm("Delete?")){
         let rec=expense.find(h=>h.date===curKharchDate);
-        if(rec){rec.items.splice(i,1); renderKharchEdit(); save();}
+        if(rec){rec.items.splice(i,1);renderKharchEdit();save();}
     }
 }
 function delKharchRec(date){
     if(confirm("Poora din hataein?")){expense=expense.filter(h=>h.date!==date);save();renderKharchHist();}
 }
+function kharchDateChanged(ymd){
+    let d=ymdToDmy(ymd);if(!d)return;
+    curKharchDate=d;
+    if(!expense.find(h=>h.date===d))expense.unshift({date:d,items:[]});
+    renderKharchEdit();
+}
+function kharchHistDateGo(ymd){
+    let date=ymdToDmy(ymd);if(!date)return;
+    let rec=expense.find(h=>h.date===date);
+    if(rec&&rec.items&&rec.items.length>0){
+        let id='kd_'+date.replace(/\//g,'_');
+        let el=document.getElementById(id);
+        if(el){el.style.display='block';setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100);}
+        else{curKharchDate=date;showPage('kharchEditPage');renderKharchEdit();}
+    }else{
+        curKharchDate=date;
+        if(!expense.find(h=>h.date===date))expense.unshift({date:date,items:[]});
+        showPage('kharchEditPage');
+        renderKharchEdit();
+    }
+}
 
 // ====== SAMAN HISTORY ======
-function openSamanHist(){
-    renderSamanHist();
-    showPage('samanHistPage');
-}
+function openSamanHist(){showPage('samanHistPage');renderSamanHist();}
 function renderSamanHist(){
-    let area=document.getElementById('samanHistArea'); area.innerHTML='';
+    let area=document.getElementById('samanHistArea');area.innerHTML='';
     let arr=shopping.filter(h=>h.items&&h.items.length>0);
     let sorted=[...arr].sort((a,b)=>dateDiff(b.date,a.date));
-    if(!sorted.length){area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Koi history nahi hai.</p>"; return;}
+    if(!sorted.length){area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Koi history nahi hai.</p>";return;}
     let curM='',html='',mTot=0;
     sorted.forEach(h=>{
         let m=dateToMonth(h.date);
         let dTot=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-        if(curM!==m&&curM!==''){area.innerHTML+=`<div class="month-header">${curM} — Total: ₹${mTot.toFixed(2)}</div>`+html; html=''; mTot=0;}
-        curM=m; mTot+=dTot;
-        let itemsHTML_s = h.items.map((it,ii)=>{
+        if(curM!==m&&curM!==''){
+            area.innerHTML+=`<div class="month-header"><span style="color:#0984e3;">${curM}</span> <span style="color:#2d3436;">— Total: </span><span style="color:#d63031;">₹${mTot.toFixed(2)}</span></div>`+html;
+            html='';mTot=0;
+        }
+        curM=m;mTot+=dTot;
+        let iHTML=h.items.map((it,ii)=>{
             let qStr=fmtQtyHi(it.qty,it.unit);
             let pStr=it.price>0?`₹${parseFloat(it.price).toFixed(2)}`:'—';
             return `<div style="display:grid;grid-template-columns:22px 1fr 80px 70px;gap:4px;padding:6px 8px;border-bottom:1px solid #f5f5f5;font-size:12px;align-items:center;">
@@ -493,7 +497,7 @@ function renderSamanHist(){
                 <span style="color:#0984e3;text-align:center;">${qStr}</span>
                 <span style="color:#e17055;text-align:right;font-weight:700;">${pStr}</span>
             </div>`;
-        }).join('') + `<div style="display:grid;grid-template-columns:1fr 70px;padding:7px 8px;background:#e3f2fd;font-weight:900;font-size:13px;">
+        }).join('')+`<div style="display:grid;grid-template-columns:1fr 70px;padding:7px 8px;background:#e3f2fd;font-weight:900;font-size:13px;">
             <span style="color:#636e72;">TOTAL</span>
             <span style="color:#0984e3;text-align:right;">₹${dTot.toFixed(2)}</span>
         </div>`;
@@ -504,373 +508,177 @@ function renderSamanHist(){
                 <button class="btn ok-btn" style="font-size:10px;" onclick="event.stopPropagation();openSamanEdit('${h.date}')">EDIT</button>
                 <button class="btn del-btn" onclick="event.stopPropagation();delSamanRec('${h.date}')">✕</button>
             </div>
-            <div id="sd_${h.date.replace(/\//g,'_')}" style="display:none;">${itemsHTML_s}</div>
+            <div id="sd_${h.date.replace(/\//g,'_')}" style="display:none;">${iHTML}</div>
         </div>`;
     });
     if(curM) area.innerHTML+=`<div class="month-header"><span style="color:#0984e3;">${curM}</span> <span style="color:#2d3436;">— Total: </span><span style="color:#d63031;">₹${mTot.toFixed(2)}</span></div>`+html;
 }
-function openSamanEdit(date){
-    curSamanDate=date;
-    renderSamanEdit();
-    showPage('samanEditPage');
-}
+function openSamanEdit(date){curSamanDate=date;showPage('samanEditPage');renderSamanEdit();}
 function renderSamanEdit(){
-    let dlabel2=document.getElementById('samanEditDate');
-    if(dlabel2) dlabel2.innerText='📅 '+curSamanDate;
-    let dp2=document.getElementById('samanDatePicker');
-    if(dp2 && curSamanDate){
-        let p=curSamanDate.split('/');
-        if(p.length===3) dp2.value=`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
-    }
-    document.getElementById('sAddName').value='';
-    document.getElementById('sAddQty').value='';
-    document.getElementById('sAddPrice').value='';
+    let dl=document.getElementById('samanEditDate');if(dl)dl.innerText='📅 '+curSamanDate;
+    let dp=document.getElementById('samanDatePicker');
+    if(dp&&curSamanDate){let p=curSamanDate.split('/');if(p.length===3)dp.value=`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;}
+    let na=document.getElementById('sAddName');if(na)na.value='';
+    let qa=document.getElementById('sAddQty');if(qa)qa.value='';
+    let pa=document.getElementById('sAddPrice');if(pa)pa.value='';
     let rec=shopping.find(h=>h.date===curSamanDate);
-    let area=document.getElementById('sEditList');
+    let area=document.getElementById('sEditList');if(!area)return;
     if(!rec||!rec.items.length){
         area.innerHTML="<p style='text-align:center;padding:28px;color:#b2bec3;'>Koi item nahi. Upar se add karo.</p>";
-        document.getElementById('sEditSum').innerText='TOTAL: ₹0';
+        let ss=document.getElementById('sEditSum');if(ss)ss.innerText='TOTAL: ₹0';
         return;
     }
     area.innerHTML=rec.items.map((it,i)=>
         `<div style="background:white;margin-bottom:3px;border-radius:6px;border-bottom:1px solid #eee;padding:8px 6px;">
             <div style="display:grid;grid-template-columns:18px 1fr 76px 36px 36px;gap:4px;align-items:center;margin-bottom:4px;">
                 <span style="color:#636e72;font-size:11px;">${i+1}.</span>
-                <input type="text" ${it.done?'disabled':''} value="${it.name}"
-                    onchange="sField(${i},'name',this.value)" style="font-size:13px;min-width:0;height:36px;padding:5px;">
-                <input type="number" ${it.done?'disabled':''} value="${it.price||''}"
-                    onchange="sField(${i},'price',this.value)" class="p-box" style="height:36px;" inputmode="decimal">
+                <input type="text" ${it.done?'disabled':''} value="${it.name}" onchange="sField(${i},'name',this.value)" style="font-size:13px;min-width:0;height:36px;padding:5px;">
+                <input type="number" ${it.done?'disabled':''} value="${it.price||''}" onchange="sField(${i},'price',this.value)" class="p-box" style="height:36px;" inputmode="decimal">
                 <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="sLock(${i})" style="height:36px;">${it.done?'✓':'🔒'}</button>
                 <button class="btn del-btn" onclick="sDel(${i})" style="height:36px;">✕</button>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;align-items:center;">
                 <span style="font-size:12px;color:#0984e3;font-weight:700;padding-left:22px;">${fmtQtyHi(it.qty,it.unit)}</span>
                 <div style="display:flex;gap:3px;align-items:center;">
-                    <input type="number" ${it.done?'disabled':''} value="${it.qty||''}"
-                        onchange="sField(${i},'qty',this.value)" style="width:55px;height:32px;font-size:12px;" inputmode="decimal">
+                    <input type="number" ${it.done?'disabled':''} value="${it.qty||''}" onchange="sField(${i},'qty',this.value)" style="width:55px;height:32px;font-size:12px;" inputmode="decimal">
                     <select ${it.done?'disabled':''} onchange="sField(${i},'unit',this.value)" style="height:32px;font-size:11px;background:#f1f2f6;border:none;border-radius:6px;padding:0 2px;flex:1;">
-                        <option value="Kg"    ${it.unit=='Kg'    ?'selected':''}>Kg</option>
-                        <option value="Ltr"   ${it.unit=='Ltr'   ?'selected':''}>Ltr</option>
-                        <option value="Pc"    ${it.unit=='Pc'    ?'selected':''}>Pc</option>
-                        <option value="Pkt"   ${it.unit=='Pkt'   ?'selected':''}>Pkt</option>
-                        <option value="Open"  ${it.unit=='Open'  ?'selected':''}>Open</option>
-                        <option value="Rs"    ${it.unit=='Rs'    ?'selected':''}>Rs</option>
-                        <option value="Send"  ${it.unit=='Send'  ?'selected':''}>Send</option>
-                        <option value="Plate" ${it.unit=='Plate' ?'selected':''}>Plate</option>
-                        <option value="Form"  ${it.unit=='Form'  ?'selected':''}>Form</option>
-                        <option value="Cup"   ${it.unit=='Cup'   ?'selected':''}>Cup</option>
-                        <option value="Glass" ${it.unit=='Glass' ?'selected':''}>Glass</option>
+                        <option value="Kg"    ${it.unit=='Kg'   ?'selected':''}>Kg</option>
+                        <option value="Ltr"   ${it.unit=='Ltr'  ?'selected':''}>Ltr</option>
+                        <option value="Pc"    ${it.unit=='Pc'   ?'selected':''}>Pc</option>
+                        <option value="Pkt"   ${it.unit=='Pkt'  ?'selected':''}>Pkt</option>
+                        <option value="Open"  ${it.unit=='Open' ?'selected':''}>Open</option>
+                        <option value="Rs"    ${it.unit=='Rs'   ?'selected':''}>Rs</option>
+                        <option value="Send"  ${it.unit=='Send' ?'selected':''}>Send</option>
+                        <option value="Plate" ${it.unit=='Plate'?'selected':''}>Plate</option>
+                        <option value="Form"  ${it.unit=='Form' ?'selected':''}>Form</option>
+                        <option value="Cup"   ${it.unit=='Cup'  ?'selected':''}>Cup</option>
+                        <option value="Glass" ${it.unit=='Glass'?'selected':''}>Glass</option>
                     </select>
                 </div>
             </div>
         </div>`
     ).join('');
     let t=rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-    document.getElementById('sEditSum').innerText=`TOTAL: ₹${t.toFixed(2)}`;
+    let ss=document.getElementById('sEditSum');if(ss)ss.innerText=`TOTAL: ₹${t.toFixed(2)}`;
 }
 function sAddItem(){
     let n=document.getElementById('sAddName').value.trim();
     let q=parseFloat(document.getElementById('sAddQty').value)||0;
     let p=parseFloat(document.getElementById('sAddPrice').value)||0;
-    if(!n){alert("Naam zaroor bharein!"); return;}
+    if(!n){alert("Naam zaroor bharein!");return;}
     let rec=shopping.find(h=>h.date===curSamanDate);
     if(!rec){rec={date:curSamanDate,items:[]};shopping.unshift(rec);}
     let ex=rec.items.find(e=>e.name.toLowerCase()===n.toLowerCase());
-    if(ex){ex.qty=(parseFloat(ex.qty)||0)+q; ex.price=(parseFloat(ex.price)||0)+p;}
-    else   rec.items.push({name:n,qty:q,price:p,done:false});
+    if(ex){ex.qty=(parseFloat(ex.qty)||0)+q;ex.price=(parseFloat(ex.price)||0)+p;}
+    else rec.items.push({name:n,qty:q,price:p,done:false});
     document.getElementById('sAddName').value='';
     document.getElementById('sAddQty').value='';
     document.getElementById('sAddPrice').value='';
-    renderSamanEdit(); save();
+    renderSamanEdit();save();
 }
 function sField(i,f,v){
-    let rec=shopping.find(h=>h.date===curSamanDate); if(!rec) return;
-    if(f==='name'||f==='unit') rec.items[i][f]=v;
+    let rec=shopping.find(h=>h.date===curSamanDate);if(!rec)return;
+    if(f==='name'||f==='unit')rec.items[i][f]=v;
     else rec.items[i][f]=parseFloat(v)||0;
     let t=rec.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-    document.getElementById('sEditSum').innerText=`TOTAL: ₹${t.toFixed(2)}`;
-    renderSamanEdit();
+    let ss=document.getElementById('sEditSum');if(ss)ss.innerText=`TOTAL: ₹${t.toFixed(2)}`;
     save();
 }
 function sLock(i){
-    let rec=shopping.find(h=>h.date===curSamanDate); if(!rec) return;
-    rec.items[i].done=!rec.items[i].done; renderSamanEdit(); save();
+    let rec=shopping.find(h=>h.date===curSamanDate);if(!rec)return;
+    rec.items[i].done=!rec.items[i].done;renderSamanEdit();save();
 }
 function sDel(i){
     if(confirm("Delete?")){
         let rec=shopping.find(h=>h.date===curSamanDate);
-        if(rec){rec.items.splice(i,1); renderSamanEdit(); save();}
+        if(rec){rec.items.splice(i,1);renderSamanEdit();save();}
     }
 }
 function delSamanRec(date){
     if(confirm("Poora din hataein?")){shopping=shopping.filter(h=>h.date!==date);save();renderSamanHist();}
 }
+function samanDateChanged(ymd){
+    let d=ymdToDmy(ymd);if(!d)return;
+    curSamanDate=d;
+    if(!shopping.find(h=>h.date===d))shopping.unshift({date:d,items:[]});
+    renderSamanEdit();
+}
+function samanHistDateGo(ymd){
+    let date=ymdToDmy(ymd);if(!date)return;
+    let rec=shopping.find(h=>h.date===date);
+    if(rec&&rec.items&&rec.items.length>0){
+        let id='sd_'+date.replace(/\//g,'_');
+        let el=document.getElementById(id);
+        if(el){el.style.display='block';setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100);}
+        else{curSamanDate=date;showPage('samanEditPage');renderSamanEdit();}
+    }else{
+        curSamanDate=date;
+        if(!shopping.find(h=>h.date===date))shopping.unshift({date:date,items:[]});
+        showPage('samanEditPage');
+        renderSamanEdit();
+    }
+}
 
 // ====== MONTHLY TOTAL ======
 function renderMonthlyTotal(){
-    let box=document.getElementById('monthlyList'); if(!box) return;
-    // Expense aur shopping dono ko month wise jodo
+    let box=document.getElementById('monthlyList');if(!box)return;
     let monthMap={};
-
-    // Expense (kharch)
     expense.forEach(h=>{
-        if(!h.items||!h.items.length) return;
+        if(!h.items||!h.items.length)return;
         let p=h.date.split('/');
-        let key=months[parseInt(p[1])-1]+' '+p[2]; // "May 2026"
-        let short=months[parseInt(p[1])-1]; // "May"
-        let yr=p[2];
-        let mk=short+'_'+yr;
-        if(!monthMap[mk]) monthMap[mk]={short,yr,exp:0,shop:0};
-        monthMap[mk].exp += h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
+        let sh=months[parseInt(p[1])-1],yr=p[2],mk=sh+'_'+yr;
+        if(!monthMap[mk])monthMap[mk]={sh,yr,total:0};
+        monthMap[mk].total+=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
     });
-
-    // Shopping (saman)
     shopping.forEach(h=>{
-        if(!h.items||!h.items.length) return;
+        if(!h.items||!h.items.length)return;
         let p=h.date.split('/');
-        let short=months[parseInt(p[1])-1];
-        let yr=p[2];
-        let mk=short+'_'+yr;
-        if(!monthMap[mk]) monthMap[mk]={short,yr,exp:0,shop:0};
-        monthMap[mk].shop += h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
+        let sh=months[parseInt(p[1])-1],yr=p[2],mk=sh+'_'+yr;
+        if(!monthMap[mk])monthMap[mk]={sh,yr,total:0};
+        monthMap[mk].total+=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
     });
-
-    let keys=Object.keys(monthMap).sort((a,b)=>{
-        let ma=monthMap[a], mb=monthMap[b];
-        let da=new Date(`${ma.yr}-${(months.indexOf(ma.short)+1).toString().padStart(2,'0')}-01`);
-        let db=new Date(`${mb.yr}-${(months.indexOf(mb.short)+1).toString().padStart(2,'0')}-01`);
-        return db-da;
-    });
-
-    if(!keys.length){
-        box.innerHTML="<span style='font-size:11px;color:#b2bec3;'>Koi data nahi</span>";
-        return;
-    }
-
-    // Current month
     let now=new Date();
-    let curShort=months[now.getMonth()];
-    let curYr=now.getFullYear().toString();
-    let curKey=curShort+'_'+curYr;
-    let cm=monthMap[curKey];
-    let curTotal=cm?(cm.exp+cm.shop):0;
-
-    // Last 6 months list (current included)
-    let last6=[];
-    for(let i=0;i<6;i++){
+    let curSh=months[now.getMonth()],curYr=now.getFullYear().toString();
+    let curKey=curSh+'_'+curYr;
+    let curTotal=monthMap[curKey]?monthMap[curKey].total:0;
+    // Last 5 months for dropdown (excluding current)
+    let prev5=[];
+    for(let i=1;i<=5;i++){
         let d=new Date(now.getFullYear(),now.getMonth()-i,1);
-        let sh=months[d.getMonth()];
-        let yr=d.getFullYear().toString();
-        let mk=sh+'_'+yr;
-        let mt=monthMap[mk]?(monthMap[mk].exp+monthMap[mk].shop):0;
-        last6.push({sh,yr,total:mt});
+        let sh=months[d.getMonth()],yr=d.getFullYear().toString(),mk=sh+'_'+yr;
+        prev5.push({sh,yr,total:monthMap[mk]?monthMap[mk].total:0});
     }
-
-    let dropHTML=last6.slice(1).map(m=>
-        `<div style="padding:5px 10px;font-size:12px;border-top:1px solid #f1f2f6;display:flex;justify-content:space-between;gap:12px;">
-            <span style="font-weight:700;color:#0984e3;">${m.sh} <span style="color:#636e72;">${m.yr}</span></span>
+    let dropHTML=prev5.map(m=>
+        `<div style="padding:6px 12px;font-size:12px;border-top:1px solid #f1f2f6;display:flex;justify-content:space-between;gap:12px;">
+            <span style="font-weight:700;color:#0984e3;">${m.sh} <span style="color:#636e72;font-size:11px;">${m.yr}</span></span>
             <span style="color:#d63031;font-weight:800;">₹${Math.round(m.total)}</span>
         </div>`
     ).join('');
-
     box.innerHTML=`
-        <div onclick="toggleMonthDrop()" style="font-size:12px;white-space:nowrap;cursor:pointer;display:flex;align-items:center;gap:4px;">
-            <span style="font-weight:900;color:#0984e3;">${curShort}</span>
+        <div style="font-size:12px;white-space:nowrap;display:flex;align-items:center;gap:4px;">
+            <span style="font-weight:900;color:#0984e3;">${curSh}</span>
             <span style="color:#636e72;">-</span>
             <span style="color:#d63031;font-weight:800;">₹${Math.round(curTotal)}</span>
         </div>
-        <div id="monthDrop" style="display:none;position:absolute;top:100%;left:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:1000;min-width:160px;overflow:hidden;">
+        <div id="monthDrop" style="display:none;position:absolute;top:110%;left:0;background:white;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.18);z-index:500;min-width:170px;overflow:hidden;border:1px solid #e1e8ed;">
+            <div style="padding:6px 12px;font-size:11px;font-weight:800;color:#636e72;background:#f8f9fa;">PICHLE MAHINE</div>
             ${dropHTML}
-
         </div>`;
-    let mb=document.getElementById('monthlyBox');
-    if(mb){ mb.style.position='relative'; mb.style.setProperty('overflow','visible'); }
 }
-
-// ====== MONTH DROPDOWN ======
 function toggleMonthDrop(){
     let d=document.getElementById('monthDrop');
-    if(!d) return;
-    d.style.display=d.style.display==='none'?'block':'none';
-    // Close on outside click
-    if(d.style.display==='block'){
+    if(!d)return;
+    let isOpen=d.style.display==='block';
+    d.style.display=isOpen?'none':'block';
+    if(!isOpen){
         setTimeout(()=>{
-            document.addEventListener('click',function closeDrop(e){
-                if(!d.contains(e.target)){ d.style.display='none'; document.removeEventListener('click',closeDrop); }
+            document.addEventListener('click',function h(e){
+                let box=document.getElementById('monthlyBox');
+                if(box&&!box.contains(e.target)){d.style.display='none';}
+                document.removeEventListener('click',h);
             });
         },10);
     }
-}
-
-function openMonthPicker(){
-    // Close dropdown
-    let dd=document.getElementById('monthDrop');
-    if(dd) dd.style.display='none';
-
-    // Hidden input se native month picker kholo
-    let inp=document.getElementById('monthPickerInput');
-    if(!inp){
-        inp=document.createElement('input');
-        inp.type='month';
-        inp.id='monthPickerInput';
-        inp.style.cssText='position:fixed;opacity:0;pointer-events:none;top:50%;left:50%;width:1px;height:1px;';
-        inp.addEventListener('change',function(){
-            if(!this.value) return;
-            let parts=this.value.split('-'); // YYYY-MM
-            let yr=parts[0];
-            let mi=parseInt(parts[1])-1;
-            let sh=months[mi];
-            // Calculate total
-            let allMap={};
-            expense.forEach(h=>{
-                if(!h.items||!h.items.length) return;
-                let p=h.date.split('/');
-                let s=months[parseInt(p[1])-1],y=p[2];
-                let k=s+'_'+y; if(!allMap[k]) allMap[k]=0;
-                allMap[k]+=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-            });
-            shopping.forEach(h=>{
-                if(!h.items||!h.items.length) return;
-                let p=h.date.split('/');
-                let s=months[parseInt(p[1])-1],y=p[2];
-                let k=s+'_'+y; if(!allMap[k]) allMap[k]=0;
-                allMap[k]+=h.items.reduce((a,b)=>a+(parseFloat(b.price)||0),0);
-            });
-            let mk=sh+'_'+yr;
-            let t=allMap[mk]||0;
-            alert(`${sh} ${yr} — Total: ₹${Math.round(t)}`);
-        });
-        document.body.appendChild(inp);
-    }
-    // Set current month as default
-    let now=new Date();
-    inp.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-    // Open picker
-    try{ inp.showPicker(); } catch(e){ inp.click(); }
-}
-
-// applyMonthPicker removed — handled in input event
-
-// ====== HELPERS ======
-function toggleDrop(id){
-    let el=document.getElementById(id);
-    if(!el) return;
-    el.style.display = el.style.display==='none' ? 'block' : 'none';
-}
-
-// Calendar se date select karna — YYYY-MM-DD aata hai, DD/MM/YYYY mein convert karo
-function ymdToDmy(ymd){
-    if(!ymd) return '';
-    let p=ymd.split('-');
-    return `${p[2]}/${p[1]}/${p[0]}`;
-}
-
-// Kharch Edit — date badlo
-function kharchDateChanged(ymd){
-    let newDate=ymdToDmy(ymd);
-    if(!newDate) return;
-    curKharchDate=newDate;
-    // Record nahi hai to bana do
-    if(!expense.find(h=>h.date===curKharchDate)){
-        expense.unshift({date:curKharchDate,items:[]});
-    }
-    renderKharchEdit();
-}
-
-// Saman Edit — date badlo
-function samanDateChanged(ymd){
-    let newDate=ymdToDmy(ymd);
-    if(!newDate) return;
-    curSamanDate=newDate;
-    if(!shopping.find(h=>h.date===curSamanDate)){
-        shopping.unshift({date:curSamanDate,items:[]});
-    }
-    renderSamanEdit();
-}
-
-// Kharch History — date select karo, us date ka expand karo
-function kharchHistDateGo(ymd){
-    let date=ymdToDmy(ymd);
-    if(!date) return;
-    // Pehle check karo record hai ya nahi
-    let rec=expense.find(h=>h.date===date);
-    if(rec && rec.items && rec.items.length>0){
-        // History page mein scroll karke us date ka dropdown kholo
-        let id='kd_'+date.replace(/\//g,'_');
-        let el=document.getElementById(id);
-        if(el){
-            el.style.display='block';
-            setTimeout(()=>{ el.scrollIntoView({behavior:'smooth',block:'start'}); },100);
-        } else {
-            // List mein nahi dikh raha — seedha edit kholo
-            curKharchDate=date;
-            renderKharchEdit();
-            showPage('kharchEditPage');
-        }
-    } else {
-        // Koi record nahi — seedha us date ka edit kholo
-        curKharchDate=date;
-        if(!expense.find(h=>h.date===date)){
-            expense.unshift({date:date,items:[]});
-        }
-        renderKharchEdit();
-        showPage('kharchEditPage');
-    }
-}
-
-// Saman History — date select karo
-function samanHistDateGo(ymd){
-    let date=ymdToDmy(ymd);
-    if(!date) return;
-    let rec=shopping.find(h=>h.date===date);
-    if(rec && rec.items && rec.items.length>0){
-        let id='sd_'+date.replace(/\//g,'_');
-        let el=document.getElementById(id);
-        if(el){
-            el.style.display='block';
-            setTimeout(()=>{ el.scrollIntoView({behavior:'smooth',block:'start'}); },100);
-        } else {
-            curSamanDate=date;
-            renderSamanEdit();
-            showPage('samanEditPage');
-        }
-    } else {
-        curSamanDate=date;
-        if(!shopping.find(h=>h.date===date)){
-            shopping.unshift({date:date,items:[]});
-        }
-        renderSamanEdit();
-        showPage('samanEditPage');
-    }
-}
-function dateDiff(a,b){
-    let da=a.split('/'),db=b.split('/');
-    return new Date(da[2],da[1]-1,da[0])-new Date(db[2],db[1]-1,db[0]);
-}
-function dateToMonth(date){
-    let p=date.split('/');
-    return months[parseInt(p[1])-1]+' '+p[2];
-}
-// Hindi quantity display — edit page aur calc mein use hoga
-function fmtQtyHi(qty,unit){
-    if(unit==='Open') return 'खुला';
-    if(unit==='Send') return 'Send';
-    let q=parseFloat(qty);
-    if(isNaN(q)||qty===''||qty==null) return '';
-    let h5=(Math.abs(q-0.5)<0.001),g2=(Math.abs(q-0.2)<0.001);
-    let g25=(Math.abs(q-0.25)<0.001),g1=(Math.abs(q-0.1)<0.001),g75=(Math.abs(q-0.75)<0.001);
-    if(unit==='Kg'){if(h5)return 'आधा किलो';if(g2)return '200 ग्राम';if(g25)return '250 ग्राम';if(g1)return '100 ग्राम';if(g75)return '750 ग्राम';return `${q} किलो`;}
-    if(unit==='Ltr'){if(h5)return 'आधा लीटर';if(g2)return '200 ML';if(g25)return '250 ML';if(g1)return '100 ML';if(g75)return '750 ML';return `${q} लीटर`;}
-    if(unit==='Pc')    return `${q} पीस`;
-    if(unit==='Rs')    return `₹${q}`;
-    if(unit==='Pkt')   return `${q} पैकेट`;
-    if(unit==='Open')  return `खुला`;
-    if(unit==='Send')  return `Send`;
-    if(unit==='Plate') return `${q} प्लेट`;
-    if(unit==='Form')  return `${q} फॉर्म`;
-    if(unit==='Cup')   return `${q} कप`;
-    if(unit==='Glass') return `${q} ग्लास`;
-    return `${qty} ${unit}`;
 }
 
 // ====== LANGUAGE ======
@@ -880,43 +688,42 @@ function setLang(lang){
     document.getElementById('btnEn').classList.toggle('active',lang==='en');
     renderFinalList();
 }
-function fmtQty(qty,unit,lang){
-    // Open aur Send ke liye qty ki zaroorat nahi
-    if(unit==='Open') return lang==='hi' ? 'खुला' : 'Open';
-    if(unit==='Send') return 'Send';
+function fmtQtyHi(qty,unit){
+    if(unit==='Open')return 'खुला';
+    if(unit==='Send')return 'Send';
     let q=parseFloat(qty);
-    if(isNaN(q)||qty===''||qty==null) return '';
-    let h5=(Math.abs(q-0.5)<0.001),g2=(Math.abs(q-0.2)<0.001);
-    let g25=(Math.abs(q-0.25)<0.001),g1=(Math.abs(q-0.1)<0.001),g75=(Math.abs(q-0.75)<0.001);
+    if(isNaN(q)||qty===''||qty==null)return '';
+    let h5=(Math.abs(q-0.5)<0.001),g2=(Math.abs(q-0.2)<0.001),g25=(Math.abs(q-0.25)<0.001),g1=(Math.abs(q-0.1)<0.001),g75=(Math.abs(q-0.75)<0.001);
+    if(unit==='Kg'){if(h5)return 'आधा किलो';if(g2)return '200 ग्राम';if(g25)return '250 ग्राम';if(g1)return '100 ग्राम';if(g75)return '750 ग्राम';return `${q} किलो`;}
+    if(unit==='Ltr'){if(h5)return 'आधा लीटर';if(g2)return '200 ML';if(g25)return '250 ML';if(g1)return '100 ML';if(g75)return '750 ML';return `${q} लीटर`;}
+    if(unit==='Pc')return `${q} पीस`;
+    if(unit==='Rs')return `₹${q}`;
+    if(unit==='Pkt')return `${q} पैकेट`;
+    if(unit==='Plate')return `${q} प्लेट`;
+    if(unit==='Form')return `${q} फॉर्म`;
+    if(unit==='Cup')return `${q} कप`;
+    if(unit==='Glass')return `${q} ग्लास`;
+    return `${qty} ${unit}`;
+}
+function fmtQty(qty,unit,lang){
+    if(unit==='Open')return lang==='hi'?'खुला':'Open';
+    if(unit==='Send')return 'Send';
+    let q=parseFloat(qty);
+    if(isNaN(q)||qty===''||qty==null)return '';
+    let h5=(Math.abs(q-0.5)<0.001),g2=(Math.abs(q-0.2)<0.001),g25=(Math.abs(q-0.25)<0.001),g1=(Math.abs(q-0.1)<0.001),g75=(Math.abs(q-0.75)<0.001);
     if(lang==='en'){
         if(unit==='Kg'){if(h5)return 'Half Kg';if(g2)return '200 Gram';if(g25)return '250 Gram';if(g1)return '100 Gram';if(g75)return '750 Gram';return `${q} Kg`;}
         if(unit==='Ltr'){if(h5)return 'Half Litre';if(g2)return '200 ML';if(g25)return '250 ML';if(g1)return '100 ML';if(g75)return '750 ML';return `${q} Litre`;}
-        if(unit==='Pc')    return `${q} Pc`;
-        if(unit==='Rs')    return `${q} Rs`;
-        if(unit==='Pkt')   return `${q} Pkt`;
-        if(unit==='Open')  return `Open`;
-        if(unit==='Send')  return `Send`;
-        if(unit==='Plate') return `${q} Plate`;
-        if(unit==='Form')  return `${q} Form`;
-        if(unit==='Cup')   return `${q} Cup`;
-        if(unit==='Glass') return `${q} Glass`;
+        if(unit==='Pc')return `${q} Pc`;if(unit==='Rs')return `${q} Rs`;if(unit==='Pkt')return `${q} Pkt`;
+        if(unit==='Plate')return `${q} Plate`;if(unit==='Form')return `${q} Form`;if(unit==='Cup')return `${q} Cup`;if(unit==='Glass')return `${q} Glass`;
         return `${q} ${unit}`;
     }
     if(unit==='Kg'){if(h5)return 'आधा किलो';if(g2)return '200 ग्राम';if(g25)return '250 ग्राम';if(g1)return '100 ग्राम';if(g75)return '750 ग्राम';return `${q} किलो`;}
     if(unit==='Ltr'){if(h5)return 'आधा लीटर';if(g2)return '200 ML';if(g25)return '250 ML';if(g1)return '100 ML';if(g75)return '750 ML';return `${q} लीटर`;}
-    if(unit==='Pc')    return `${q} पीस`;
-    if(unit==='Rs')    return `${q} रुपये`;
-    if(unit==='Pkt')   return `${q} पैकेट`;
-    if(unit==='Open')  return `खुला`;
-    if(unit==='Send')  return `Send`;
-    if(unit==='Plate') return `${q} प्लेट`;
-    if(unit==='Form')  return `${q} फॉर्म`;
-    if(unit==='Cup')   return `${q} कप`;
-    if(unit==='Glass') return `${q} ग्लास`;
+    if(unit==='Pc')return `${q} पीस`;if(unit==='Rs')return `${q} रुपये`;if(unit==='Pkt')return `${q} पैकेट`;
+    if(unit==='Plate')return `${q} प्लेट`;if(unit==='Form')return `${q} फॉर्म`;if(unit==='Cup')return `${q} कप`;if(unit==='Glass')return `${q} ग्लास`;
     return `${qty} ${unit}`;
 }
-// English fmtQty extra units
-
 function catLabel(c,lang){
     if(lang==='hi'){if(c==='SABJI')return 'सब्जी';if(c==='BODY')return 'शरीर';if(c==='OTHER')return 'अन्य';return 'GROC';}
     return c;
@@ -926,17 +733,17 @@ function catLabel(c,lang){
 let lastSelItems=[];
 function showFinalList(){
     lastSelItems=items.filter(it=>it.sel);
-    if(!lastSelItems.length){alert("Pehle item choose karo!"); return;}
-    renderFinalList(); showPage('listPage');
+    if(!lastSelItems.length){alert("Pehle item choose karo!");return;}
+    renderFinalList();showPage('listPage');
 }
 function renderFinalList(){
     let isHi=(listLang==='hi');
     document.getElementById('listTitle').innerText=isHi?'सामान सूची':'Shopping List';
-    let out=document.getElementById('fOut'); if(!out) return;
+    let out=document.getElementById('fOut');if(!out)return;
     let col1=isHi?'सामान':'ITEM',col2=isHi?'मात्रा':'QTY',col3=isHi?'कीमत':'RATE';
     out.innerHTML=`<h2 style="text-align:center;color:#0984e3;border-bottom:3px solid #0984e3;padding-bottom:10px;margin-bottom:15px;">${isHi?'🛒 सामान सूची':'🛒 Shopping List'}</h2>`;
     ['GROCERY','SABJI','BODY','OTHER'].forEach(c=>{
-        let f=lastSelItems.filter(it=>it.cat===c); if(!f.length) return;
+        let f=lastSelItems.filter(it=>it.cat===c);if(!f.length)return;
         out.innerHTML+=`<div style="background:#2d3436;color:#fff;padding:5px 12px;border-radius:4px;font-size:12px;margin:14px 0 7px;display:inline-block;">${catLabel(c,listLang)}</div>`;
         out.innerHTML+=`<div style="display:grid;grid-template-columns:1fr 110px 70px;font-size:11px;font-weight:900;color:#636e72;padding:5px;border-bottom:2px solid #dfe6e9;"><span>${col1}</span><span style="text-align:center;">${col2}</span><span style="text-align:center;">${col3}</span></div>`;
         f.forEach((it,j)=>{
@@ -949,44 +756,34 @@ function renderFinalList(){
     });
 }
 
-// ====== CALC — price dalte hi auto save, confirm button bhi ======
+// ====== CALC ======
 function openCalc(){
     tCalc=items.filter(it=>it.sel).map(it=>({name:it.name,qty:parseFloat(it.qty)||0,unit:it.unit,price:0,done:false}));
-    renderC(); showPage('calcPage');
+    renderC();showPage('calcPage');
 }
 function renderC(){
     document.getElementById('cList').innerHTML=tCalc.map((it,i)=>{
-        // Rs unit ho to sirf price box dikhao, qty nahi
-        let qtyDisplay = it.unit==='Rs'
-            ? `<span style="color:#e17055;font-size:11px;font-weight:800;">₹ amt</span>`
-            : `<span style="color:#636e72;font-size:12px;">${fmtQtyHi(it.qty,it.unit)}</span>`;
+        let qtyDisplay=it.unit==='Rs'
+            ?`<span style="color:#e17055;font-size:11px;font-weight:800;">₹ amt</span>`
+            :`<span style="color:#636e72;font-size:12px;">${fmtQtyHi(it.qty,it.unit)}</span>`;
         return `<div class="calc-row" style="grid-template-columns:1fr ${it.unit==='Rs'?'60px':'80px'} 76px 40px;">
             <b style="font-size:13px;">${it.name}</b>
             ${qtyDisplay}
-            <input type="number" ${it.done?'disabled':''} placeholder="₹"
-                value="${it.price>0?it.price:''}"
-                onchange="calcPrice(${i},this.value)" class="p-box" inputmode="decimal">
+            <input type="number" ${it.done?'disabled':''} placeholder="₹" value="${it.price>0?it.price:''}" onchange="calcPrice(${i},this.value)" class="p-box" inputmode="decimal">
             <button class="btn ${it.done?'ok-btn':'lock-btn'}" onclick="calcLock(${i})">${it.done?'✓':'🔒'}</button>
         </div>`;
     }).join('');
     renderCSum();
 }
-// Price dalte hi auto save shopping history mein
-function calcPrice(i,v){
-    tCalc[i].price=parseFloat(v)||0;
-    renderCSum();
-    autoSaveCalc(); // auto save
-}
-function calcLock(i){tCalc[i].done=!tCalc[i].done; renderC(); autoSaveCalc();}
-
+function calcPrice(i,v){tCalc[i].price=parseFloat(v)||0;renderCSum();autoSaveCalc();}
+function calcLock(i){tCalc[i].done=!tCalc[i].done;renderC();autoSaveCalc();}
 function autoSaveCalc(){
-    let filled=tCalc.filter(it=>it.price>0); if(!filled.length) return;
+    let filled=tCalc.filter(it=>it.price>0);if(!filled.length)return;
     let d=new Date().toLocaleDateString('en-GB');
     let rec=shopping.find(h=>h.date===d);
     if(!rec){rec={date:d,items:[]};shopping.unshift(rec);}
-    // Pehle us date ke tCalc items hata do, phir fresh add karo (duplicate na bane)
     rec.items=rec.items.filter(e=>!tCalc.find(t=>t.name.toLowerCase()===e.name.toLowerCase()));
-    filled.forEach(ni=>{rec.items.push({name:ni.name,qty:ni.qty,unit:ni.unit,price:ni.price,done:ni.done});});
+    filled.forEach(ni=>rec.items.push({name:ni.name,qty:ni.qty,unit:ni.unit,price:ni.price,done:ni.done}));
     save();
 }
 function renderCSum(){
@@ -995,23 +792,10 @@ function renderCSum(){
 }
 function takeShot(){
     let el=document.getElementById('shotArea');
-    html2canvas(el,{
-        scale:2,
-        useCORS:true,
-        backgroundColor:'#ffffff',
-        logging:false,
-        width:el.offsetWidth,
-        height:el.offsetHeight
-    }).then(canvas=>{
-        let a=document.createElement('a');
-        a.download='SamanList.png';
-        a.href=canvas.toDataURL('image/png');
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }).catch(err=>{
-        alert('Image save nahi ho paya. Browser permissions check karo.');
-    });
+    html2canvas(el,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false}).then(canvas=>{
+        let a=document.createElement('a');a.download='SamanList.png';a.href=canvas.toDataURL('image/png');
+        document.body.appendChild(a);a.click();document.body.removeChild(a);
+    }).catch(()=>alert('Image save nahi ho paya.'));
 }
 </script>
 </body>
